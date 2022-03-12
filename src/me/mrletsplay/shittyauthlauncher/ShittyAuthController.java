@@ -105,6 +105,7 @@ public class ShittyAuthController {
 		LoginData data = AuthHelper.authenticate(user, pass);
 		if(data != null) {
 			ShittyAuthLauncherSettings.setLoginData(data);
+			ShittyAuthLauncherSettings.save();
 	    	updateLogin();
 		}else {
 			
