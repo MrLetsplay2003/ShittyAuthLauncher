@@ -30,7 +30,7 @@
       <TextField fx:id="inputGameDataPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label text="New Java path (17)" GridPane.rowIndex="2" />
       <TextField fx:id="inputNewJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Label text="Old Java path (8, for MC &lt; 1.13)" GridPane.rowIndex="3" />
+      <Label text="Old Java path (8, for older MC versions)" GridPane.rowIndex="3" />
       <TextField fx:id="inputOldJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="3" />
       <Label text="Amogus" GridPane.rowIndex="5" />
       <TextField disable="true" prefWidth="250.0" text="The Amogus will always be sus" GridPane.columnIndex="1" GridPane.rowIndex="5" />

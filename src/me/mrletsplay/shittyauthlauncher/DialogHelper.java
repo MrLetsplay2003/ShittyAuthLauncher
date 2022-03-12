@@ -1,0 +1,58 @@
+package me.mrletsplay.shittyauthlauncher;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+
+public class DialogHelper {
+
+	public static void showWarning(String warning) {
+		Alert a = new Alert(AlertType.WARNING);
+		a.setContentText(warning);
+		a.showAndWait();
+	}
+	
+	public static void showError(String error) {
+		Alert a = new Alert(AlertType.ERROR);
+		a.setContentText(error);
+		a.showAndWait();
+	}
+	
+	public static void showError(String error, Exception e) {
+		Alert a = new Alert(AlertType.ERROR);
+		a.setHeaderText(error);
+		a.setResizable(true);
+		
+		StringWriter w = new StringWriter();
+		PrintWriter pw = new PrintWriter(w);
+		e.printStackTrace(pw);
+		String exceptionText = w.toString();
+		
+		Label label = new Label("Exception stacktrace:");
+		TextArea area = new TextArea(exceptionText);
+		area.setEditable(false);
+		area.setWrapText(true);
+		area.setMaxWidth(Double.MAX_VALUE);
+		area.setMaxHeight(Double.MAX_VALUE);
+		area.autosize();
+		
+		GridPane.setVgrow(area, Priority.ALWAYS);
+		GridPane.setHgrow(area, Priority.ALWAYS);
+		
+		GridPane content = new GridPane();
+		content.setMaxWidth(Double.MAX_VALUE);
+		content.add(label, 0, 0);
+		content.add(area, 0, 1);
+		
+		a.getDialogPane().setContent(content);
+		
+		a.showAndWait();
+	}
+	
+}
