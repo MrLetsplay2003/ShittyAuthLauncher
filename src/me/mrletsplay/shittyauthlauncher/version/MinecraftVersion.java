@@ -186,13 +186,15 @@ public class MinecraftVersion implements JSONConvertible {
 		}
 		System.out.println("Requires old Java? " + requiresOldJava);
 		
+		String authServer = ShittyAuthLauncherSettings.getAuthServerURL();
+		
 		ProcessBuilder b = new ProcessBuilder(
 				requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
 				"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-				"-Dminecraft.api.auth.host=https://mc.graphite-official.com",
-				"-Dminecraft.api.account.host=https://mc.graphite-official.com",
-				"-Dminecraft.api.session.host=https://mc.graphite-official.com",
-				"-Dminecraft.api.services.host=https://mc.graphite-official.com",
+				"-Dminecraft.api.auth.host=" + authServer,
+				"-Dminecraft.api.account.host=" + authServer,
+				"-Dminecraft.api.session.host=" + authServer,
+				"-Dminecraft.api.services.host=" + authServer,
 				"-cp", classPath,
 				meta.getString("mainClass"),
 				"--version", id,

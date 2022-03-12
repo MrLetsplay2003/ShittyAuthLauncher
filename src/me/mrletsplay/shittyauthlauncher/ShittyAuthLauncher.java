@@ -44,8 +44,6 @@ public class ShittyAuthLauncher extends Application {
 		settingsStage.setScene(settingsScene);
 		settingsStage.initOwner(stage);
 		settingsStage.setResizable(false);
-//		settingsStage.setWidth(720);
-//		settingsStage.setHeight(480);
 		settingsStage.sizeToScene();
 		settingsStage.setOnShown(event -> {
 			settingsController.update();
@@ -61,9 +59,9 @@ public class ShittyAuthLauncher extends Application {
 		primaryStage.getIcons().add(new Image(iconURL.openStream()));
 		
 		Scene sc = new Scene(pr, 720, 480);
-//		primaryStage.setOnCloseRequest(event -> exit());
-		primaryStage.setTitle("JJack");
-		primaryStage.setResizable(false);
+		primaryStage.setTitle("ShittyAuthLauncher");
+		primaryStage.setMinWidth(720);
+		primaryStage.setMinHeight(480);
 		primaryStage.setScene(sc);
 		primaryStage.show();
 	}

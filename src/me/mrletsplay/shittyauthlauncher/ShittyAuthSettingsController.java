@@ -19,19 +19,26 @@ public class ShittyAuthSettingsController {
     private TextField inputOldJavaPath;
 
     @FXML
+    private TextField inputAuthServerURL;
+
+    @FXML
     void buttonSave(ActionEvent event) {
     	String minecraftPath = inputMinecraftPath.getText();
     	String gameDataPath = inputGameDataPath.getText();
     	String newJavaPath = inputNewJavaPath.getText();
     	String oldJavaPath = inputOldJavaPath.getText();
+    	String authServerURL = inputAuthServerURL.getText();
     	if(minecraftPath.isBlank()) minecraftPath = null;
     	if(gameDataPath.isBlank()) gameDataPath = null;
     	if(newJavaPath.isBlank()) newJavaPath = null;
     	if(oldJavaPath.isBlank()) oldJavaPath = null;
+    	if(authServerURL.isBlank()) authServerURL = null;
     	ShittyAuthLauncherSettings.setMinecraftPath(minecraftPath);
     	ShittyAuthLauncherSettings.setGameDataPath(gameDataPath);
     	ShittyAuthLauncherSettings.setNewJavaPath(newJavaPath);
     	ShittyAuthLauncherSettings.setOldJavaPath(oldJavaPath);
+    	ShittyAuthLauncherSettings.setAuthServerURL(authServerURL);
+    	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
     }
 
@@ -45,6 +52,7 @@ public class ShittyAuthSettingsController {
     	inputMinecraftPath.setText(ShittyAuthLauncherSettings.getMinecraftPath());
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
+    	inputAuthServerURL.setText(ShittyAuthLauncherSettings.getAuthServerURL());
     }
 
 }

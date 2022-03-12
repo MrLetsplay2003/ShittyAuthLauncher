@@ -7,12 +7,13 @@ import javafx.scene.control.Alert.AlertType;
 import me.mrletsplay.mrcore.http.HttpGeneric;
 import me.mrletsplay.mrcore.http.HttpRequest;
 import me.mrletsplay.mrcore.json.JSONObject;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 
 public class AuthHelper {
 	
 	public static LoginData authenticate(String username, String password) {
 		try {
-			HttpGeneric post = HttpRequest.createGeneric("POST", "https://mc.graphite-official.com/authenticate");
+			HttpGeneric post = HttpRequest.createGeneric("POST", ShittyAuthLauncherSettings.getAuthServerURL() + "/authenticate");
 			
 			JSONObject req = new JSONObject();
 			req.put("username", username);
@@ -24,7 +25,7 @@ public class AuthHelper {
 		}catch(IllegalStateException e) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Error");
-			a.setContentText("Invalid credentials");
+			a.setContentText("Invalid credentials or auth server not reachable");
 			a.showAndWait();
 			return null;
 		}

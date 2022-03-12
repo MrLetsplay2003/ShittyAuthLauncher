@@ -9,13 +9,14 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthSettingsController">
+<GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthSettingsController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -28,12 +29,14 @@
       <Label text="Path for game data" GridPane.rowIndex="1" />
       <TextField fx:id="inputGameDataPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label text="New Java path (17)" GridPane.rowIndex="2" />
-      <Label text="Old Java path (8, for MC &lt; 1.13)" GridPane.rowIndex="3" />
       <TextField fx:id="inputNewJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Label text="Old Java path (8, for MC &lt; 1.13)" GridPane.rowIndex="3" />
       <TextField fx:id="inputOldJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <Label text="Amogus" GridPane.rowIndex="4" />
-      <TextField disable="true" prefWidth="250.0" text="The Amogus will always be sus" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.vgrow="NEVER">
+      <Label text="Amogus" GridPane.rowIndex="5" />
+      <TextField disable="true" prefWidth="250.0" text="The Amogus will always be sus" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <Label text="Auth server URL" GridPane.rowIndex="4" />
+      <TextField fx:id="inputAuthServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.vgrow="NEVER">
          <children>
             <Button mnemonicParsing="false" onAction="#buttonSave" text="Save">
                <HBox.margin>
