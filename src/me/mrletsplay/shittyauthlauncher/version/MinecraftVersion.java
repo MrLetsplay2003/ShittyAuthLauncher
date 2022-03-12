@@ -150,7 +150,7 @@ public class MinecraftVersion implements JSONConvertible {
 				JSONObject natives = lib.optJSONObject("natives").orElse(null);
 				if(natives != null) {
 					if(!natives.has(os)) continue;
-					String nativesPath = lib.getJSONObject("downloads").getJSONObject("classifiers").getJSONObject(natives.getString(os)).getString("path");
+					String nativesPath = lib.getJSONObject("downloads").getJSONObject("classifiers").getJSONObject(natives.getString(os).replace("${arch}", "64")).getString("path");
 					nativeLibs.add(new File(ShittyAuthLauncherSettings.getMinecraftPath(), "libraries/" + nativesPath));
 				}
 			}

@@ -80,6 +80,7 @@ public class ShittyAuthLauncherSettings {
 	
 	public static void setLoginData(LoginData data) {
 		tokenConfig.set("loginData", data);
+		tokenConfig.saveToFile();
 	}
 	
 	public static LoginData getLoginData() {

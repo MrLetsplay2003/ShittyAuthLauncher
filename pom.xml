@@ -39,28 +39,23 @@
 						</goals>
 					</execution>
 				</executions>
-				<!-- <configuration>
-					<minimizeJar>true</minimizeJar>
-					<filters>
-						<filter>
-							<artifact>org.openjfx:javafx-base</artifact>
-							<includes>
-								<include>**</include>
-							</includes>
-						</filter>
-						<filter>
-							<artifact>org.openjfx:javafx-controls</artifact>
-							<includes>
-								<include>**</include>
-							</includes>
-						</filter>
-					</filters>
-				</configuration> -->
+				<!-- <configuration> <minimizeJar>true</minimizeJar> <filters> <filter> 
+					<artifact>org.openjfx:javafx-base</artifact> <includes> <include>**</include> 
+					</includes> </filter> <filter> <artifact>org.openjfx:javafx-controls</artifact> 
+					<includes> <include>**</include> </includes> </filter> </filters> </configuration> -->
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.7</version>
+			</plugin>
+			<plugin>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-maven-plugin</artifactId>
+				<version>12.0.2</version>
+				<configuration>
+					<mainClass>hellofx.HelloFX</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 		<resources>
@@ -99,6 +94,18 @@
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-fxml</artifactId>
 			<version>17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>17</version>
+			<classifier>win</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>17</version>
+			<classifier>linux</classifier>
 		</dependency>
 	</dependencies>
 </project>
