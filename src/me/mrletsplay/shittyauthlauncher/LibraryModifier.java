@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class LibraryModifier {
 	
 	public static File patchAuthlib(File authLib, MinecraftVersion version) throws IOException {
 		File out = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/authlib-" + version.getId() + ".jar");
-		if(out.exists()) return out;
+		if(out.exists() && !ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) return out;
 		
 		File cringeFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "cringe");
 		cringeFolder.mkdirs();
@@ -64,7 +65,9 @@ public class LibraryModifier {
 				}
 			}
 			
-			int en = ClassFileUtils.getOrAppendString(cf, ClassFileUtils.getOrAppendUTF8(cf, "cdn.discordapp.com"));
+			String host = URI.create(ShittyAuthLauncherSettings.getAuthServerURL()).getHost();
+			System.out.println("Patching with host: " + host);
+			int en = ClassFileUtils.getOrAppendString(cf, ClassFileUtils.getOrAppendUTF8(cf, host));
 			int en2 = ClassFileUtils.getOrAppendString(cf, ClassFileUtils.getOrAppendUTF8(cf, ".minecraft.net"));
 			
 			iis.subList(0, endIdx).clear();

@@ -2,6 +2,7 @@ package me.mrletsplay.shittyauthlauncher;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 public class ShittyAuthSettingsController {
@@ -22,12 +23,16 @@ public class ShittyAuthSettingsController {
     private TextField inputAuthServerURL;
 
     @FXML
+    private CheckBox checkboxAlwaysPatch;
+
+    @FXML
     void buttonSave(ActionEvent event) {
     	String minecraftPath = inputMinecraftPath.getText();
     	String gameDataPath = inputGameDataPath.getText();
     	String newJavaPath = inputNewJavaPath.getText();
     	String oldJavaPath = inputOldJavaPath.getText();
     	String authServerURL = inputAuthServerURL.getText();
+    	boolean alwaysPatch = checkboxAlwaysPatch.isSelected();
     	if(minecraftPath.isBlank()) minecraftPath = null;
     	if(gameDataPath.isBlank()) gameDataPath = null;
     	if(newJavaPath.isBlank()) newJavaPath = null;
@@ -38,6 +43,7 @@ public class ShittyAuthSettingsController {
     	ShittyAuthLauncherSettings.setNewJavaPath(newJavaPath);
     	ShittyAuthLauncherSettings.setOldJavaPath(oldJavaPath);
     	ShittyAuthLauncherSettings.setAuthServerURL(authServerURL);
+    	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(alwaysPatch);
     	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
     }
@@ -53,6 +59,7 @@ public class ShittyAuthSettingsController {
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
     	inputAuthServerURL.setText(ShittyAuthLauncherSettings.getAuthServerURL());
+    	checkboxAlwaysPatch.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
     }
 
 }

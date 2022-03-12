@@ -29,6 +29,7 @@ public class ShittyAuthLauncherSettings {
 			setNewJavaPath("java");
 			setOldJavaPath("java");
 			setAuthServerURL(DEFAULT_AUTH_SERVER_URL);
+			setAlwaysPatchAuthlib(false);
 	    	save();
 		}
 	}
@@ -76,6 +77,14 @@ public class ShittyAuthLauncherSettings {
 	
 	public static String getAuthServerURL() {
 		return config.getString("auth-server-url", DEFAULT_AUTH_SERVER_URL, false);
+	}
+	
+	public static void setAlwaysPatchAuthlib(boolean alwaysPatch) {
+		config.set("always-patch-authlib", alwaysPatch);
+	}
+	
+	public static boolean isAlwaysPatchAuthlib() {
+		return config.getBoolean("always-patch-authlib");
 	}
 	
 	public static void setLoginData(LoginData data) {
