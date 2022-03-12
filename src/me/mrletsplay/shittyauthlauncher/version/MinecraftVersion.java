@@ -2,14 +2,11 @@ package me.mrletsplay.shittyauthlauncher.version;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.zip.ZipFile;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -19,7 +16,6 @@ import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
-import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.mrcore.json.converter.JSONConstructor;
 import me.mrletsplay.mrcore.json.converter.JSONConverter;
 import me.mrletsplay.mrcore.json.converter.JSONConvertible;
