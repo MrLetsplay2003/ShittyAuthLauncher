@@ -13,7 +13,7 @@ public class ShittyAuthLauncherSettings {
 		DEFAULT_MINECRAFT_CONTAINER = System.getProperty("os.name").toLowerCase().contains("windows") ? System.getenv("APPDATA") : System.getProperty("user.home"),
 		DEFAULT_MINECRAFT_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft",
 		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty",
-		DEFAULT_AUTH_SERVER_URL = "https://mc.graphite-official.com";
+		DEFAULT_SERVER_URL = "https://mc.graphite-official.com";
 	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
@@ -28,7 +28,10 @@ public class ShittyAuthLauncherSettings {
 			setGameDataPath(DEFAULT_GAME_DATA_PATH);
 			setNewJavaPath("java");
 			setOldJavaPath("java");
-			setAuthServerURL(DEFAULT_AUTH_SERVER_URL);
+			setAuthServerURL(DEFAULT_SERVER_URL);
+			setAccountServerURL(DEFAULT_SERVER_URL);
+			setSessionServerURL(DEFAULT_SERVER_URL);
+			setServicesServerURL(DEFAULT_SERVER_URL);
 			setAlwaysPatchAuthlib(false);
 	    	save();
 		}
@@ -76,7 +79,31 @@ public class ShittyAuthLauncherSettings {
 	}
 	
 	public static String getAuthServerURL() {
-		return config.getString("auth-server-url", DEFAULT_AUTH_SERVER_URL, false);
+		return config.getString("auth-server-url", DEFAULT_SERVER_URL, false);
+	}
+	
+	public static void setAccountServerURL(String url) {
+		config.set("account-server-url", url);
+	}
+	
+	public static String getAccountServerURL() {
+		return config.getString("account-server-url", DEFAULT_SERVER_URL, false);
+	}
+	
+	public static void setSessionServerURL(String url) {
+		config.set("session-server-url", url);
+	}
+	
+	public static String getSessionServerURL() {
+		return config.getString("session-server-url", DEFAULT_SERVER_URL, false);
+	}
+	
+	public static void setServicesServerURL(String url) {
+		config.set("services-server-url", url);
+	}
+	
+	public static String getServicesServerURL() {
+		return config.getString("services-server-url", DEFAULT_SERVER_URL, false);
 	}
 	
 	public static void setAlwaysPatchAuthlib(boolean alwaysPatch) {

@@ -184,20 +184,19 @@ public class MinecraftVersion implements JSONConvertible {
 			}
 			System.out.println("Requires old Java? " + requiresOldJava);
 			
-			String authServer = ShittyAuthLauncherSettings.getAuthServerURL();
-			
 			ProcessBuilder b = new ProcessBuilder(
 					requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
 					"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-					"-Dminecraft.api.auth.host=" + authServer,
-					"-Dminecraft.api.account.host=" + authServer,
-					"-Dminecraft.api.session.host=" + authServer,
-					"-Dminecraft.api.services.host=" + authServer,
+					"-Dminecraft.api.auth.host=" + ShittyAuthLauncherSettings.getAuthServerURL(),
+					"-Dminecraft.api.account.host=" + ShittyAuthLauncherSettings.getAccountServerURL(),
+					"-Dminecraft.api.session.host=" + ShittyAuthLauncherSettings.getSessionServerURL(),
+					"-Dminecraft.api.services.host=" + ShittyAuthLauncherSettings.getServicesServerURL(),
 					"-cp", classPath,
 					meta.getString("mainClass"),
 					"--version", id,
 					"--accessToken", data.getAccessToken(),
 					"--username", data.getUsername(),
+					"--uuid", data.getUuid(),
 					"--gameDir", ShittyAuthLauncherSettings.getGameDataPath(),
 					"--assetsDir", ShittyAuthLauncherSettings.getMinecraftPath() + "/assets",
 					"--assetIndex", meta.getString("assets"),
@@ -205,6 +204,7 @@ public class MinecraftVersion implements JSONConvertible {
 					"--versionType", "release",
 					"--userProperties", "{}" /* For old versions */);
 			b.directory(new File(ShittyAuthLauncherSettings.getMinecraftPath()));
+			System.out.println(b.command());
 			new Thread(() -> {
 				try {
 					Process p = b.inheritIO().start();

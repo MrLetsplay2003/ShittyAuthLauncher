@@ -23,29 +23,36 @@ public class ShittyAuthSettingsController {
     private TextField inputAuthServerURL;
 
     @FXML
+    private TextField inputAccountServerURL;
+
+    @FXML
+    private TextField inputSessionServerURL;
+
+    @FXML
+    private TextField inputServicesServerURL;
+
+    @FXML
     private CheckBox checkboxAlwaysPatch;
 
     @FXML
     void buttonSave(ActionEvent event) {
-    	String minecraftPath = inputMinecraftPath.getText();
-    	String gameDataPath = inputGameDataPath.getText();
-    	String newJavaPath = inputNewJavaPath.getText();
-    	String oldJavaPath = inputOldJavaPath.getText();
-    	String authServerURL = inputAuthServerURL.getText();
-    	boolean alwaysPatch = checkboxAlwaysPatch.isSelected();
-    	if(minecraftPath.isBlank()) minecraftPath = null;
-    	if(gameDataPath.isBlank()) gameDataPath = null;
-    	if(newJavaPath.isBlank()) newJavaPath = null;
-    	if(oldJavaPath.isBlank()) oldJavaPath = null;
-    	if(authServerURL.isBlank()) authServerURL = null;
-    	ShittyAuthLauncherSettings.setMinecraftPath(minecraftPath);
-    	ShittyAuthLauncherSettings.setGameDataPath(gameDataPath);
-    	ShittyAuthLauncherSettings.setNewJavaPath(newJavaPath);
-    	ShittyAuthLauncherSettings.setOldJavaPath(oldJavaPath);
-    	ShittyAuthLauncherSettings.setAuthServerURL(authServerURL);
-    	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(alwaysPatch);
+    	ShittyAuthLauncherSettings.setMinecraftPath(getString(inputMinecraftPath));
+    	ShittyAuthLauncherSettings.setGameDataPath(getString(inputGameDataPath));
+    	ShittyAuthLauncherSettings.setNewJavaPath(getString(inputNewJavaPath));
+    	ShittyAuthLauncherSettings.setOldJavaPath(getString(inputOldJavaPath));
+    	ShittyAuthLauncherSettings.setAuthServerURL(getString(inputAuthServerURL));
+    	ShittyAuthLauncherSettings.setAccountServerURL(getString(inputAccountServerURL));
+    	ShittyAuthLauncherSettings.setSessionServerURL(getString(inputSessionServerURL));
+    	ShittyAuthLauncherSettings.setServicesServerURL(getString(inputServicesServerURL));
+    	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatch.isSelected());
     	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
+    }
+    
+    private String getString(TextField textField) {
+    	String txt = textField.getText();
+    	if(txt.isBlank()) txt = null;
+    	return txt;
     }
 
     @FXML
@@ -59,6 +66,9 @@ public class ShittyAuthSettingsController {
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
     	inputAuthServerURL.setText(ShittyAuthLauncherSettings.getAuthServerURL());
+    	inputAccountServerURL.setText(ShittyAuthLauncherSettings.getAccountServerURL());
+    	inputSessionServerURL.setText(ShittyAuthLauncherSettings.getSessionServerURL());
+    	inputServicesServerURL.setText(ShittyAuthLauncherSettings.getServicesServerURL());
     	checkboxAlwaysPatch.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
     }
 

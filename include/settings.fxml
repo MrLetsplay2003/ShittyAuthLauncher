@@ -22,6 +22,9 @@
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
@@ -34,11 +37,19 @@
       <TextField fx:id="inputNewJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       <Label text="Old Java path (8, for older MC versions)" GridPane.rowIndex="3" />
       <TextField fx:id="inputOldJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <Label text="Amogus" GridPane.rowIndex="6" />
-      <TextField disable="true" prefWidth="250.0" text="The Amogus will always be sus" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       <Label text="Auth server URL" GridPane.rowIndex="4" />
       <TextField fx:id="inputAuthServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="7" GridPane.vgrow="NEVER">
+      <Label text="Account server URL" GridPane.rowIndex="5" />
+      <TextField fx:id="inputAccountServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <Label text="Session server URL" GridPane.rowIndex="6" />
+      <TextField fx:id="inputSessionServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+      <Label text="Services server URL" GridPane.rowIndex="7" />
+      <TextField fx:id="inputServicesServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+      <Label text="Always patch authlib" GridPane.rowIndex="8" />
+      <CheckBox fx:id="checkboxAlwaysPatch" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+      <Label text="Amogus" GridPane.rowIndex="9" />
+      <TextField disable="true" prefWidth="250.0" text="The Amogus will always be sus" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="10" GridPane.vgrow="NEVER">
          <children>
             <Button mnemonicParsing="false" onAction="#buttonSave" text="Save">
                <HBox.margin>
@@ -48,8 +59,6 @@
             <Button mnemonicParsing="false" onAction="#buttonCancel" text="Cancel" />
          </children>
       </HBox>
-      <Label text="Always patch authlib" GridPane.rowIndex="5" />
-      <CheckBox fx:id="checkboxAlwaysPatch" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
