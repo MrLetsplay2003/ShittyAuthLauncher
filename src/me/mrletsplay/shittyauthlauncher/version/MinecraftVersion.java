@@ -204,7 +204,6 @@ public class MinecraftVersion implements JSONConvertible {
 					"--versionType", "release",
 					"--userProperties", "{}" /* For old versions */);
 			b.directory(new File(ShittyAuthLauncherSettings.getMinecraftPath()));
-			System.out.println(b.command());
 			new Thread(() -> {
 				try {
 					Process p = b.inheritIO().start();

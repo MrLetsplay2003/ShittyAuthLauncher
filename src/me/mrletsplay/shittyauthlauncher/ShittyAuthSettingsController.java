@@ -32,6 +32,9 @@ public class ShittyAuthSettingsController {
     private TextField inputServicesServerURL;
 
     @FXML
+    private TextField inputSkinHost;
+
+    @FXML
     private CheckBox checkboxAlwaysPatch;
 
     @FXML
@@ -44,6 +47,7 @@ public class ShittyAuthSettingsController {
     	ShittyAuthLauncherSettings.setAccountServerURL(getString(inputAccountServerURL));
     	ShittyAuthLauncherSettings.setSessionServerURL(getString(inputSessionServerURL));
     	ShittyAuthLauncherSettings.setServicesServerURL(getString(inputServicesServerURL));
+    	ShittyAuthLauncherSettings.setSkinHost(getString(inputSkinHost));
     	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatch.isSelected());
     	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
@@ -69,6 +73,7 @@ public class ShittyAuthSettingsController {
     	inputAccountServerURL.setText(ShittyAuthLauncherSettings.getAccountServerURL());
     	inputSessionServerURL.setText(ShittyAuthLauncherSettings.getSessionServerURL());
     	inputServicesServerURL.setText(ShittyAuthLauncherSettings.getServicesServerURL());
+    	inputSkinHost.setText(ShittyAuthLauncherSettings.getSkinHost());
     	checkboxAlwaysPatch.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
     }
 

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +64,7 @@ public class LibraryModifier {
 				}
 			}
 			
-			String host = URI.create(ShittyAuthLauncherSettings.getAuthServerURL()).getHost();
+			String host = ShittyAuthLauncherSettings.getSkinHost();
 			System.out.println("Patching with host: " + host);
 			int en = ClassFileUtils.getOrAppendString(cf, ClassFileUtils.getOrAppendUTF8(cf, host));
 			int en2 = ClassFileUtils.getOrAppendString(cf, ClassFileUtils.getOrAppendUTF8(cf, ".minecraft.net"));

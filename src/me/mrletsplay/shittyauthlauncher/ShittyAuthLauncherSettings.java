@@ -13,7 +13,8 @@ public class ShittyAuthLauncherSettings {
 		DEFAULT_MINECRAFT_CONTAINER = System.getProperty("os.name").toLowerCase().contains("windows") ? System.getenv("APPDATA") : System.getProperty("user.home"),
 		DEFAULT_MINECRAFT_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft",
 		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty",
-		DEFAULT_SERVER_URL = "https://mc.graphite-official.com";
+		DEFAULT_SERVER_URL = "https://mc.graphite-official.com",
+		DEFAULT_SKIN_HOST = "mc.graphite-official.com";
 	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
@@ -32,6 +33,7 @@ public class ShittyAuthLauncherSettings {
 			setAccountServerURL(DEFAULT_SERVER_URL);
 			setSessionServerURL(DEFAULT_SERVER_URL);
 			setServicesServerURL(DEFAULT_SERVER_URL);
+			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
 	    	save();
 		}
@@ -104,6 +106,14 @@ public class ShittyAuthLauncherSettings {
 	
 	public static String getServicesServerURL() {
 		return config.getString("services-server-url", DEFAULT_SERVER_URL, false);
+	}
+	
+	public static void setSkinHost(String url) {
+		config.set("skin-host", url);
+	}
+	
+	public static String getSkinHost() {
+		return config.getString("skin-host", DEFAULT_SKIN_HOST, false);
 	}
 	
 	public static void setAlwaysPatchAuthlib(boolean alwaysPatch) {
