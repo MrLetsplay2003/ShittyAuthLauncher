@@ -1,6 +1,7 @@
 package me.mrletsplay.shittyauthlauncher;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,10 +47,12 @@ public class ShittyAuthController {
 
 	public void init() {
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
-		versionsListRelease = FXCollections.observableArrayList(MinecraftVersion.VERSIONS.stream()
-				.filter(v -> v.getType() == MinecraftVersionType.RELEASE).collect(Collectors.toList()));
+		List<MinecraftVersion> releases = MinecraftVersion.VERSIONS.stream()
+				.filter(v -> v.getType() == MinecraftVersionType.RELEASE)
+				.collect(Collectors.toList());
+		versionsListRelease = FXCollections.observableArrayList(releases);
 		dropdownVersions.setItems(versionsListRelease);
-		dropdownVersions.getSelectionModel().select(MinecraftVersion.VERSIONS.indexOf(MinecraftVersion.LATEST_RELEASE));
+		dropdownVersions.getSelectionModel().select(releases.indexOf(MinecraftVersion.LATEST_RELEASE));
 		updateLogin();
 	}
 
@@ -114,6 +117,10 @@ public class ShittyAuthController {
 	@FXML
 	void buttonPlay(ActionEvent event) {
 		MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
+		if(ver == null) {
+			DialogHelper.showError("No version selected");
+			return;
+		}
 		ver.launch();
 	}
 

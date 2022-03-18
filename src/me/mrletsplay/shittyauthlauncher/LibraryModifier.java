@@ -3,8 +3,8 @@ package me.mrletsplay.shittyauthlauncher;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,11 +92,9 @@ public class LibraryModifier {
 		}
 
 		File pubkeyFile = new File(cringeFolder, "yggdrasil_session_pubkey.der");
-		
-		URL url = ShittyAuthLauncher.class.getResource("/include/yggdrasil_session_pubkey.der");
-		if(url == null) url = new File("./include/yggdrasil_session_pubkey.der").toURI().toURL();
-		try(InputStream in = url.openStream()) {
-			IOUtils.writeBytes(pubkeyFile, IOUtils.readAllBytes(in));
+		File launcherPubkeyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
+		if(launcherPubkeyFile.exists()) {
+			Files.copy(launcherPubkeyFile.toPath(), pubkeyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 		
 		System.out.println("Repacking...");

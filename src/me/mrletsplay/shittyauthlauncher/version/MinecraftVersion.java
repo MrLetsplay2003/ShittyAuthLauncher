@@ -9,7 +9,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
+import me.mrletsplay.mrcore.http.HttpGet;
 import me.mrletsplay.mrcore.http.HttpRequest;
+import me.mrletsplay.mrcore.http.HttpResult;
 import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
@@ -80,6 +82,21 @@ public class MinecraftVersion implements JSONConvertible {
 			if(ShittyAuthLauncherSettings.getLoginData() == null) {
 				DialogHelper.showWarning("You need to log in first");
 				return;
+			}
+			
+			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
+			if(!keyFile.exists()) {
+				boolean b = DialogHelper.showYesNo("You don't have a public key file yet.\nAttempt to download it from the session server?\n\nNote: Without a key file, skins won't work");
+				if(b) {
+					HttpGet g = HttpRequest.createGet(ShittyAuthLauncherSettings.getSessionServerURL() + "/yggdrasil_session_pubkey.der");
+					HttpResult r = g.execute();
+					if(!r.isSuccess()) {
+						DialogHelper.showError("Failed to download key file:\n" + r.getErrorResponse());
+						return;
+					}
+					
+					r.transferTo(keyFile);
+				}
 			}
 			
 			File metaFile = new File(ShittyAuthLauncherSettings.getMinecraftPath(), "versions/" + id + "/" + id + ".json");
