@@ -57,6 +57,19 @@
 					<mainClass>hellofx.HelloFX</mainClass>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>me.mrletsplay</groupId>
+				<artifactId>fxbuild-maven-plugin</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>packagefx</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<resources>
 			<resource>
@@ -68,6 +81,12 @@
 			</resource>
 		</resources>
 	</build>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>Graphite-Official</id>
+			<url>http://graphite-official.com/repo/</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<repositories>
 		<repository>
 			<id>Graphite-Official</id>
@@ -78,34 +97,31 @@
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>MrCore</artifactId>
-			<version>3.4.4</version>
+			<version>3.4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-base</artifactId>
 			<version>17</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-controls</artifactId>
 			<version>17</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-fxml</artifactId>
 			<version>17</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-graphics</artifactId>
 			<version>17</version>
-			<classifier>win</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-graphics</artifactId>
-			<version>17</version>
-			<classifier>linux</classifier>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>
