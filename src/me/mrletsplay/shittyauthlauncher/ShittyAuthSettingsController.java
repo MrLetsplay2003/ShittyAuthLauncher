@@ -11,9 +11,6 @@ public class ShittyAuthSettingsController {
     private TextField inputGameDataPath;
 
     @FXML
-    private TextField inputMinecraftPath;
-
-    @FXML
     private TextField inputNewJavaPath;
 
     @FXML
@@ -39,7 +36,6 @@ public class ShittyAuthSettingsController {
 
     @FXML
     void buttonSave(ActionEvent event) {
-    	ShittyAuthLauncherSettings.setMinecraftPath(getString(inputMinecraftPath));
     	ShittyAuthLauncherSettings.setGameDataPath(getString(inputGameDataPath));
     	ShittyAuthLauncherSettings.setNewJavaPath(getString(inputNewJavaPath));
     	ShittyAuthLauncherSettings.setOldJavaPath(getString(inputOldJavaPath));
@@ -66,7 +62,6 @@ public class ShittyAuthSettingsController {
     
     public void update() {
     	inputGameDataPath.setText(ShittyAuthLauncherSettings.getGameDataPath());
-    	inputMinecraftPath.setText(ShittyAuthLauncherSettings.getMinecraftPath());
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
     	inputAuthServerURL.setText(ShittyAuthLauncherSettings.getAuthServerURL());

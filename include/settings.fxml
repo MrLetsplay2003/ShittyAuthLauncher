@@ -16,7 +16,6 @@
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -29,27 +28,25 @@
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <Label text="Path to .minecraft" />
-      <TextField fx:id="inputMinecraftPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" />
-      <Label text="Path for game data" GridPane.rowIndex="1" />
-      <TextField fx:id="inputGameDataPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <Label text="New Java path (17)" GridPane.rowIndex="2" />
-      <TextField fx:id="inputNewJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Label text="Old Java path (8, for older MC versions)" GridPane.rowIndex="3" />
-      <TextField fx:id="inputOldJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <Label text="Auth server URL" GridPane.rowIndex="4" />
-      <TextField fx:id="inputAuthServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-      <Label text="Account server URL" GridPane.rowIndex="5" />
-      <TextField fx:id="inputAccountServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-      <Label text="Session server URL" GridPane.rowIndex="6" />
-      <TextField fx:id="inputSessionServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-      <Label text="Services server URL" GridPane.rowIndex="7" />
-      <TextField fx:id="inputServicesServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-      <Label text="Skin/Cape host" GridPane.rowIndex="8" />
-      <TextField fx:id="inputSkinHost" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-      <Label text="Always patch authlib" GridPane.rowIndex="9" />
-      <CheckBox fx:id="checkboxAlwaysPatch" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="10" GridPane.vgrow="NEVER">
+      <Label text="Path for game data" />
+      <TextField fx:id="inputGameDataPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" />
+      <Label text="New Java path (17)" GridPane.rowIndex="1" />
+      <TextField fx:id="inputNewJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Label text="Old Java path (8, for older MC versions)" GridPane.rowIndex="2" />
+      <TextField fx:id="inputOldJavaPath" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Label text="Auth server URL" GridPane.rowIndex="3" />
+      <TextField fx:id="inputAuthServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <Label text="Account server URL" GridPane.rowIndex="4" />
+      <TextField fx:id="inputAccountServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <Label text="Session server URL" GridPane.rowIndex="5" />
+      <TextField fx:id="inputSessionServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <Label text="Services server URL" GridPane.rowIndex="6" />
+      <TextField fx:id="inputServicesServerURL" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+      <Label text="Skin/Cape host" GridPane.rowIndex="7" />
+      <TextField fx:id="inputSkinHost" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+      <Label text="Always patch authlib" GridPane.rowIndex="8" />
+      <CheckBox fx:id="checkboxAlwaysPatch" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="9" GridPane.vgrow="NEVER">
          <children>
             <Button mnemonicParsing="false" onAction="#buttonSave" text="Save">
                <HBox.margin>
