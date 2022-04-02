@@ -98,7 +98,7 @@ public class MinecraftVersion implements JSONConvertible {
 				int i = 0;
 				for(Map.Entry<File, String> dl : toDownload.entrySet()) {
 					if(isCancelled()) return null;
-					System.out.println("Downloading " + dl.getKey() + "...");
+//					System.out.println("Downloading " + dl.getKey() + "...");
 					updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
 					try {
 						HttpRequest.createGet(dl.getValue()).execute().transferTo(dl.getKey());
@@ -225,7 +225,6 @@ public class MinecraftVersion implements JSONConvertible {
 				if(authLibFile != null) {
 					authLibFile = LibraryModifier.patchAuthlib(authLibFile, MinecraftVersion.this);
 					libs.add(authLibFile);
-					System.out.println(authLibFile);
 					System.out.println("Using authlib at: " + authLibFile.getAbsolutePath());
 				}else {
 					System.out.println("Couldn't find authlib");
