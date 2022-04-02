@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -34,6 +36,7 @@ import me.mrletsplay.shittyauthlauncher.LibraryModifier;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.shittyauthlauncher.util.CombinedTask;
 import me.mrletsplay.shittyauthlauncher.util.LaunchException;
 
 public class MinecraftVersion implements JSONConvertible {
@@ -94,6 +97,7 @@ public class MinecraftVersion implements JSONConvertible {
 			protected Void call() throws Exception {
 				int i = 0;
 				for(Map.Entry<File, String> dl : toDownload.entrySet()) {
+					if(isCancelled()) return null;
 					System.out.println("Downloading " + dl.getKey() + "...");
 					updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
 					try {
@@ -128,8 +132,8 @@ public class MinecraftVersion implements JSONConvertible {
 	}
 	
 	private Task<List<File>> loadLibraries(JSONObject meta, File tempFolder) throws IOException {
-		return new Task<List<File>>() {
-
+		return new CombinedTask<List<File>>() {
+			
 			@Override
 			protected List<File> call() throws Exception {
 				File minecraftJar = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + id + "/" + id + ".jar");
@@ -204,19 +208,13 @@ public class MinecraftVersion implements JSONConvertible {
 				}
 				
 				libs.add(minecraftJar);
-				if(authLibFile != null) libs.add(authLibFile);
 				
-				Task<Void> downloads = downloadFiles(toDownload);
-				downloads.progressProperty().addListener(p -> {
-					updateProgress(downloads.getProgress(), 1);
-				});
-				downloads.messageProperty().addListener(p -> {
-					updateMessage(downloads.getMessage());
-				});
-				downloads.run();
+				runOther(downloadFiles(toDownload));
+				if(isCancelled()) return null;
 				
 				updateMessage("Extracting native libs");
 				for(File n : nativeLibs) {
+					if(isCancelled()) return null;
 					try {
 						ZIPFileUtils.unzipFile(n, tempFolder);
 					} catch (IOException e) {
@@ -226,6 +224,8 @@ public class MinecraftVersion implements JSONConvertible {
 				
 				if(authLibFile != null) {
 					authLibFile = LibraryModifier.patchAuthlib(authLibFile, MinecraftVersion.this);
+					libs.add(authLibFile);
+					System.out.println(authLibFile);
 					System.out.println("Using authlib at: " + authLibFile.getAbsolutePath());
 				}else {
 					System.out.println("Couldn't find authlib");
@@ -237,8 +237,8 @@ public class MinecraftVersion implements JSONConvertible {
 	}
 	
 	private Task<Void> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
-		return new Task<Void>() {
-
+		return new CombinedTask<Void>() {
+			
 			@Override
 			protected Void call() throws Exception {
 				File indexesFolder = new File(assetsFolder, "indexes");
@@ -275,15 +275,7 @@ public class MinecraftVersion implements JSONConvertible {
 					}
 				}
 				
-				Task<Void> t = downloadFiles(toDownload);
-				t.progressProperty().addListener(p -> {
-					updateProgress(t.getProgress(), 1);
-				});
-				t.messageProperty().addListener(p -> {
-					updateMessage(t.getMessage());
-				});
-				t.run();
-				
+				runOther(downloadFiles(toDownload));
 				return null;
 			}
 		};
@@ -316,44 +308,38 @@ public class MinecraftVersion implements JSONConvertible {
 			Dialog<Void> d = new Dialog<>();
 			d.setTitle("Launching game");
 			d.initOwner(ShittyAuthLauncher.stage);
+			d.setResizable(true);
 			Label label = new Label("Loading...");
 			label.setPrefWidth(500);
 			ProgressBar pb = new ProgressBar(0);
+			pb.setMinWidth(ProgressBar.USE_COMPUTED_SIZE);
+			pb.setMinHeight(ProgressBar.USE_COMPUTED_SIZE);
 			pb.setPrefWidth(500);
 			GridPane content = new GridPane();
 			content.setMaxWidth(Double.MAX_VALUE);
 			content.setMaxHeight(Double.MAX_VALUE);
 			content.add(label, 0, 0);
 			content.add(pb, 0, 1);
+			content.setPadding(new Insets(10, 10, 10, 10));
+			content.setVgap(10);
 			d.getDialogPane().setContent(content);
+			d.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+			d.getDialogPane().getScene().getWindow().sizeToScene();
 			d.show();
 			
-			Task<Pair<ProcessBuilder, File>> launch = new Task<>() {
-
+			Task<Pair<ProcessBuilder, File>> launch = new CombinedTask<>() {
+				
 				@Override
 				protected Pair<ProcessBuilder, File> call() throws Exception {
 					JSONObject meta = loadMetadata();
 					
 					File tempFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), UUID.randomUUID().toString());
-					Task<List<File>> libsTask = loadLibraries(meta, tempFolder);
-					libsTask.progressProperty().addListener(p -> {
-						updateProgress(libsTask.getProgress(), 1);
-					});
-					libsTask.messageProperty().addListener(p -> {
-						updateMessage(libsTask.getMessage());
-					});
-					libsTask.run();
-					List<File> libs = libsTask.get();
+					List<File> libs = runOther(loadLibraries(meta, tempFolder));
+					if(isCancelled()) return null;
 					
 					File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
-					Task<Void> assetsTask = loadAssets(meta, assetsFolder);
-					assetsTask.progressProperty().addListener(p -> {
-						updateProgress(assetsTask.getProgress(), 1);
-					});
-					assetsTask.messageProperty().addListener(p -> {
-						updateMessage(assetsTask.getMessage());
-					});
-					assetsTask.run();
+					runOther(loadAssets(meta, assetsFolder));
+					if(isCancelled()) return null;
 					
 					LoginData data = ShittyAuthLauncherSettings.getLoginData();
 					String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
@@ -389,14 +375,15 @@ public class MinecraftVersion implements JSONConvertible {
 					return new Pair<>(b, tempFolder);
 				}
 			};
-			launch.progressProperty().addListener(v -> {
-				pb.setProgress(launch.getProgress());
-			});
-			launch.messageProperty().addListener(v -> {
-				label.setText(launch.getMessage());
+			launch.progressProperty().addListener(v -> pb.setProgress(launch.getProgress()));
+			launch.messageProperty().addListener(v -> label.setText(launch.getMessage()));
+			d.setOnCloseRequest(event -> launch.cancel());
+			launch.setOnFailed(event -> {
+				d.hide();
+				DialogHelper.showError("Failed to launch", launch.getException());
 			});
 			launch.setOnSucceeded(event -> {
-				Platform.runLater(() -> d.hide());
+				d.hide();
 				Pair<ProcessBuilder, File> pair;
 				try {
 					pair = launch.get();

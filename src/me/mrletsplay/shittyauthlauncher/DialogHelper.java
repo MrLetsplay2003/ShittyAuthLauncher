@@ -25,14 +25,14 @@ public class DialogHelper {
 		a.showAndWait();
 	}
 	
-	public static void showError(String error, Exception e) {
+	public static void showError(String error, Throwable r) {
 		Alert a = new Alert(AlertType.ERROR);
 		a.setHeaderText(error);
 		a.setResizable(true);
 		
 		StringWriter w = new StringWriter();
 		PrintWriter pw = new PrintWriter(w);
-		e.printStackTrace(pw);
+		r.printStackTrace(pw);
 		String exceptionText = w.toString();
 		
 		Label label = new Label("Exception stacktrace:");

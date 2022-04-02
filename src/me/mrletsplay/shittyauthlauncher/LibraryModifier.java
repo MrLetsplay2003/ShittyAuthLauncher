@@ -23,6 +23,10 @@ import me.mrletsplay.shittyauthlauncher.version.MinecraftVersion;
 
 public class LibraryModifier {
 	
+	// TODO: patch for older versions (< MC 1.16):
+	// - Replace string constant "https://sessionserver.mojang.com/session/minecraft/profile/"
+	// - Replace static variables JOIN_URL, CHECK_URL
+	
 	public static File patchAuthlib(File authLib, MinecraftVersion version) throws IOException {
 		File out = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/authlib-" + version.getId() + ".jar");
 		if(out.exists() && !ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) return out;
