@@ -35,6 +35,7 @@ public class ShittyAuthLauncherSettings {
 			setServicesServerURL(DEFAULT_SERVER_URL);
 			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
+			setAlwaysPatchMinecraft(false);
 	    	save();
 		}
 	}
@@ -116,12 +117,20 @@ public class ShittyAuthLauncherSettings {
 		return config.getString("skin-host", DEFAULT_SKIN_HOST, false);
 	}
 	
-	public static void setAlwaysPatchAuthlib(boolean alwaysPatch) {
-		config.set("always-patch-authlib", alwaysPatch);
+	public static void setAlwaysPatchAuthlib(boolean alwaysPatchAuthlib) {
+		config.set("always-patch-authlib", alwaysPatchAuthlib);
 	}
 	
 	public static boolean isAlwaysPatchAuthlib() {
 		return config.getBoolean("always-patch-authlib");
+	}
+	
+	public static void setAlwaysPatchMinecraft(boolean alwaysPatchMinecraft) {
+		config.set("always-patch-minecraft", alwaysPatchMinecraft);
+	}
+	
+	public static boolean isAlwaysPatchMinecraft() {
+		return config.getBoolean("always-patch-minecraft");
 	}
 	
 	public static void setLoginData(LoginData data) {

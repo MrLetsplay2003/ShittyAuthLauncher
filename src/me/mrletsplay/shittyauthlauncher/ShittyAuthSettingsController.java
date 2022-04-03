@@ -32,7 +32,10 @@ public class ShittyAuthSettingsController {
     private TextField inputSkinHost;
 
     @FXML
-    private CheckBox checkboxAlwaysPatch;
+    private CheckBox checkboxAlwaysPatchAuthlib;
+    
+    @FXML
+    private CheckBox checkboxAlwaysPatchMinecraft;
 
     @FXML
     void buttonSave(ActionEvent event) {
@@ -44,7 +47,8 @@ public class ShittyAuthSettingsController {
     	ShittyAuthLauncherSettings.setSessionServerURL(getString(inputSessionServerURL));
     	ShittyAuthLauncherSettings.setServicesServerURL(getString(inputServicesServerURL));
     	ShittyAuthLauncherSettings.setSkinHost(getString(inputSkinHost));
-    	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatch.isSelected());
+    	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatchAuthlib.isSelected());
+    	ShittyAuthLauncherSettings.setAlwaysPatchMinecraft(checkboxAlwaysPatchMinecraft.isSelected());
     	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
     }
@@ -69,7 +73,8 @@ public class ShittyAuthSettingsController {
     	inputSessionServerURL.setText(ShittyAuthLauncherSettings.getSessionServerURL());
     	inputServicesServerURL.setText(ShittyAuthLauncherSettings.getServicesServerURL());
     	inputSkinHost.setText(ShittyAuthLauncherSettings.getSkinHost());
-    	checkboxAlwaysPatch.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
+    	checkboxAlwaysPatchAuthlib.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
+    	checkboxAlwaysPatchMinecraft.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchMinecraft());
     }
 
 }

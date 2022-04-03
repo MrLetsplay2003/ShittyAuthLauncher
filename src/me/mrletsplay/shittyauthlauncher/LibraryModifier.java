@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -23,17 +24,20 @@ import me.mrletsplay.mrcore.misc.classfile.pool.entry.ConstantPoolEntry;
 import me.mrletsplay.mrcore.misc.classfile.pool.entry.ConstantPoolFieldRefEntry;
 import me.mrletsplay.mrcore.misc.classfile.pool.entry.ConstantPoolStringEntry;
 import me.mrletsplay.mrcore.misc.classfile.util.ClassFileUtils;
+import me.mrletsplay.shittyauthlauncher.util.LaunchException;
 import me.mrletsplay.shittyauthlauncher.version.MinecraftVersion;
 
 public class LibraryModifier {
 	
-	// TODO: patch for older versions (< MC 1.16):
-	// - Replace string constant "https://sessionserver.mojang.com/session/minecraft/profile/"
-	// - Replace static variables JOIN_URL, CHECK_URL
+	private static final String
+		SESSION_SERVER = "https://sessionserver.mojang.com",
+		SKIN_SERVER = "http://skins.minecraft.net";
 	
 	public static File patchAuthlib(File authLib, MinecraftVersion version) throws IOException {
 		File out = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/authlib-" + version.getId() + ".jar");
 		if(out.exists() && !ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) return out;
+		
+		System.out.println("Patching authlib");
 		
 		Files.copy(authLib.toPath(), out.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		
@@ -101,7 +105,7 @@ public class LibraryModifier {
 				code.replace(ByteCode.of(iis));
 			}
 
-			replaceSessionServer(cf);
+			replaceStrings(cf, SESSION_SERVER, ShittyAuthLauncherSettings.getSessionServerURL());
 			
 			try(OutputStream fOut = Files.newOutputStream(sessionService)) {
 				cf.write(fOut);
@@ -118,13 +122,51 @@ public class LibraryModifier {
 		return out;
 	}
 	
-	private static void replaceSessionServer(ClassFile cf) {
+	public static File patchMinecraft(File minecraft, MinecraftVersion version) throws IOException {
+		if(!version.isOlderThan(MinecraftVersion.getVersion("1.7.6"))) return minecraft; // New skins API was introduced in release 1.7.6
+
+		File out = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/minecraft-" + version.getId() + ".jar");
+		if(out.exists() && !ShittyAuthLauncherSettings.isAlwaysPatchMinecraft()) return out;
+		
+		System.out.println("Patching minecraft");
+		
+		Files.copy(minecraft.toPath(), out.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		
+		try(FileSystem fs = FileSystems.newFileSystem(out.toPath(), (ClassLoader) null)) {
+			String mainClass = version.loadMetadata().getString("mainClass");
+			Path manifestPath = fs.getPath("/META-INF/MANIFEST.MF");
+			if(Files.exists(manifestPath)) Files.write(manifestPath, ("Manifest-Version: 1.0\nMain-Class: " + mainClass).getBytes(StandardCharsets.UTF_8));
+			
+			Files.walk(fs.getPath("/")).forEach(f -> {
+				try {
+					if(Files.isDirectory(f) || !f.getFileName().toString().endsWith(".class")) return;
+					
+					ClassFile cf;
+					try(InputStream in = Files.newInputStream(f)) {
+						cf = new ClassFile(in);
+					}
+					
+					replaceStrings(cf, SKIN_SERVER, ShittyAuthLauncherSettings.getSessionServerURL());
+					
+					try(OutputStream fOut = Files.newOutputStream(f)) {
+						cf.write(fOut);
+					}
+				}catch(IOException e) {
+					throw new LaunchException("Failed to patch minecraft.jar", e);
+				}
+			});
+		}
+		
+		return out;
+	}
+	
+	private static void replaceStrings(ClassFile cf, String find, String replace) {
 		for(int i = 1; i < cf.getConstantPool().getSize() + 1; i++) {
 			ConstantPoolEntry e = cf.getConstantPool().getEntry(i);
 			if(e instanceof ConstantPoolStringEntry) {
 				String s = e.as(ConstantPoolStringEntry.class).getString().getValue();
-				if(s.startsWith("https://sessionserver.mojang.com")) {
-					cf.getConstantPool().setEntry(i, new ConstantPoolStringEntry(cf.getConstantPool(), ClassFileUtils.getOrAppendUTF8(cf, s.replace("https://sessionserver.mojang.com", ShittyAuthLauncherSettings.getSessionServerURL()))));
+				if(s.startsWith(find)) {
+					cf.getConstantPool().setEntry(i, new ConstantPoolStringEntry(cf.getConstantPool(), ClassFileUtils.getOrAppendUTF8(cf, s.replace(find, replace))));
 				}
 			}
 		}

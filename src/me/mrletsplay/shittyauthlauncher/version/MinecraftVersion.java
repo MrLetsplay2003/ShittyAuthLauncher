@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,20 @@ public class MinecraftVersion implements JSONConvertible {
 	@Override
 	public String toString() {
 		return id;
+	}
+	
+	public boolean isOlderThan(MinecraftVersion other) {
+		return VERSIONS.indexOf(this) > VERSIONS.indexOf(other);
+	}
+	
+	public boolean isNewerThan(MinecraftVersion other) {
+		return VERSIONS.indexOf(this) < VERSIONS.indexOf(other);
+	}
+	
+	public static MinecraftVersion getVersion(String id) {
+		return VERSIONS.stream()
+				.filter(v -> v.getId().equals(id))
+				.findFirst().orElse(null);
 	}
 	
 	private Task<Void> downloadFiles(Map<File, String> toDownload) {
@@ -207,8 +222,6 @@ public class MinecraftVersion implements JSONConvertible {
 					}
 				}
 				
-				libs.add(minecraftJar);
-				
 				runOther(downloadFiles(toDownload));
 				if(isCancelled()) return null;
 				
@@ -221,6 +234,9 @@ public class MinecraftVersion implements JSONConvertible {
 						e.printStackTrace();
 					}
 				}
+				
+				minecraftJar = LibraryModifier.patchMinecraft(minecraftJar, MinecraftVersion.this);
+				libs.add(minecraftJar);
 				
 				if(authLibFile != null) {
 					authLibFile = LibraryModifier.patchAuthlib(authLibFile, MinecraftVersion.this);
@@ -351,7 +367,38 @@ public class MinecraftVersion implements JSONConvertible {
 					}
 					System.out.println("Requires old Java? " + requiresOldJava);
 					
-					ProcessBuilder b = new ProcessBuilder(
+					List<String> gameArgs = new ArrayList<>();
+					if(meta.has("arguments")) {
+						gameArgs.addAll(meta.getJSONObject("arguments").getJSONArray("game").stream()
+								.filter(s -> s instanceof String)
+								.map(s -> (String) s)
+								.collect(Collectors.toList()));
+					}else {
+						gameArgs.addAll(Arrays.asList(meta.getString("minecraftArguments").split(" ")));
+					}
+					
+					Map<String, String> params = new HashMap<>();
+					params.put("auth_player_name", data.getUsername());
+					params.put("version_name", id);
+					params.put("game_directory", ShittyAuthLauncherSettings.getGameDataPath());
+					params.put("assets_root", assetsFolder.getAbsolutePath());
+					params.put("assets_index_name", meta.getString("assets"));
+					params.put("auth_uuid", data.getUuid());
+					params.put("auth_access_token", data.getAccessToken());
+					params.put("version_type", meta.getString("type"));
+					params.put("user_type", "mojang");
+					params.put("auth_session", data.getAccessToken());
+					params.put("user_properties", "{}");
+					
+					for(int i = 0; i < gameArgs.size(); i++) {
+						String arg = gameArgs.get(i);
+						gameArgs.set(i, params.entrySet().stream()
+								.filter(e -> arg.equals("${" + e.getKey() + "}"))
+								.map(e -> e.getValue())
+								.findFirst().orElse(arg));
+					}
+					
+					gameArgs.addAll(0, Arrays.asList(
 							requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
 							"-Djava.library.path=" + tempFolder.getAbsolutePath(),
 							"-Dminecraft.api.auth.host=" + ShittyAuthLauncherSettings.getAuthServerURL(),
@@ -359,17 +406,30 @@ public class MinecraftVersion implements JSONConvertible {
 							"-Dminecraft.api.session.host=" + ShittyAuthLauncherSettings.getSessionServerURL(),
 							"-Dminecraft.api.services.host=" + ShittyAuthLauncherSettings.getServicesServerURL(),
 							"-cp", classPath,
-							meta.getString("mainClass"),
-							"--version", id,
-							"--accessToken", data.getAccessToken(),
-							"--username", data.getUsername(),
-							"--uuid", data.getUuid(),
-							"--gameDir", ShittyAuthLauncherSettings.getGameDataPath(),
-							"--assetsDir", assetsFolder.getAbsolutePath(),
-							"--assetIndex", meta.getString("assets"),
-							"--userType", "mojang",
-							"--versionType", "release",
-							"--userProperties", "{}" /* For old versions */);
+							meta.getString("mainClass")
+					));
+					
+					ProcessBuilder b = new ProcessBuilder(gameArgs);
+					
+//					ProcessBuilder b = new ProcessBuilder(
+//							requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
+//							"-Djava.library.path=" + tempFolder.getAbsolutePath(),
+//							"-Dminecraft.api.auth.host=" + ShittyAuthLauncherSettings.getAuthServerURL(),
+//							"-Dminecraft.api.account.host=" + ShittyAuthLauncherSettings.getAccountServerURL(),
+//							"-Dminecraft.api.session.host=" + ShittyAuthLauncherSettings.getSessionServerURL(),
+//							"-Dminecraft.api.services.host=" + ShittyAuthLauncherSettings.getServicesServerURL(),
+//							"-cp", classPath,
+//							meta.getString("mainClass"),
+//							"--version", id,
+//							"--accessToken", data.getAccessToken(),
+//							"--username", data.getUsername(),
+//							"--uuid", data.getUuid(),
+//							"--gameDir", ShittyAuthLauncherSettings.getGameDataPath(),
+//							"--assetsDir", assetsFolder.getAbsolutePath(),
+//							"--assetIndex", meta.getString("assets"),
+//							"--userType", "mojang",
+//							"--versionType", "release",
+//							"--userProperties", "{}" /* For old versions */);
 					b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
 					return new Pair<>(b, tempFolder);
 				}
