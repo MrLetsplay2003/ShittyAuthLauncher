@@ -42,6 +42,8 @@ import me.mrletsplay.shittyauthlauncher.util.LaunchException;
 
 public class MinecraftVersion implements JSONConvertible {
 	
+	// TODO: java runtime: https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json
+	
 	public static final List<MinecraftVersion> VERSIONS = new ArrayList<>();
 	public static final MinecraftVersion LATEST_RELEASE, LATEST_SNAPSHOT;
 	
@@ -113,7 +115,6 @@ public class MinecraftVersion implements JSONConvertible {
 				int i = 0;
 				for(Map.Entry<File, String> dl : toDownload.entrySet()) {
 					if(isCancelled()) return null;
-//					System.out.println("Downloading " + dl.getKey() + "...");
 					updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
 					try {
 						HttpRequest.createGet(dl.getValue()).execute().transferTo(dl.getKey());
@@ -214,8 +215,6 @@ public class MinecraftVersion implements JSONConvertible {
 						String nativesPath = nativeLib.getString("path");
 						File libFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/" + nativesPath);
 						if(!libFile.exists()) {
-//							System.out.println("Downloading " + libFile + "...");
-//							HttpRequest.createGet(nativeLib.getString("url")).execute().transferTo(libFile);
 							toDownload.put(libFile, nativeLib.getString("url"));
 						}
 						nativeLibs.add(libFile);
@@ -251,11 +250,11 @@ public class MinecraftVersion implements JSONConvertible {
 		};
 	}
 	
-	private Task<Void> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
-		return new CombinedTask<Void>() {
+	private Task<File> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
+		return new CombinedTask<File>() {
 			
 			@Override
-			protected Void call() throws Exception {
+			protected File call() throws Exception {
 				File indexesFolder = new File(assetsFolder, "indexes");
 				indexesFolder.mkdirs();
 				
@@ -275,8 +274,15 @@ public class MinecraftVersion implements JSONConvertible {
 					throw new LaunchException(e);
 				}
 				
-				File objectsFolder = new File(assetsFolder, "objects");
-				objectsFolder.mkdirs();
+				String assetId = assetIndex.getString("id");
+				File assetsDownloadFolder = new File(assetsFolder, "objects");
+				boolean legacyAssets = assetId.equals("legacy");
+				boolean pre16Assets = assetId.equals("pre-1.6");
+				
+				if(legacyAssets) assetsDownloadFolder = new File(assetsFolder, "virtual/legacy");
+				if(pre16Assets) assetsDownloadFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "resources");
+				
+				assetsDownloadFolder.mkdirs();
 				
 				Map<File, String> toDownload = new HashMap<>();
 				JSONObject objects = index.getJSONObject("objects");
@@ -284,14 +290,15 @@ public class MinecraftVersion implements JSONConvertible {
 					JSONObject obj = objects.getJSONObject(name);
 					String hash = obj.getString("hash");
 					String path = hash.substring(0, 2) + "/" + hash;
-					File objFile = new File(objectsFolder, path);
+					File objFile = new File(assetsDownloadFolder, (legacyAssets || pre16Assets) ? name : path);
 					if(!objFile.exists()) {
 						toDownload.put(objFile, "http://resources.download.minecraft.net/" + path);
 					}
 				}
 				
 				runOther(downloadFiles(toDownload));
-				return null;
+				
+				return (legacyAssets || pre16Assets) ? assetsDownloadFolder : assetsFolder;
 			}
 		};
 	}
@@ -353,7 +360,7 @@ public class MinecraftVersion implements JSONConvertible {
 					if(isCancelled()) return null;
 					
 					File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
-					runOther(loadAssets(meta, assetsFolder));
+					assetsFolder = runOther(loadAssets(meta, assetsFolder));
 					if(isCancelled()) return null;
 					
 					LoginData data = ShittyAuthLauncherSettings.getLoginData();
@@ -389,6 +396,7 @@ public class MinecraftVersion implements JSONConvertible {
 					params.put("user_type", "mojang");
 					params.put("auth_session", data.getAccessToken());
 					params.put("user_properties", "{}");
+					params.put("game_assets", assetsFolder.getAbsolutePath() + "/");
 					
 					for(int i = 0; i < gameArgs.size(); i++) {
 						String arg = gameArgs.get(i);
@@ -410,26 +418,6 @@ public class MinecraftVersion implements JSONConvertible {
 					));
 					
 					ProcessBuilder b = new ProcessBuilder(gameArgs);
-					
-//					ProcessBuilder b = new ProcessBuilder(
-//							requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
-//							"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-//							"-Dminecraft.api.auth.host=" + ShittyAuthLauncherSettings.getAuthServerURL(),
-//							"-Dminecraft.api.account.host=" + ShittyAuthLauncherSettings.getAccountServerURL(),
-//							"-Dminecraft.api.session.host=" + ShittyAuthLauncherSettings.getSessionServerURL(),
-//							"-Dminecraft.api.services.host=" + ShittyAuthLauncherSettings.getServicesServerURL(),
-//							"-cp", classPath,
-//							meta.getString("mainClass"),
-//							"--version", id,
-//							"--accessToken", data.getAccessToken(),
-//							"--username", data.getUsername(),
-//							"--uuid", data.getUuid(),
-//							"--gameDir", ShittyAuthLauncherSettings.getGameDataPath(),
-//							"--assetsDir", assetsFolder.getAbsolutePath(),
-//							"--assetIndex", meta.getString("assets"),
-//							"--userType", "mojang",
-//							"--versionType", "release",
-//							"--userProperties", "{}" /* For old versions */);
 					b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
 					return new Pair<>(b, tempFolder);
 				}
