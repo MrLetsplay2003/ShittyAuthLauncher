@@ -6,6 +6,7 @@ import me.mrletsplay.mrcore.config.ConfigLoader;
 import me.mrletsplay.mrcore.config.FileCustomConfig;
 import me.mrletsplay.mrcore.config.mapper.JSONObjectMapper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
 	
@@ -16,11 +17,20 @@ public class ShittyAuthLauncherSettings {
 		DEFAULT_SERVER_URL = "https://mc.graphite-official.com",
 		DEFAULT_SKIN_HOST = "mc.graphite-official.com";
 	
+	private static final ServerConfiguration DEFAULT_SERVERS = new ServerConfiguration(
+			DEFAULT_SERVER_URL,
+			DEFAULT_SERVER_URL,
+			DEFAULT_SERVER_URL,
+			DEFAULT_SERVER_URL
+		);
+	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
 	
 	static {
 		config = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/settings.yml"));
+		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class));
+		
 		tokenConfig = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/token.yml"));
 		tokenConfig.registerMapper(JSONObjectMapper.create(LoginData.class));
 		
@@ -29,10 +39,7 @@ public class ShittyAuthLauncherSettings {
 			setGameDataPath(DEFAULT_GAME_DATA_PATH);
 			setNewJavaPath("java");
 			setOldJavaPath("java");
-			setAuthServerURL(DEFAULT_SERVER_URL);
-			setAccountServerURL(DEFAULT_SERVER_URL);
-			setSessionServerURL(DEFAULT_SERVER_URL);
-			setServicesServerURL(DEFAULT_SERVER_URL);
+			setServers(DEFAULT_SERVERS);
 			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
@@ -77,36 +84,12 @@ public class ShittyAuthLauncherSettings {
 		return config.getString("old-java-path", "java", false);
 	}
 	
-	public static void setAuthServerURL(String url) {
-		config.set("auth-server-url", url);
+	public static void setServers(ServerConfiguration configuration) {
+		config.set("servers", configuration);
 	}
 	
-	public static String getAuthServerURL() {
-		return config.getString("auth-server-url", DEFAULT_SERVER_URL, false);
-	}
-	
-	public static void setAccountServerURL(String url) {
-		config.set("account-server-url", url);
-	}
-	
-	public static String getAccountServerURL() {
-		return config.getString("account-server-url", DEFAULT_SERVER_URL, false);
-	}
-	
-	public static void setSessionServerURL(String url) {
-		config.set("session-server-url", url);
-	}
-	
-	public static String getSessionServerURL() {
-		return config.getString("session-server-url", DEFAULT_SERVER_URL, false);
-	}
-	
-	public static void setServicesServerURL(String url) {
-		config.set("services-server-url", url);
-	}
-	
-	public static String getServicesServerURL() {
-		return config.getString("services-server-url", DEFAULT_SERVER_URL, false);
+	public static ServerConfiguration getServers() {
+		return config.getGeneric("servers", ServerConfiguration.class, DEFAULT_SERVERS, false);
 	}
 	
 	public static void setSkinHost(String url) {

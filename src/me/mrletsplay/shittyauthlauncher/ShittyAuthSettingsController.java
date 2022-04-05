@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthSettingsController {
 
@@ -42,10 +43,11 @@ public class ShittyAuthSettingsController {
     	ShittyAuthLauncherSettings.setGameDataPath(getString(inputGameDataPath));
     	ShittyAuthLauncherSettings.setNewJavaPath(getString(inputNewJavaPath));
     	ShittyAuthLauncherSettings.setOldJavaPath(getString(inputOldJavaPath));
-    	ShittyAuthLauncherSettings.setAuthServerURL(getString(inputAuthServerURL));
-    	ShittyAuthLauncherSettings.setAccountServerURL(getString(inputAccountServerURL));
-    	ShittyAuthLauncherSettings.setSessionServerURL(getString(inputSessionServerURL));
-    	ShittyAuthLauncherSettings.setServicesServerURL(getString(inputServicesServerURL));
+    	ShittyAuthLauncherSettings.setServers(new ServerConfiguration(
+    			getString(inputAuthServerURL),
+    			getString(inputAccountServerURL),
+    			getString(inputSessionServerURL),
+    			getString(inputServicesServerURL)));
     	ShittyAuthLauncherSettings.setSkinHost(getString(inputSkinHost));
     	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatchAuthlib.isSelected());
     	ShittyAuthLauncherSettings.setAlwaysPatchMinecraft(checkboxAlwaysPatchMinecraft.isSelected());
@@ -68,10 +70,12 @@ public class ShittyAuthSettingsController {
     	inputGameDataPath.setText(ShittyAuthLauncherSettings.getGameDataPath());
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
-    	inputAuthServerURL.setText(ShittyAuthLauncherSettings.getAuthServerURL());
-    	inputAccountServerURL.setText(ShittyAuthLauncherSettings.getAccountServerURL());
-    	inputSessionServerURL.setText(ShittyAuthLauncherSettings.getSessionServerURL());
-    	inputServicesServerURL.setText(ShittyAuthLauncherSettings.getServicesServerURL());
+    	
+    	ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+    	inputAuthServerURL.setText(servers.authServer);
+    	inputAccountServerURL.setText(servers.accountsServer);
+    	inputSessionServerURL.setText(servers.sessionServer);
+    	inputServicesServerURL.setText(servers.servicesServer);
     	inputSkinHost.setText(ShittyAuthLauncherSettings.getSkinHost());
     	checkboxAlwaysPatchAuthlib.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
     	checkboxAlwaysPatchMinecraft.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchMinecraft());

@@ -33,12 +33,13 @@ import me.mrletsplay.mrcore.json.converter.JSONConverter;
 import me.mrletsplay.mrcore.json.converter.JSONConvertible;
 import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.shittyauthlauncher.DialogHelper;
-import me.mrletsplay.shittyauthlauncher.LibraryModifier;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
 import me.mrletsplay.shittyauthlauncher.util.CombinedTask;
 import me.mrletsplay.shittyauthlauncher.util.LaunchException;
+import me.mrletsplay.shittyauthpatcher.util.LibraryPatcher;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class MinecraftVersion implements JSONConvertible {
 	
@@ -159,6 +160,8 @@ public class MinecraftVersion implements JSONConvertible {
 					HttpRequest.createGet(downloadURL).execute().transferTo(minecraftJar);
 				}
 				
+				ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+				
 				File authLibFile = null;
 				String os = System.getProperty("os.name").toLowerCase().contains("windows") ? "windows" : "linux";
 				List<File> libs = new ArrayList<>();
@@ -234,13 +237,56 @@ public class MinecraftVersion implements JSONConvertible {
 					}
 				}
 				
-				minecraftJar = LibraryModifier.patchMinecraft(minecraftJar, MinecraftVersion.this);
+				if(isOlderThan(MinecraftVersion.getVersion("1.7.6"))) {
+					// New skins API was introduced in release 1.7.6
+					File patchServers = new File(minecraftJar.getParentFile(), "patch-servers.json");
+					
+					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
+					try {
+						ServerConfiguration conf = JSONConverter.decodeObject(new JSONObject(Files.readString(patchServers.toPath())), ServerConfiguration.class);
+						if(!conf.equals(servers)) forcePatch = true;
+					}catch(IOException e) {
+						forcePatch = true;
+					}
+					
+					if(forcePatch) {
+						System.out.println("Forcibly repatching Minecraft");
+					}
+					
+					File out = new File(minecraftJar.getParentFile(), "patched-" + minecraftJar.getName());
+					if(!out.exists() || forcePatch) {
+						updateMessage("Patching minecraft");
+						LibraryPatcher.patchMinecraft(minecraftJar.toPath(), out.toPath(), servers);
+						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
+					}
+					minecraftJar = out;
+				}
 				libs.add(minecraftJar);
+				System.out.println("Minecraft jar: " + minecraftJar.getAbsolutePath());
 				
 				if(authLibFile != null) {
-					authLibFile = LibraryModifier.patchAuthlib(authLibFile, MinecraftVersion.this);
-					libs.add(authLibFile);
-					System.out.println("Using authlib at: " + authLibFile.getAbsolutePath());
+					File patchServers = new File(authLibFile.getParentFile(), "patch-servers.json");
+					
+					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
+					try {
+						ServerConfiguration conf = JSONConverter.decodeObject(new JSONObject(Files.readString(patchServers.toPath())), ServerConfiguration.class);
+						if(!conf.equals(servers)) forcePatch = true;
+					}catch(IOException e) {
+						forcePatch = true;
+					}
+					
+					if(forcePatch) {
+						System.out.println("Forcibly repatching authlib");
+					}
+					
+					File out = new File(authLibFile.getParentFile(), "patched-" + authLibFile.getName());
+					if(!out.exists() || ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) {
+						updateMessage("Patching authlib");
+						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), ShittyAuthLauncherSettings.getSkinHost(), servers);
+						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
+					}
+					libs.add(out);
+					System.out.println("Using authlib at: " + out.getAbsolutePath());
 				}else {
 					System.out.println("Couldn't find authlib");
 				}
@@ -310,11 +356,13 @@ public class MinecraftVersion implements JSONConvertible {
 				return;
 			}
 			
+			ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+			
 			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
 			if(!keyFile.exists()) {
 				boolean b = DialogHelper.showYesNo("You don't have a public key file yet.\nAttempt to download it from the session server?\n\nNote: Without a key file, skins won't work");
 				if(b) {
-					HttpGet g = HttpRequest.createGet(ShittyAuthLauncherSettings.getSessionServerURL() + "/yggdrasil_session_pubkey.der");
+					HttpGet g = HttpRequest.createGet(servers.sessionServer + "/yggdrasil_session_pubkey.der");
 					HttpResult r = g.execute();
 					if(!r.isSuccess()) {
 						String msg = r.getErrorResponse() != null ? r.getErrorResponse() : String.valueOf(r.getException());
@@ -409,10 +457,10 @@ public class MinecraftVersion implements JSONConvertible {
 					gameArgs.addAll(0, Arrays.asList(
 							requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
 							"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-							"-Dminecraft.api.auth.host=" + ShittyAuthLauncherSettings.getAuthServerURL(),
-							"-Dminecraft.api.account.host=" + ShittyAuthLauncherSettings.getAccountServerURL(),
-							"-Dminecraft.api.session.host=" + ShittyAuthLauncherSettings.getSessionServerURL(),
-							"-Dminecraft.api.services.host=" + ShittyAuthLauncherSettings.getServicesServerURL(),
+							"-Dminecraft.api.auth.host=" + servers.authServer,
+							"-Dminecraft.api.account.host=" + servers.accountsServer,
+							"-Dminecraft.api.session.host=" + servers.sessionServer,
+							"-Dminecraft.api.services.host=" + servers.servicesServer,
 							"-cp", classPath,
 							meta.getString("mainClass")
 					));

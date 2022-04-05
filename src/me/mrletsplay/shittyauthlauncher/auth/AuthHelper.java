@@ -9,12 +9,14 @@ import me.mrletsplay.mrcore.http.HttpRequest;
 import me.mrletsplay.mrcore.http.HttpResult;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class AuthHelper {
 	
 	public static LoginData authenticate(String username, String password) {
 		try {
-			HttpGeneric post = HttpRequest.createGeneric("POST", ShittyAuthLauncherSettings.getAuthServerURL() + "/authenticate");
+			ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+			HttpGeneric post = HttpRequest.createGeneric("POST", servers.authServer + "/authenticate");
 			post.setHeaderParameter("Content-Type", "application/json");
 			
 			JSONObject req = new JSONObject();
