@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauthlauncher.version;
+package me.mrletsplay.shittyauthlauncher.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,87 +28,18 @@ import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
-import me.mrletsplay.mrcore.json.converter.JSONConstructor;
 import me.mrletsplay.mrcore.json.converter.JSONConverter;
-import me.mrletsplay.mrcore.json.converter.JSONConvertible;
-import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.shittyauthlauncher.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
-import me.mrletsplay.shittyauthlauncher.util.CombinedTask;
-import me.mrletsplay.shittyauthlauncher.util.LaunchException;
 import me.mrletsplay.shittyauthpatcher.util.LibraryPatcher;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
+import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 
-public class MinecraftVersion implements JSONConvertible {
+public class LaunchHelper {
 	
-	// TODO: java runtime: https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json
-	
-	public static final List<MinecraftVersion> VERSIONS = new ArrayList<>();
-	public static final MinecraftVersion LATEST_RELEASE, LATEST_SNAPSHOT;
-	
-	static {
-		JSONObject obj = HttpRequest.createGet("http://launchermeta.mojang.com/mc/game/version_manifest.json").execute().asJSONObject();
-		
-		for(Object o : obj.getJSONArray("versions")) {
-			VERSIONS.add(JSONConverter.decodeObject((JSONObject) o, MinecraftVersion.class));
-		}
-		
-		JSONObject latest = obj.getJSONObject("latest");
-		
-		LATEST_RELEASE = VERSIONS.stream()
-				.filter(v -> v.getId().equals(latest.getString("release")))
-				.findFirst().orElse(VERSIONS.get(0));
-		LATEST_SNAPSHOT = VERSIONS.stream()
-				.filter(v -> v.getId().equals(latest.getString("snapshot")))
-				.findFirst().orElse(VERSIONS.get(0));
-	}
-
-	@JSONValue
-	private String id;
-	
-	@JSONValue
-	private MinecraftVersionType type;
-	
-	@JSONValue
-	private String url;
-	
-	@JSONConstructor
-	private MinecraftVersion() {}
-	
-	public String getId() {
-		return id;
-	}
-
-	public MinecraftVersionType getType() {
-		return type;
-	}
-
-	public String getURL() {
-		return url;
-	}
-
-	@Override
-	public String toString() {
-		return id;
-	}
-	
-	public boolean isOlderThan(MinecraftVersion other) {
-		return VERSIONS.indexOf(this) > VERSIONS.indexOf(other);
-	}
-	
-	public boolean isNewerThan(MinecraftVersion other) {
-		return VERSIONS.indexOf(this) < VERSIONS.indexOf(other);
-	}
-	
-	public static MinecraftVersion getVersion(String id) {
-		return VERSIONS.stream()
-				.filter(v -> v.getId().equals(id))
-				.findFirst().orElse(null);
-	}
-	
-	private Task<Void> downloadFiles(Map<File, String> toDownload) {
+	private static Task<Void> downloadFiles(Map<File, String> toDownload) {
 		return new Task<Void>() {
 
 			@Override
@@ -130,30 +61,12 @@ public class MinecraftVersion implements JSONConvertible {
 		};
 	}
 	
-	public JSONObject loadMetadata() throws IOException {
-		File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + id + "/" + id + ".json");
-		if(!metaFile.exists()) {
-			System.out.println("Downloading " + metaFile + "...");
-			HttpRequest.createGet(url).execute().transferTo(metaFile);
-		}
-		
-		JSONObject meta;
-		try {
-			meta = new JSONObject(Files.readString(metaFile.toPath()));
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-		return meta;
-	}
-	
-	private Task<List<File>> loadLibraries(JSONObject meta, File tempFolder) throws IOException {
+	private static Task<List<File>> loadLibraries(MinecraftVersion version, JSONObject meta, File tempFolder) throws IOException {
 		return new CombinedTask<List<File>>() {
 			
 			@Override
 			protected List<File> call() throws Exception {
-				File minecraftJar = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + id + "/" + id + ".jar");
+				File minecraftJar = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".jar");
 				if(!minecraftJar.exists()) {
 					System.out.println("Downloading " + minecraftJar + "...");
 					String downloadURL = meta.getJSONObject("downloads").getJSONObject("client").getString("url");
@@ -237,7 +150,7 @@ public class MinecraftVersion implements JSONConvertible {
 					}
 				}
 				
-				if(isOlderThan(MinecraftVersion.getVersion("1.7.6"))) {
+				if(version.isOlderThan(MinecraftVersion.getVersion("1.7.6"))) {
 					// New skins API was introduced in release 1.7.6
 					File patchServers = new File(minecraftJar.getParentFile(), "patch-servers.json");
 					
@@ -296,7 +209,7 @@ public class MinecraftVersion implements JSONConvertible {
 		};
 	}
 	
-	private Task<File> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
+	private static Task<File> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
 		return new CombinedTask<File>() {
 			
 			@Override
@@ -349,7 +262,7 @@ public class MinecraftVersion implements JSONConvertible {
 		};
 	}
 	
-	public void launch() {
+	public static void launch(MinecraftVersion version) {
 		try {
 			if(ShittyAuthLauncherSettings.getLoginData() == null) {
 				DialogHelper.showWarning("You need to log in first");
@@ -401,10 +314,11 @@ public class MinecraftVersion implements JSONConvertible {
 				
 				@Override
 				protected Pair<ProcessBuilder, File> call() throws Exception {
-					JSONObject meta = loadMetadata();
+					File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".json");
+					JSONObject meta = version.loadMetadata(metaFile);
 					
 					File tempFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), UUID.randomUUID().toString());
-					List<File> libs = runOther(loadLibraries(meta, tempFolder));
+					List<File> libs = runOther(loadLibraries(version, meta, tempFolder));
 					if(isCancelled()) return null;
 					
 					File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
@@ -434,7 +348,7 @@ public class MinecraftVersion implements JSONConvertible {
 					
 					Map<String, String> params = new HashMap<>();
 					params.put("auth_player_name", data.getUsername());
-					params.put("version_name", id);
+					params.put("version_name", version.getId());
 					params.put("game_directory", ShittyAuthLauncherSettings.getGameDataPath());
 					params.put("assets_root", assetsFolder.getAbsolutePath());
 					params.put("assets_index_name", meta.getString("assets"));
@@ -507,5 +421,5 @@ public class MinecraftVersion implements JSONConvertible {
 			DialogHelper.showError("Failed to launch", e);
 		}
 	}
-	
+
 }

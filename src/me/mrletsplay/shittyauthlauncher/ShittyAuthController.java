@@ -25,8 +25,9 @@ import javafx.stage.StageStyle;
 import javafx.util.Pair;
 import me.mrletsplay.shittyauthlauncher.auth.AuthHelper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
-import me.mrletsplay.shittyauthlauncher.version.MinecraftVersion;
-import me.mrletsplay.shittyauthlauncher.version.MinecraftVersionType;
+import me.mrletsplay.shittyauthlauncher.util.LaunchHelper;
+import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
+import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
 
 public class ShittyAuthController {
 
@@ -121,7 +122,8 @@ public class ShittyAuthController {
 			DialogHelper.showError("No version selected");
 			return;
 		}
-		ver.launch();
+		
+		LaunchHelper.launch(ver);
 	}
 
 	@FXML
