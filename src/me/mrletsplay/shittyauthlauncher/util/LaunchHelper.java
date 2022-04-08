@@ -314,74 +314,79 @@ public class LaunchHelper {
 				
 				@Override
 				protected Pair<ProcessBuilder, File> call() throws Exception {
-					File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".json");
-					JSONObject meta = version.loadMetadata(metaFile);
-					
 					File tempFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), UUID.randomUUID().toString());
-					List<File> libs = runOther(loadLibraries(version, meta, tempFolder));
-					if(isCancelled()) return null;
-					
-					File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
-					assetsFolder = runOther(loadAssets(meta, assetsFolder));
-					if(isCancelled()) return null;
-					
-					LoginData data = ShittyAuthLauncherSettings.getLoginData();
-					String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
-					String classPath = libs.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(libSeparator));
-			
-					boolean requiresOldJava = true;
-					if(meta.containsKey("javaVersion")) {
-						int major = meta.getJSONObject("javaVersion").getInt("majorVersion");
-						if(major > 8) requiresOldJava = false;
+					try {
+						File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".json");
+						JSONObject meta = version.loadMetadata(metaFile);
+						
+						List<File> libs = runOther(loadLibraries(version, meta, tempFolder));
+						if(isCancelled()) return null;
+						
+						File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
+						assetsFolder = runOther(loadAssets(meta, assetsFolder));
+						if(isCancelled()) return null;
+						
+						LoginData data = ShittyAuthLauncherSettings.getLoginData();
+						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
+						String classPath = libs.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(libSeparator));
+				
+						boolean requiresOldJava = true;
+						if(meta.containsKey("javaVersion")) {
+							int major = meta.getJSONObject("javaVersion").getInt("majorVersion");
+							if(major > 8) requiresOldJava = false;
+						}
+						System.out.println("Requires old Java? " + requiresOldJava);
+						
+						List<String> gameArgs = new ArrayList<>();
+						if(meta.has("arguments")) {
+							gameArgs.addAll(meta.getJSONObject("arguments").getJSONArray("game").stream()
+									.filter(s -> s instanceof String)
+									.map(s -> (String) s)
+									.collect(Collectors.toList()));
+						}else {
+							gameArgs.addAll(Arrays.asList(meta.getString("minecraftArguments").split(" ")));
+						}
+						
+						Map<String, String> params = new HashMap<>();
+						params.put("auth_player_name", data.getUsername());
+						params.put("version_name", version.getId());
+						params.put("game_directory", ShittyAuthLauncherSettings.getGameDataPath());
+						params.put("assets_root", assetsFolder.getAbsolutePath());
+						params.put("assets_index_name", meta.getString("assets"));
+						params.put("auth_uuid", data.getUuid());
+						params.put("auth_access_token", data.getAccessToken());
+						params.put("version_type", meta.getString("type"));
+						params.put("user_type", "mojang");
+						params.put("auth_session", data.getAccessToken());
+						params.put("user_properties", "{}");
+						params.put("game_assets", assetsFolder.getAbsolutePath() + "/");
+						
+						for(int i = 0; i < gameArgs.size(); i++) {
+							String arg = gameArgs.get(i);
+							gameArgs.set(i, params.entrySet().stream()
+									.filter(e -> arg.equals("${" + e.getKey() + "}"))
+									.map(e -> e.getValue())
+									.findFirst().orElse(arg));
+						}
+						
+						gameArgs.addAll(0, Arrays.asList(
+								requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
+								"-Djava.library.path=" + tempFolder.getAbsolutePath(),
+								"-Dminecraft.api.auth.host=" + servers.authServer,
+								"-Dminecraft.api.account.host=" + servers.accountsServer,
+								"-Dminecraft.api.session.host=" + servers.sessionServer,
+								"-Dminecraft.api.services.host=" + servers.servicesServer,
+								"-cp", classPath,
+								meta.getString("mainClass")
+						));
+						
+						ProcessBuilder b = new ProcessBuilder(gameArgs);
+						b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
+						return new Pair<>(b, tempFolder);
+					}catch(Exception e) {
+						if(tempFolder.exists()) tempFolder.delete();
+						throw e;
 					}
-					System.out.println("Requires old Java? " + requiresOldJava);
-					
-					List<String> gameArgs = new ArrayList<>();
-					if(meta.has("arguments")) {
-						gameArgs.addAll(meta.getJSONObject("arguments").getJSONArray("game").stream()
-								.filter(s -> s instanceof String)
-								.map(s -> (String) s)
-								.collect(Collectors.toList()));
-					}else {
-						gameArgs.addAll(Arrays.asList(meta.getString("minecraftArguments").split(" ")));
-					}
-					
-					Map<String, String> params = new HashMap<>();
-					params.put("auth_player_name", data.getUsername());
-					params.put("version_name", version.getId());
-					params.put("game_directory", ShittyAuthLauncherSettings.getGameDataPath());
-					params.put("assets_root", assetsFolder.getAbsolutePath());
-					params.put("assets_index_name", meta.getString("assets"));
-					params.put("auth_uuid", data.getUuid());
-					params.put("auth_access_token", data.getAccessToken());
-					params.put("version_type", meta.getString("type"));
-					params.put("user_type", "mojang");
-					params.put("auth_session", data.getAccessToken());
-					params.put("user_properties", "{}");
-					params.put("game_assets", assetsFolder.getAbsolutePath() + "/");
-					
-					for(int i = 0; i < gameArgs.size(); i++) {
-						String arg = gameArgs.get(i);
-						gameArgs.set(i, params.entrySet().stream()
-								.filter(e -> arg.equals("${" + e.getKey() + "}"))
-								.map(e -> e.getValue())
-								.findFirst().orElse(arg));
-					}
-					
-					gameArgs.addAll(0, Arrays.asList(
-							requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
-							"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-							"-Dminecraft.api.auth.host=" + servers.authServer,
-							"-Dminecraft.api.account.host=" + servers.accountsServer,
-							"-Dminecraft.api.session.host=" + servers.sessionServer,
-							"-Dminecraft.api.services.host=" + servers.servicesServer,
-							"-cp", classPath,
-							meta.getString("mainClass")
-					));
-					
-					ProcessBuilder b = new ProcessBuilder(gameArgs);
-					b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
-					return new Pair<>(b, tempFolder);
 				}
 			};
 			launch.progressProperty().addListener(v -> pb.setProgress(launch.getProgress()));
