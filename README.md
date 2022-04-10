@@ -9,10 +9,11 @@ ShittyAuthLauncher is a Minecraft launcher that's not tied to any specific authe
 Just download the latest launcher JAR file from the [releases](https://github.com/MrLetsplay2003/ShittyAuthLauncher/releases) section. You can then run it using any Java 11+ VM on Linux or Windows.
 
 # Features
-- Automatically patches Mojang's authlib
-- Configurable auth/session/api servers
+- Automatically patches Mojang's authlib as well as the Minecraft JAR
+- Configurable auth/session/api/services servers
 - Supports custom skin hosts
-- Works with most modern versions of Minecraft (1.8+), maybe also some older ones
+- Supports authentication and skins in modern versions of Minecraft as well as older ones (as low as beta 1.8 when using [ShittyAuthServer](https://github.com/MrLetsplay2003/ShittyAuthServer))
+- Works completely independently of the normal Minecraft launcher
 
 # Compiling the launcher yourself
 The launcher uses Maven for building.
