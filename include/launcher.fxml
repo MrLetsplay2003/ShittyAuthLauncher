@@ -13,7 +13,7 @@
       <Button layoutY="416.0" mnemonicParsing="false" onAction="#buttonPlay" prefHeight="55.0" text="Play Minecraft" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0" />
       <ComboBox fx:id="dropdownVersions" layoutX="15.0" layoutY="429.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
       <Label layoutX="14.0" layoutY="416.0" text="Choose your Minecraft version" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="15.0" />
-      <TextArea editable="false" prefHeight="357.0" prefWidth="690.0" AnchorPane.bottomAnchor="110.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0" />
+      <TextArea fx:id="areaLog" editable="false" prefHeight="357.0" prefWidth="690.0" promptText="Output from the latest launch will appear here" AnchorPane.bottomAnchor="110.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0" />
       <Button layoutX="332.0" layoutY="381.0" mnemonicParsing="false" onAction="#buttonSettings" prefHeight="25.0" text="Settings" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="310.0" AnchorPane.rightAnchor="310.0" />
       <CheckBox fx:id="checkboxShowAllVersions" layoutX="15.0" layoutY="384.0" mnemonicParsing="false" onAction="#checkboxShowAllVersions" prefHeight="25.0" text="Show all versions" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="15.0" />
       <Button layoutX="476.0" layoutY="442.0" mnemonicParsing="false" onAction="#buttonInstallations" prefHeight="25.0" text="Edit Installations" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="15.0" />
@@ -24,6 +24,6 @@
          </children>
       </HBox>
       <ComboBox fx:id="dropdownInstallations" layoutX="555.0" layoutY="441.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0" />
-      <Label layoutX="505.0" layoutY="420.0" text="Installation" AnchorPane.bottomAnchor="45.0" />
+      <Label layoutX="505.0" layoutY="420.0" text="Installation" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="152.0" />
    </children>
 </AnchorPane>

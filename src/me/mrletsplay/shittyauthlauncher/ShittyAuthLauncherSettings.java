@@ -49,6 +49,7 @@ public class ShittyAuthLauncherSettings {
 			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
+			setMinimizeLauncher(true);
 			setInstallations(Collections.emptyList());
 	    	save();
 		}
@@ -121,6 +122,14 @@ public class ShittyAuthLauncherSettings {
 	
 	public static boolean isAlwaysPatchMinecraft() {
 		return config.getBoolean("always-patch-minecraft");
+	}
+	
+	public static void setMinimizeLauncher(boolean minimizeLauncher) {
+		config.set("minimize-launcher", minimizeLauncher);
+	}
+	
+	public static boolean isMinimizeLauncher() {
+		return config.getBoolean("minimize-launcher");
 	}
 	
 	public static void setInstallations(List<GameInstallation> installations) {

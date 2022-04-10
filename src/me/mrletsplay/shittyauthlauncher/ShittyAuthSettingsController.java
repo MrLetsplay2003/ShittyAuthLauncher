@@ -37,7 +37,10 @@ public class ShittyAuthSettingsController {
     
     @FXML
     private CheckBox checkboxAlwaysPatchMinecraft;
-
+    
+    @FXML
+    private CheckBox checkboxMinimizeLauncher;
+    
     @FXML
     void buttonSave(ActionEvent event) {
     	ShittyAuthLauncherSettings.setGameDataPath(getString(inputGameDataPath));
@@ -51,13 +54,14 @@ public class ShittyAuthSettingsController {
     	ShittyAuthLauncherSettings.setSkinHost(getString(inputSkinHost));
     	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatchAuthlib.isSelected());
     	ShittyAuthLauncherSettings.setAlwaysPatchMinecraft(checkboxAlwaysPatchMinecraft.isSelected());
+    	ShittyAuthLauncherSettings.setMinimizeLauncher(checkboxMinimizeLauncher.isSelected());
     	ShittyAuthLauncherSettings.save();
     	ShittyAuthLauncher.settingsStage.hide();
     }
     
     private String getString(TextField textField) {
     	String txt = textField.getText();
-    	if(txt.isBlank()) txt = null;
+    	if(txt == null || txt.isBlank()) txt = null;
     	return txt;
     }
 
@@ -79,6 +83,7 @@ public class ShittyAuthSettingsController {
     	inputSkinHost.setText(ShittyAuthLauncherSettings.getSkinHost());
     	checkboxAlwaysPatchAuthlib.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
     	checkboxAlwaysPatchMinecraft.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchMinecraft());
+    	checkboxMinimizeLauncher.setSelected(ShittyAuthLauncherSettings.isMinimizeLauncher());
     }
 
 }

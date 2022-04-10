@@ -10,12 +10,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthSettingsController">
+<GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthSettingsController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
   </columnConstraints>
   <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -47,7 +48,7 @@
       <TextField fx:id="inputSkinHost" prefWidth="250.0" promptText="empty = default" GridPane.columnIndex="1" GridPane.rowIndex="7" />
       <Label text="Always patch authlib" GridPane.rowIndex="8" />
       <CheckBox fx:id="checkboxAlwaysPatchAuthlib" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="10" GridPane.vgrow="NEVER">
+      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="11" GridPane.vgrow="NEVER">
          <children>
             <Button mnemonicParsing="false" onAction="#buttonSave" text="Save">
                <HBox.margin>
@@ -59,6 +60,8 @@
       </HBox>
       <Label text="Always patch minecraft.jar" GridPane.rowIndex="9" />
       <CheckBox fx:id="checkboxAlwaysPatchMinecraft" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+      <Label text="Minimize launcher after starting the game" GridPane.rowIndex="10" />
+      <CheckBox fx:id="checkboxMinimizeLauncher" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="10" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

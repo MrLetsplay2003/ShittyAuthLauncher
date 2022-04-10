@@ -2,6 +2,8 @@ package me.mrletsplay.shittyauthlauncher.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -263,6 +265,7 @@ public class LaunchHelper {
 	}
 	
 	public static void launch(MinecraftVersion version, GameInstallation installation) {
+		// TODO: check for already running Minecraft instance
 		try {
 			if(ShittyAuthLauncherSettings.getLoginData() == null) {
 				DialogHelper.showWarning("You need to log in first");
@@ -377,10 +380,13 @@ public class LaunchHelper {
 						gameArgs.addAll(0, Arrays.asList(
 								javaPath,
 								"-Djava.library.path=" + tempFolder.getAbsolutePath(),
+								
+								// Technically not needed as YggdrasilEnvironment gets patched anyway
 								"-Dminecraft.api.auth.host=" + servers.authServer,
 								"-Dminecraft.api.account.host=" + servers.accountsServer,
 								"-Dminecraft.api.session.host=" + servers.sessionServer,
 								"-Dminecraft.api.services.host=" + servers.servicesServer,
+								
 								"-cp", classPath,
 								meta.getString("mainClass")
 						));
@@ -412,11 +418,20 @@ public class LaunchHelper {
 				}
 				new Thread(() -> {
 					try {
-						Process p = pair.getKey().inheritIO().start();
-						Platform.runLater(() -> {
-							ShittyAuthLauncher.stage.setIconified(true);
-						});
-						p.waitFor();
+						ShittyAuthLauncher.controller.clearLog();
+						Process p = pair.getKey().start();
+						if(ShittyAuthLauncherSettings.isMinimizeLauncher()) {
+							Platform.runLater(() -> {
+								ShittyAuthLauncher.stage.setIconified(true);
+							});
+						}
+						while(p.isAlive()) {
+							writeToLog(p.getInputStream());
+							writeToLog(p.getErrorStream());
+							Thread.sleep(100);
+						}
+						writeToLog(p.getInputStream());
+						writeToLog(p.getErrorStream());
 						IOUtils.deleteFile(pair.getValue());
 						Platform.runLater(() -> {
 							ShittyAuthLauncher.stage.setIconified(false);
@@ -430,6 +445,12 @@ public class LaunchHelper {
 		}catch(Exception e) {
 			DialogHelper.showError("Failed to launch", e);
 		}
+	}
+	
+	private static void writeToLog(InputStream in) throws IOException {
+		byte[] bytes = new byte[in.available()];
+		int len = in.read(bytes);
+		ShittyAuthLauncher.controller.appendLog(new String(bytes, 0, len, StandardCharsets.UTF_8));
 	}
 
 }

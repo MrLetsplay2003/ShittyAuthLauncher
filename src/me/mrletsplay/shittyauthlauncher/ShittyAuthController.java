@@ -67,6 +67,9 @@ public class ShittyAuthController {
 	@FXML
 	private CheckBox checkboxShowAllVersions;
 
+    @FXML
+    private TextArea areaLog;
+
 	public void init() {
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
 		List<MinecraftVersion> releases = MinecraftVersion.VERSIONS.stream()
@@ -297,7 +300,7 @@ public class ShittyAuthController {
 		dialog.initOwner(ShittyAuthLauncher.stage);
 		dialog.initStyle(StageStyle.UTILITY);
 		dialog.setTitle("Edit Installation");
-		dialog.setHeaderText("Enter installation details");
+		dialog.setHeaderText("Enter installation settings");
 		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.FINISH, ButtonType.CANCEL);
 
 		GridPane grid = new GridPane();
@@ -384,8 +387,16 @@ public class ShittyAuthController {
     
     private String getString(TextField textField) {
     	String txt = textField.getText();
-    	if(txt.isBlank()) txt = null;
+    	if(txt == null || txt.isBlank()) txt = null;
     	return txt;
+    }
+    
+    public void clearLog() {
+    	areaLog.setText(null);
+    }
+    
+    public void appendLog(String text) {
+    	areaLog.appendText(text);
     }
 
 }
