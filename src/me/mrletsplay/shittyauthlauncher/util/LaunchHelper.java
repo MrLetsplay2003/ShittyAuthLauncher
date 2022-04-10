@@ -209,7 +209,7 @@ public class LaunchHelper {
 		};
 	}
 	
-	private static Task<File> loadAssets(JSONObject meta, File assetsFolder) throws IOException {
+	private static Task<File> loadAssets(JSONObject meta, File assetsFolder, GameInstallation installation) throws IOException {
 		return new CombinedTask<File>() {
 			
 			@Override
@@ -239,7 +239,7 @@ public class LaunchHelper {
 				boolean pre16Assets = assetId.equals("pre-1.6");
 				
 				if(legacyAssets) assetsDownloadFolder = new File(assetsFolder, "virtual/legacy");
-				if(pre16Assets) assetsDownloadFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "resources");
+				if(pre16Assets) assetsDownloadFolder = new File(installation != null ? installation.gameDirectory : ShittyAuthLauncherSettings.getGameDataPath(), "resources");
 				
 				assetsDownloadFolder.mkdirs();
 				
@@ -262,7 +262,7 @@ public class LaunchHelper {
 		};
 	}
 	
-	public static void launch(MinecraftVersion version) {
+	public static void launch(MinecraftVersion version, GameInstallation installation) {
 		try {
 			if(ShittyAuthLauncherSettings.getLoginData() == null) {
 				DialogHelper.showWarning("You need to log in first");
@@ -273,7 +273,7 @@ public class LaunchHelper {
 			
 			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
 			if(!keyFile.exists()) {
-				boolean b = DialogHelper.showYesNo("You don't have a public key file yet.\nAttempt to download it from the session server?\n\nNote: Without a key file, skins won't work");
+				boolean b = DialogHelper.showYesNo("You don't have a public key file yet.\nAttempt to download it from the session server? (only available if using ShittyAuthServer)\n\nNote: Without a key file, skins won't work");
 				if(b) {
 					HttpGet g = HttpRequest.createGet(servers.sessionServer + "/yggdrasil_session_pubkey.der");
 					HttpResult r = g.execute();
@@ -323,7 +323,7 @@ public class LaunchHelper {
 						if(isCancelled()) return null;
 						
 						File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
-						assetsFolder = runOther(loadAssets(meta, assetsFolder));
+						assetsFolder = runOther(loadAssets(meta, assetsFolder, installation));
 						if(isCancelled()) return null;
 						
 						LoginData data = ShittyAuthLauncherSettings.getLoginData();
@@ -350,7 +350,7 @@ public class LaunchHelper {
 						Map<String, String> params = new HashMap<>();
 						params.put("auth_player_name", data.getUsername());
 						params.put("version_name", version.getId());
-						params.put("game_directory", ShittyAuthLauncherSettings.getGameDataPath());
+						params.put("game_directory", installation != null ? installation.gameDirectory : ShittyAuthLauncherSettings.getGameDataPath());
 						params.put("assets_root", assetsFolder.getAbsolutePath());
 						params.put("assets_index_name", meta.getString("assets"));
 						params.put("auth_uuid", data.getUuid());
@@ -369,8 +369,13 @@ public class LaunchHelper {
 									.findFirst().orElse(arg));
 						}
 						
+						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
+						if(installation != null && installation.javaPath != null) javaPath = installation.javaPath;
+						
+						System.out.println("Java path: " + javaPath);
+						
 						gameArgs.addAll(0, Arrays.asList(
-								requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath(),
+								javaPath,
 								"-Djava.library.path=" + tempFolder.getAbsolutePath(),
 								"-Dminecraft.api.auth.host=" + servers.authServer,
 								"-Dminecraft.api.account.host=" + servers.accountsServer,

@@ -10,23 +10,27 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 public class DialogHelper {
 
 	public static void showWarning(String warning) {
 		Alert a = new Alert(AlertType.WARNING);
+		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(warning);
 		a.showAndWait();
 	}
 	
 	public static void showError(String error) {
 		Alert a = new Alert(AlertType.ERROR);
+		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(error);
 		a.showAndWait();
 	}
 	
 	public static void showError(String error, Throwable r) {
 		Alert a = new Alert(AlertType.ERROR);
+		a.initOwner(ShittyAuthLauncher.stage);
 		a.setHeaderText(error);
 		a.setResizable(true);
 		
@@ -58,9 +62,11 @@ public class DialogHelper {
 	
 	public static boolean showYesNo(String message) {
 		Alert a = new Alert(AlertType.CONFIRMATION);
+		a.initOwner(ShittyAuthLauncher.stage);
 		a.getButtonTypes().clear();
 		a.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
 		a.setContentText(message);
+		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		return a.showAndWait().orElse(null) == ButtonType.YES;
 	}
 	

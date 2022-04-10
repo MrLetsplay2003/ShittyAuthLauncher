@@ -1,11 +1,16 @@
 package me.mrletsplay.shittyauthlauncher;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import me.mrletsplay.mrcore.config.ConfigLoader;
 import me.mrletsplay.mrcore.config.FileCustomConfig;
 import me.mrletsplay.mrcore.config.mapper.JSONObjectMapper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
@@ -30,6 +35,7 @@ public class ShittyAuthLauncherSettings {
 	static {
 		config = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/settings.yml"));
 		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class));
+		config.registerMapper(JSONObjectMapper.create(GameInstallation.class));
 		
 		tokenConfig = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/token.yml"));
 		tokenConfig.registerMapper(JSONObjectMapper.create(LoginData.class));
@@ -43,6 +49,7 @@ public class ShittyAuthLauncherSettings {
 			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
+			setInstallations(Collections.emptyList());
 	    	save();
 		}
 	}
@@ -114,6 +121,16 @@ public class ShittyAuthLauncherSettings {
 	
 	public static boolean isAlwaysPatchMinecraft() {
 		return config.getBoolean("always-patch-minecraft");
+	}
+	
+	public static void setInstallations(List<GameInstallation> installations) {
+		config.set("installations", installations.stream()
+				.filter(i -> i != GameInstallation.DEFAULT_INSTALLATION)
+				.collect(Collectors.toList()));
+	}
+	
+	public static List<GameInstallation> getInstallations() {
+		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
 	}
 	
 	public static void setLoginData(LoginData data) {
