@@ -78,7 +78,16 @@ public class LaunchHelper {
 				ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
 				
 				File authLibFile = null;
-				String os = System.getProperty("os.name").toLowerCase().contains("windows") ? "windows" : "linux";
+				
+				String osName = System.getProperty("os.name").toLowerCase();
+				String os;
+				if(osName.contains("windows")) {
+					os = "windows";
+				}else if(osName.contains("mac")){
+					os = "osx";
+				}else {
+					os = "linux";
+				}
 				List<File> libs = new ArrayList<>();
 				List<File> nativeLibs = new ArrayList<>();
 				Map<File, String> toDownload = new HashMap<>();
