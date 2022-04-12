@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
@@ -30,16 +32,20 @@ import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
+import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.mrcore.json.converter.JSONConverter;
 import me.mrletsplay.shittyauthlauncher.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.shittyauthlauncher.util.OS.OSType;
 import me.mrletsplay.shittyauthpatcher.util.LibraryPatcher;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 
 public class LaunchHelper {
+	
+	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{(?<name>[a-z_]+)\\}");
 	
 	private static Task<Void> downloadFiles(Map<File, String> toDownload) {
 		return new Task<Void>() {
@@ -63,6 +69,32 @@ public class LaunchHelper {
 		};
 	}
 	
+	private static boolean matchesRuleOS(OS os, JSONObject ruleOS) {
+		return (!ruleOS.has("name") || ruleOS.getString("name").equals(os.getType().getRuleName()))
+				&& (!ruleOS.has("version") || Pattern.compile(ruleOS.getString("version")).matcher(os.getVersion()).matches())
+				&& (!ruleOS.has("arch") || ruleOS.getString("arch").equals(os.getArch()));
+	}
+	
+	private static boolean checkRules(JSONArray rules) {
+		OS os = OS.getCurrentOS();
+		Boolean allow = null;
+		for(Object r : rules) {
+			JSONObject rule = (JSONObject) r;
+			boolean a = rule.getString("action").equals("allow");
+			
+			if(!rule.has("os")) {
+				if(rule.has("features")) continue; // We don't care about features right now (e.g. is_demo_user, has_custom_resolution)
+				if(allow == null) allow = a;
+				continue;
+			}
+			
+			JSONObject ruleOS = rule.getJSONObject("os");
+			if(matchesRuleOS(os, ruleOS)) allow = a;
+		}
+		
+		return allow != null && allow;
+	}
+	
 	private static Task<List<File>> loadLibraries(MinecraftVersion version, JSONObject meta, File tempFolder) throws IOException {
 		return new CombinedTask<List<File>>() {
 			
@@ -79,15 +111,8 @@ public class LaunchHelper {
 				
 				File authLibFile = null;
 				
-				String osName = System.getProperty("os.name").toLowerCase();
-				String os;
-				if(osName.contains("windows")) {
-					os = "windows";
-				}else if(osName.contains("mac")){
-					os = "osx";
-				}else {
-					os = "linux";
-				}
+				String os = OS.getCurrentOS().getType().getRuleName();
+				
 				List<File> libs = new ArrayList<>();
 				List<File> nativeLibs = new ArrayList<>();
 				Map<File, String> toDownload = new HashMap<>();
@@ -96,24 +121,7 @@ public class LaunchHelper {
 					String name = lib.getString("name");
 					
 					JSONArray rules = lib.optJSONArray("rules").orElse(null);
-					Boolean allow = null;
-					if(rules != null) {
-						for(Object r : rules) {
-							JSONObject rule = (JSONObject) r;
-							String ruleOS = rule.optJSONObject("os").map(obj -> obj.getString("name")).orElse(null);
-							boolean a = rule.getString("action").equals("allow");
-							if(ruleOS == null) {
-								if(allow == null) allow = a;
-							}else if(ruleOS.equals(os)) {
-								allow = a;
-							}
-						}
-					}else {
-						// No rules = allow
-						allow = true;
-					}
-					
-					if(allow == null || !allow) continue;
+					if(rules != null && !checkRules(rules)) continue;
 					
 					JSONObject downloads = lib.getJSONObject("downloads");
 					
@@ -332,11 +340,17 @@ public class LaunchHelper {
 						JSONObject meta = version.loadMetadata(metaFile);
 						
 						List<File> libs = runOther(loadLibraries(version, meta, tempFolder));
-						if(isCancelled()) return null;
+						if(isCancelled()) {
+							IOUtils.deleteFile(tempFolder);
+							return null;
+						}
 						
 						File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
 						assetsFolder = runOther(loadAssets(meta, assetsFolder, installation));
-						if(isCancelled()) return null;
+						if(isCancelled()) {
+							IOUtils.deleteFile(tempFolder);
+							return null;
+						}
 						
 						LoginData data = ShittyAuthLauncherSettings.getLoginData();
 						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
@@ -349,15 +363,56 @@ public class LaunchHelper {
 						}
 						System.out.println("Requires old Java? " + requiresOldJava);
 						
+						boolean legacyArgs = false;
 						List<String> gameArgs = new ArrayList<>();
+						List<String> jvmArgs = new ArrayList<>();
 						if(meta.has("arguments")) {
-							gameArgs.addAll(meta.getJSONObject("arguments").getJSONArray("game").stream()
-									.filter(s -> s instanceof String)
-									.map(s -> (String) s)
-									.collect(Collectors.toList()));
+							JSONObject args = meta.getJSONObject("arguments");
+							
+							JSONArray game = args.getJSONArray("game");
+							for(int i = 0; i < game.size(); i++) {
+								Object o = game.get(i);
+								if(o instanceof String) {
+									gameArgs.add((String) o);
+									continue;
+								}
+								
+								JSONObject r = (JSONObject) o;
+								if(!checkRules(r.getJSONArray("rules"))) continue;
+								if(r.isOfType("value", JSONType.STRING)) {
+									gameArgs.add(r.getString("value"));
+								}else {
+									gameArgs.addAll(r.getJSONArray("value").stream()
+											.map(s -> (String) s)
+											.collect(Collectors.toList()));
+								}
+							}
+							
+							JSONArray jvm = args.getJSONArray("jvm");
+							for(int i = 0; i < jvm.size(); i++) {
+								Object o = jvm.get(i);
+								if(o instanceof String) {
+									jvmArgs.add((String) o);
+									continue;
+								}
+								
+								JSONObject r = (JSONObject) o;
+								if(!checkRules(r.getJSONArray("rules"))) continue;
+								if(r.isOfType("value", JSONType.STRING)) {
+									jvmArgs.add(r.getString("value"));
+								}else {
+									jvmArgs.addAll(r.getJSONArray("value").stream()
+											.map(s -> (String) s)
+											.collect(Collectors.toList()));
+								}
+							}
 						}else {
+							legacyArgs = true;
 							gameArgs.addAll(Arrays.asList(meta.getString("minecraftArguments").split(" ")));
 						}
+						
+						System.out.println("JVM args: " + jvmArgs);
+						System.out.println("Game args: " + gameArgs);
 						
 						Map<String, String> params = new HashMap<>();
 						params.put("auth_player_name", data.getUsername());
@@ -372,39 +427,43 @@ public class LaunchHelper {
 						params.put("auth_session", data.getAccessToken());
 						params.put("user_properties", "{}");
 						params.put("game_assets", assetsFolder.getAbsolutePath() + "/");
-						
-						for(int i = 0; i < gameArgs.size(); i++) {
-							String arg = gameArgs.get(i);
-							gameArgs.set(i, params.entrySet().stream()
-									.filter(e -> arg.equals("${" + e.getKey() + "}"))
-									.map(e -> e.getValue())
-									.findFirst().orElse(arg));
-						}
+						params.put("natives_directory", tempFolder.getAbsolutePath());
+						params.put("launcher_name", "ShittyAuthLauncher");
+						params.put("launcher_version", "69.420");
+						params.put("classpath", classPath);
+						params.put("auth_xuid", "nope"); // XBox UID
+						params.put("clientid", "nope");
+
+						replacePlaceholders(gameArgs, params);
+						replacePlaceholders(jvmArgs, params);
 						
 						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
 						if(installation != null && installation.javaPath != null) javaPath = installation.javaPath;
 						
 						System.out.println("Java path: " + javaPath);
 						
-						gameArgs.addAll(0, Arrays.asList(
-								javaPath,
-								"-Djava.library.path=" + tempFolder.getAbsolutePath(),
-								
-								// Technically not needed as YggdrasilEnvironment gets patched anyway
-								"-Dminecraft.api.auth.host=" + servers.authServer,
-								"-Dminecraft.api.account.host=" + servers.accountsServer,
-								"-Dminecraft.api.session.host=" + servers.sessionServer,
-								"-Dminecraft.api.services.host=" + servers.servicesServer,
-								
-								"-cp", classPath,
-								meta.getString("mainClass")
-						));
+						if(OS.getCurrentOS().getType() == OSType.MACOS && !jvmArgs.contains("-XstartOnFirstThread")) {
+							gameArgs.add(0, "-XstartOnFirstThread");
+						}
 						
-						ProcessBuilder b = new ProcessBuilder(gameArgs);
+						if(legacyArgs) {
+							jvmArgs.addAll(Arrays.asList(
+									"-Djava.library.path=" + tempFolder.getAbsolutePath(),
+									"-cp", classPath
+							));
+						}
+						
+						List<String> fullArgs = new ArrayList<>();
+						fullArgs.add(javaPath);
+						fullArgs.addAll(jvmArgs);
+						fullArgs.add(meta.getString("mainClass"));
+						fullArgs.addAll(gameArgs);
+						
+						ProcessBuilder b = new ProcessBuilder(fullArgs);
 						b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
 						return new Pair<>(b, tempFolder);
 					}catch(Exception e) {
-						if(tempFolder.exists()) tempFolder.delete();
+						IOUtils.deleteFile(tempFolder);
 						throw e;
 					}
 				}
@@ -453,6 +512,24 @@ public class LaunchHelper {
 			new Thread(launch).start();
 		}catch(Exception e) {
 			DialogHelper.showError("Failed to launch", e);
+		}
+	}
+	
+	private static void replacePlaceholders(List<String> args, Map<String, String> placeholders) {
+		for(int i = 0; i < args.size(); i++) {
+			String arg = args.get(i);
+			Matcher m = PLACEHOLDER_PATTERN.matcher(arg);
+			StringBuilder sb = new StringBuilder();
+			while(m.find()) {
+				String val = placeholders.get(m.group("name"));
+				if(val == null) {
+					System.out.println("Missing parameter: " + val + ", skipping!");
+				}else {
+					m.appendReplacement(sb, val);
+				}
+			}
+			m.appendTail(sb);
+			args.set(i, sb.toString());
 		}
 	}
 	
