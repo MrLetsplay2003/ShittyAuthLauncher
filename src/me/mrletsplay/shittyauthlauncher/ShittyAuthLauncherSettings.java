@@ -3,68 +3,63 @@ package me.mrletsplay.shittyauthlauncher;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import me.mrletsplay.mrcore.config.ConfigLoader;
 import me.mrletsplay.mrcore.config.FileCustomConfig;
 import me.mrletsplay.mrcore.config.mapper.JSONObjectMapper;
-import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.mrcore.json.converter.DeserializationOption;
+import me.mrletsplay.mrcore.json.converter.SerializationOption;
+import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
+import me.mrletsplay.shittyauthlauncher.util.InstallationType;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
 	
 	private static final String
 		DEFAULT_MINECRAFT_CONTAINER = System.getProperty("os.name").toLowerCase().contains("windows") ? System.getenv("APPDATA") : System.getProperty("user.home"),
-		DEFAULT_MINECRAFT_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft",
-		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty",
-		DEFAULT_SERVER_URL = "https://mc.graphite-official.com",
-		DEFAULT_SKIN_HOST = "mc.graphite-official.com";
-	
-	private static final ServerConfiguration DEFAULT_SERVERS = new ServerConfiguration(
-			DEFAULT_SERVER_URL,
-			DEFAULT_SERVER_URL,
-			DEFAULT_SERVER_URL,
-			DEFAULT_SERVER_URL
-		);
+		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty";
 	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
 	
 	static {
 		config = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/settings.yml"));
-		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class));
-		config.registerMapper(JSONObjectMapper.create(GameInstallation.class));
+		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
+		config.registerMapper(JSONObjectMapper.create(GameInstallation.class, EnumSet.of(SerializationOption.SHORT_ENUMS, SerializationOption.DONT_INCLUDE_CLASS), EnumSet.of(DeserializationOption.SHORT_ENUMS)));
 		
 		tokenConfig = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/token.yml"));
-		tokenConfig.registerMapper(JSONObjectMapper.create(LoginData.class));
+		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {
-			setMinecraftPath(DEFAULT_MINECRAFT_PATH);
 			setGameDataPath(DEFAULT_GAME_DATA_PATH);
 			setNewJavaPath("java");
 			setOldJavaPath("java");
-			setServers(DEFAULT_SERVERS);
-			setSkinHost(DEFAULT_SKIN_HOST);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
 			setMinimizeLauncher(true);
 			setInstallations(Collections.emptyList());
+			setAccounts(Collections.emptyList());
+			setActiveAccount(null);
 	    	save();
+		}
+		
+		List<GameInstallation> installations = getInstallations();
+		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_RELEASE)) {
+			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", DEFAULT_GAME_DATA_PATH, null, null));
+			setInstallations(installations);
+		}
+		
+		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_SNAPSHOT)) {
+			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", DEFAULT_GAME_DATA_PATH, null, null));
+			setInstallations(installations);
 		}
 	}
 	
 	public static void save() {
 		config.saveToFile();
-	}
-	
-	public static void setMinecraftPath(String path) {
-		config.set("minecraft-path", path);
-	}
-	
-	public static String getMinecraftPath() {
-		return config.getString("minecraft-path", DEFAULT_MINECRAFT_PATH, false);
 	}
 	
 	public static void setGameDataPath(String path) {
@@ -92,22 +87,6 @@ public class ShittyAuthLauncherSettings {
 		return config.getString("old-java-path", "java", false);
 	}
 	
-	public static void setServers(ServerConfiguration configuration) {
-		config.set("servers", configuration);
-	}
-	
-	public static ServerConfiguration getServers() {
-		return config.getGeneric("servers", ServerConfiguration.class, DEFAULT_SERVERS, false);
-	}
-	
-	public static void setSkinHost(String url) {
-		config.set("skin-host", url);
-	}
-	
-	public static String getSkinHost() {
-		return config.getString("skin-host", DEFAULT_SKIN_HOST, false);
-	}
-	
 	public static void setAlwaysPatchAuthlib(boolean alwaysPatchAuthlib) {
 		config.set("always-patch-authlib", alwaysPatchAuthlib);
 	}
@@ -133,22 +112,33 @@ public class ShittyAuthLauncherSettings {
 	}
 	
 	public static void setInstallations(List<GameInstallation> installations) {
-		config.set("installations", installations.stream()
-				.filter(i -> i != GameInstallation.DEFAULT_INSTALLATION)
-				.collect(Collectors.toList()));
+		config.set("installations", new ArrayList<>(installations));
 	}
 	
 	public static List<GameInstallation> getInstallations() {
 		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
 	}
 	
-	public static void setLoginData(LoginData data) {
-		tokenConfig.set("loginData", data);
+	public static void setAccounts(List<MinecraftAccount> accounts) {
+		tokenConfig.set("accounts", new ArrayList<>(accounts));
 		tokenConfig.saveToFile();
 	}
 	
-	public static LoginData getLoginData() {
-		return tokenConfig.getGeneric("loginData", LoginData.class);
+	public static List<MinecraftAccount> getAccounts() {
+		return tokenConfig.getGenericList("accounts", MinecraftAccount.class, new ArrayList<>(), false);
+	}
+	
+	public static void setActiveAccount(MinecraftAccount account) {
+		tokenConfig.set("active-account", account == null ? null : account.getId());
+		tokenConfig.saveToFile();
+	}
+	
+	public static MinecraftAccount getActiveAccount() {
+		String acc = tokenConfig.getString("active-account");
+		if(acc == null) return null;
+		return getAccounts().stream()
+				.filter(a -> a.getId().equals(acc))
+				.findFirst().orElse(null);
 	}
 
 }

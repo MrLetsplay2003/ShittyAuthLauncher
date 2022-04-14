@@ -54,23 +54,5 @@ public class OS {
 	public static OS getCurrentOS() {
 		return CURRENT_OS;
 	}
-	
-	public static enum OSType {
-	
-		WINDOWS("windows"),
-		LINUX("linux"),
-		MACOS("osx");
-		
-		private final String ruleName;
-		
-		private OSType(String ruleName) {
-			this.ruleName = ruleName;
-		}
-		
-		public String getRuleName() {
-			return ruleName;
-		}
-		
-	}
 
 }

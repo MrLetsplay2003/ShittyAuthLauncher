@@ -2,6 +2,7 @@ package me.mrletsplay.shittyauthlauncher;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,12 +12,14 @@ import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
@@ -32,17 +35,19 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.StageStyle;
 import javafx.util.Pair;
+import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.auth.AuthHelper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
+import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
+import me.mrletsplay.shittyauthlauncher.util.InstallationType;
 import me.mrletsplay.shittyauthlauncher.util.LaunchHelper;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
 
@@ -51,6 +56,7 @@ public class ShittyAuthController {
 	private ObservableList<MinecraftVersion> versionsListRelease;
 	private ObservableList<MinecraftVersion> versionsList;
 	private ObservableList<GameInstallation> installationsList;
+	private ObservableList<MinecraftAccount> accountsList;
 
 	@FXML
 	private ComboBox<MinecraftVersion> dropdownVersions;
@@ -59,16 +65,28 @@ public class ShittyAuthController {
 	private ComboBox<GameInstallation> dropdownInstallations;
 
 	@FXML
-	private TextArea textLog;
+	private ComboBox<MinecraftAccount> dropdownAccounts;
 
 	@FXML
-	private Label textLoggedIn;
+	private TextArea textLog;
 
 	@FXML
 	private CheckBox checkboxShowAllVersions;
 
     @FXML
     private TextArea areaLog;
+    
+    @FXML
+    private Button buttonNewInstallation;
+    
+    @FXML
+    private VBox boxInstallations;
+    
+    @FXML
+    private Button buttonNewAccount;
+    
+    @FXML
+    private VBox boxAccounts;
 
 	public void init() {
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
@@ -80,44 +98,70 @@ public class ShittyAuthController {
 		dropdownVersions.getSelectionModel().select(MinecraftVersion.LATEST_RELEASE);
 		dropdownVersions.setOnAction(e -> {
 			GameInstallation inst = dropdownInstallations.getValue();
-			if(inst == GameInstallation.DEFAULT_INSTALLATION) return;
-			inst.lastVersionId = dropdownVersions.getValue().getId();
+			if(inst.type != InstallationType.CUSTOM) return;
+			MinecraftVersion ver = dropdownVersions.getValue();
+			if(ver == null) return;
+			inst.lastVersionId = ver.getId();
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
 			ShittyAuthLauncherSettings.save();
 		});
 		
 		installationsList = FXCollections.observableArrayList();
-		installationsList.add(GameInstallation.DEFAULT_INSTALLATION);
-		installationsList.addAll(ShittyAuthLauncherSettings.getInstallations());
-		dropdownInstallations.setItems(installationsList);
-		dropdownInstallations.getSelectionModel().select(GameInstallation.DEFAULT_INSTALLATION);
-		dropdownInstallations.setOnAction(e -> {
-			GameInstallation inst = dropdownInstallations.getValue();
-			if(inst == GameInstallation.DEFAULT_INSTALLATION) {
-				dropdownVersions.getSelectionModel().select(MinecraftVersion.LATEST_RELEASE);
-			}else {
-				dropdownVersions.getSelectionModel().select(MinecraftVersion.getVersion(inst.lastVersionId));
+		installationsList.addListener((ListChangeListener<GameInstallation>) v -> {
+			boxInstallations.getChildren().removeIf(c -> !(c instanceof Button));
+			for(GameInstallation inst : installationsList) {
+				boxInstallations.getChildren().add(createInstallationItem(inst));
 			}
 		});
 		
-		updateLogin();
-	}
-
-	public void updateLogin() {
-		LoginData d = ShittyAuthLauncherSettings.getLoginData();
-		if (d != null) {
-			textLoggedIn.setText(d.getUsername());
-		}
-	}
-	
-	public void updateInstallations() {
-		List<GameInstallation> installations = ShittyAuthLauncherSettings.getInstallations();
-		installationsList.addAll(installations);
+		installationsList.addAll(ShittyAuthLauncherSettings.getInstallations());
+		dropdownInstallations.setItems(installationsList);
+		dropdownInstallations.getSelectionModel().select(ShittyAuthLauncherSettings.getInstallations().get(0));
+		dropdownInstallations.setOnAction(e -> {
+			GameInstallation inst = dropdownInstallations.getValue();
+			
+			MinecraftVersion ver;
+			switch(inst.type) {
+				default:
+				case LATEST_RELEASE:
+					ver = MinecraftVersion.LATEST_RELEASE;
+					dropdownVersions.setDisable(true);
+					break;
+				case LATEST_SNAPSHOT:
+					ver = MinecraftVersion.LATEST_SNAPSHOT;
+					dropdownVersions.setDisable(true);
+					break;
+				case CUSTOM:
+					ver = MinecraftVersion.getVersion(inst.lastVersionId);
+					dropdownVersions.setDisable(false);
+					break;
+			};
+			
+			if(!dropdownVersions.getItems().contains(ver)) {
+				checkboxShowAllVersions.setSelected(true);
+				dropdownVersions.setItems(versionsList);
+			}
+			dropdownVersions.getSelectionModel().select(ver);
+		});
 		
+		accountsList = FXCollections.observableArrayList();
+		accountsList.addListener((ListChangeListener<MinecraftAccount>) v -> {
+			boxAccounts.getChildren().removeIf(c -> !(c instanceof Button));
+			for(MinecraftAccount acc : accountsList) {
+				boxAccounts.getChildren().add(createAccountItem(acc));
+			}
+		});
+		
+		accountsList.addAll(ShittyAuthLauncherSettings.getAccounts());
+		dropdownAccounts.setItems(accountsList);
+		dropdownAccounts.getSelectionModel().select(ShittyAuthLauncherSettings.getActiveAccount());
+		dropdownAccounts.setOnAction(event -> {
+			MinecraftAccount acc = dropdownAccounts.getValue();
+			ShittyAuthLauncherSettings.setActiveAccount(acc);
+		});
 	}
 
-	@FXML
-	void buttonChangeUser(ActionEvent event) {
+	private void showLoginDialog(MinecraftAccount account) {
 		ButtonType login = new ButtonType("Login", ButtonData.OK_DONE);
 		Dialog<Pair<String, String>> dialog = new Dialog<>();
 		dialog.initOwner(ShittyAuthLauncher.stage);
@@ -143,10 +187,23 @@ public class ShittyAuthController {
 
 		dialog.getDialogPane().setContent(grid);
 		Platform.runLater(() -> username.requestFocus());
+		
+		Button loginButton = (Button) dialog.getDialogPane().lookupButton(login);
+		loginButton.addEventFilter(ActionEvent.ACTION, ae -> {
+			String name = getString(username);
+			String pass = getString(password);
+			
+			if(name == null || pass == null) {
+				DialogHelper.showError("Need both username and password to log in");
+				ae.consume();
+			}
+		});
 
 		dialog.setResultConverter(type -> {
 			if (type == login) {
-				return new Pair<>(username.getText(), password.getText());
+				String name = getString(username);
+				String pass = getString(password);
+				return new Pair<>(name, pass);
 			}
 
 			return null;
@@ -158,10 +215,17 @@ public class ShittyAuthController {
 		Pair<String, String> p = creds.get();
 		String user = p.getKey();
 		String pass = p.getValue();
-		LoginData data = AuthHelper.authenticate(user, pass);
-		if(data != null) {
-			ShittyAuthLauncherSettings.setLoginData(data);
-	    	updateLogin();
+		
+		try {
+			LoginData data = AuthHelper.authenticate(user, pass, account.getServers());
+			if(data != null) {
+				account.setLoginData(data);
+				accountsList.set(accountsList.indexOf(account), account);
+				ShittyAuthLauncherSettings.setAccounts(accountsList);
+				ShittyAuthLauncherSettings.save();
+			}
+		}catch(Exception e) {
+			DialogHelper.showError("Failed to log in", e);
 		}
 	}
 
@@ -173,9 +237,7 @@ public class ShittyAuthController {
 			return;
 		}
 		
-		GameInstallation installation = dropdownInstallations.getValue();
-		if(installation == GameInstallation.DEFAULT_INSTALLATION) installation = null;
-		LaunchHelper.launch(ver, installation);
+		LaunchHelper.launch(ver, dropdownInstallations.getValue());
 	}
 
 	@FXML
@@ -214,7 +276,6 @@ public class ShittyAuthController {
 		scroll.setFitToWidth(true);
 		
 		for(GameInstallation inst : installationsList) {
-			if(inst == GameInstallation.DEFAULT_INSTALLATION) continue;
 			vbox.getChildren().add(createInstallationItem(inst));
 		}
 		
@@ -232,7 +293,6 @@ public class ShittyAuthController {
 		InvalidationListener l = v -> {
 			vbox.getChildren().clear();
 			for(GameInstallation inst : installationsList) {
-				if(inst == GameInstallation.DEFAULT_INSTALLATION) continue;
 				vbox.getChildren().add(createInstallationItem(inst));
 			}
 			vbox.getChildren().add(newInst);
@@ -245,54 +305,65 @@ public class ShittyAuthController {
 		dialog.showAndWait();
 		installationsList.removeListener(l);
 	}
-	
-	private Node createInstallationItem(GameInstallation installation) {
-		HBox hbox = new HBox();
-		hbox.setSpacing(10);
-		hbox.setPadding(new Insets(10, 10, 10, 10));
-		hbox.setAlignment(Pos.CENTER);
-		
-		ImageView img = new ImageView();
-		img.setFitWidth(64);
-		img.setFitHeight(64);
-		img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
-		hbox.getChildren().add(img);
-		
-		Label lbl = new Label(installation.name);
-		HBox.setHgrow(lbl, Priority.ALWAYS);
-		lbl.setMaxHeight(Double.MAX_VALUE);
-		lbl.setMaxWidth(Double.MAX_VALUE);
-		hbox.getChildren().add(lbl);
-		
-		VBox buttons = new VBox(10);
-		
-		Button btn = new Button();
-		btn.setText("Edit");
-		btn.setMaxWidth(Double.MAX_VALUE);
-		btn.setOnAction(event -> {
-			showEditInstallationDialog(installation);
-			installationsList.set(installationsList.indexOf(installation), installation); // Cause a list update
+
+	@FXML
+	void buttonNewInstallation(ActionEvent event) {
+		GameInstallation inst = showEditInstallationDialog(null);
+		if(inst != null) {
+			installationsList.add(inst);
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
 			ShittyAuthLauncherSettings.save();
-		});
-		buttons.getChildren().add(btn);
-		
-		Button btn2 = new Button();
-		btn2.setText("Delete");
-		btn2.setMaxWidth(Double.MAX_VALUE);
-		btn2.setOnAction(event -> {
-			if(DialogHelper.showYesNo("Do you really want to delete the installation '" + installation.name + "'?\n\n"
-					+ "Note: This will only remove it from the launcher, the game data folder will not be deleted")) {
-				installationsList.remove(installation);
+		}
+	}
+
+	@FXML
+	void buttonNewAccount(ActionEvent event) {
+		ServerConfiguration conf = showEditServersDialog(null);
+		if(conf != null) {
+			MinecraftAccount acc = new MinecraftAccount(conf);
+			accountsList.add(acc);
+			ShittyAuthLauncherSettings.setAccounts(accountsList);
+			ShittyAuthLauncherSettings.save();
+		}
+	}
+	
+	private Node createInstallationItem(GameInstallation installation) {
+		try {
+			URL url = ShittyAuthLauncher.class.getResource("/include/installation-item.fxml");
+			if(url == null) url = new File("./include/installation-item.fxml").toURI().toURL();
+	
+			FXMLLoader l = new FXMLLoader(url);
+			Parent pr = l.load(url.openStream());
+			
+			ImageView img = (ImageView) pr.lookup("#imageIcon");
+			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
+			
+			Label lbl = (Label) pr.lookup("#textName");
+			lbl.setText(installation.name);
+			
+			Button edit = (Button) pr.lookup("#buttonEdit");
+			edit.setOnAction(event -> {
+				showEditInstallationDialog(installation);
+				installationsList.set(installationsList.indexOf(installation), installation); // Cause a list update
 				ShittyAuthLauncherSettings.setInstallations(installationsList);
 				ShittyAuthLauncherSettings.save();
-			}
-		});
-		buttons.getChildren().add(btn2);
-		
-		hbox.getChildren().add(buttons);
-		
-		return hbox;
+			});
+			
+			Button delete = (Button) pr.lookup("#buttonDelete");
+			if(installation.type != InstallationType.CUSTOM) delete.setDisable(true);
+			delete.setOnAction(event -> {
+				if(DialogHelper.showYesNo("Do you really want to delete the installation '" + installation.name + "'?\n\n"
+						+ "Note: This will only remove it from the launcher, the game data folder will not be deleted")) {
+					installationsList.remove(installation);
+					ShittyAuthLauncherSettings.setInstallations(installationsList);
+					ShittyAuthLauncherSettings.save();
+				}
+			});
+			
+			return pr;
+		}catch(IOException e) {
+			throw new FriendlyException(e);
+		}
 	}
 	
 	private GameInstallation showEditInstallationDialog(GameInstallation from) {
@@ -312,6 +383,7 @@ public class ShittyAuthController {
 		name.setPromptText("Name");
 		name.setPrefWidth(300);
 		if(from != null) name.setText(from.name);
+		if(from != null && from.type != InstallationType.CUSTOM) name.setDisable(true);
 		
 		TextField directory = new TextField();
 		directory.setPromptText("Directory");
@@ -320,21 +392,21 @@ public class ShittyAuthController {
 		Button browseDir = new Button("Browse...");
 		browseDir.setOnAction(event -> {
 			DirectoryChooser ch = new DirectoryChooser();
-			File gameDir = new File(ShittyAuthLauncherSettings.getGameDataPath());	
-			if(gameDir.exists()) ch.setInitialDirectory(gameDir);
+			File oldDir = new File(from.gameDirectory);	
+			if(oldDir.exists()) ch.setInitialDirectory(oldDir);
 			File f = ch.showDialog(dialog.getDialogPane().getScene().getWindow());
 			if(f != null) directory.setText(f.getAbsolutePath());
 		});
 		
 		TextField javaPath = new TextField();
-		javaPath.setPromptText("Java Path");
+		javaPath.setPromptText("empty = default");
 		javaPath.setPrefWidth(300);
 		if(from != null) javaPath.setText(from.javaPath);
 		Button browseJavaPath = new Button("Browse...");
 		browseJavaPath.setOnAction(event -> {
 			FileChooser ch = new FileChooser();
-			File gameDir = new File(ShittyAuthLauncherSettings.getGameDataPath());	
-			if(gameDir.exists()) ch.setInitialDirectory(gameDir);
+			File oldDir = new File(from.javaPath).getParentFile();	
+			if(oldDir.exists()) ch.setInitialDirectory(oldDir);
 			File f = ch.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
 			if(f != null) javaPath.setText(f.getAbsolutePath());
 		});
@@ -350,17 +422,23 @@ public class ShittyAuthController {
 
 		dialog.getDialogPane().setContent(grid);
 		Platform.runLater(() -> name.requestFocus());
+		
+		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.FINISH);
+		okButton.addEventFilter(ActionEvent.ACTION, ae -> {
+			String nm = getString(name);
+			String gameDir = getString(directory);
+			
+			if(nm == null || gameDir == null) {
+				DialogHelper.showError("Both name and game directory need to be set");
+				ae.consume();
+			}
+		});
 
 		dialog.setResultConverter(type -> {
 			if (type == ButtonType.FINISH) {
 				String nm = getString(name);
 				String gameDir = getString(directory);
 				String java = getString(javaPath);
-				
-				if(nm == null || gameDir == null) {
-					DialogHelper.showError("Both name and game directory need to be set");
-					return null;
-				}
 				
 				if(from != null) {
 					from.name = nm;
@@ -381,8 +459,149 @@ public class ShittyAuthController {
 			return null;
 		});
 
-		Optional<GameInstallation> res = dialog.showAndWait();
-		return res.orElse(null);
+		return dialog.showAndWait().orElse(null);
+	}
+	
+	private Node createAccountItem(MinecraftAccount account) {
+		try {
+			URL url = ShittyAuthLauncher.class.getResource("/include/account-item.fxml");
+			if(url == null) url = new File("./include/account-item.fxml").toURI().toURL();
+	
+			FXMLLoader l = new FXMLLoader(url);
+			Parent pr = l.load(url.openStream());
+			
+			ImageView img = (ImageView) pr.lookup("#imageIcon");
+			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
+			
+			Label lbl = (Label) pr.lookup("#textName");
+			lbl.setText(account.getLoginData() != null ? account.getLoginData().getUsername() : "Not Logged In");
+			
+			Button switchAccount = (Button) pr.lookup("#buttonLogin");
+			switchAccount.setOnAction(event -> showLoginDialog(account));
+			
+			Button edit = (Button) pr.lookup("#buttonEdit");
+			edit.setOnAction(event -> {
+				showEditServersDialog(account.getServers());
+				accountsList.set(accountsList.indexOf(account), account); // Cause a list update
+				ShittyAuthLauncherSettings.setAccounts(accountsList);
+				ShittyAuthLauncherSettings.save();
+			});
+			
+			Button delete = (Button) pr.lookup("#buttonDelete");
+			delete.setOnAction(event -> {
+				if(DialogHelper.showYesNo("Do you really want to delete the account '" + account.toString() + "'?")) {
+					accountsList.remove(account);
+					ShittyAuthLauncherSettings.setAccounts(accountsList);
+					ShittyAuthLauncherSettings.save();
+				}
+			});
+			
+			return pr;
+		}catch(IOException e) {
+			throw new FriendlyException(e);
+		}
+	}
+	
+	private ServerConfiguration showEditServersDialog(ServerConfiguration from) {
+		Dialog<ServerConfiguration> dialog = new Dialog<>();
+		dialog.initOwner(ShittyAuthLauncher.stage);
+		dialog.initStyle(StageStyle.UTILITY);
+		dialog.setTitle("Edit Servers");
+		dialog.setHeaderText("Enter server settings");
+		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.FINISH, ButtonType.CANCEL);
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 10, 10, 10));
+
+		TextField authServer = new TextField();
+		authServer.setPromptText("e.g. http://auth.example.com");
+		authServer.setPrefWidth(300);
+		if(from != null) authServer.setText(from.authServer);
+
+		TextField accountsServer = new TextField();
+		accountsServer.setPromptText("e.g. http://account.example.com");
+		accountsServer.setPrefWidth(300);
+		if(from != null) accountsServer.setText(from.accountsServer);
+
+		TextField sessionServer = new TextField();
+		sessionServer.setPromptText("e.g. http://session.example.com");
+		sessionServer.setPrefWidth(300);
+		if(from != null) sessionServer.setText(from.sessionServer);
+
+		TextField servicesServer = new TextField();
+		servicesServer.setPromptText("e.g. http://services.example.com");
+		servicesServer.setPrefWidth(300);
+		if(from != null) servicesServer.setText(from.servicesServer);
+
+		TextField skinHost = new TextField();
+		skinHost.setPromptText("e.g. skins.example.com");
+		skinHost.setPrefWidth(300);
+		if(from != null) skinHost.setText(from.skinHost);
+
+		grid.add(new Label("Authentication server URL"), 0, 0);
+		grid.add(authServer, 1, 0);
+		grid.add(new Label("Accounts server URL"), 0, 1);
+		grid.add(accountsServer, 1, 1);
+		grid.add(new Label("Session server URL"), 0, 2);
+		grid.add(sessionServer, 1, 2);
+		grid.add(new Label("Services server URL"), 0, 3);
+		grid.add(servicesServer, 1, 3);
+		grid.add(new Label("Skin/Cape host"), 0, 4);
+		grid.add(skinHost, 1, 4);
+
+		dialog.getDialogPane().setContent(grid);
+		Platform.runLater(() -> authServer.requestFocus());
+		
+		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.FINISH);
+		okButton.addEventFilter(ActionEvent.ACTION, ae -> {
+			String authServerURL = getString(authServer);
+			String accountsServerURL = getString(accountsServer);
+			String sessionServerURL = getString(sessionServer);
+			String servicesServerURL = getString(servicesServer);
+			String skinHostname = getString(skinHost);
+			
+			if(authServerURL == null
+					|| accountsServerURL == null
+					|| sessionServerURL == null
+					|| servicesServerURL == null
+					|| skinHostname == null) {
+				DialogHelper.showError("All server URLs need to be set");
+				ae.consume();
+			}
+		});
+
+		dialog.setResultConverter(type -> {
+			if (type == ButtonType.FINISH) {
+				String authServerURL = getString(authServer);
+				String accountsServerURL = getString(accountsServer);
+				String sessionServerURL = getString(sessionServer);
+				String servicesServerURL = getString(servicesServer);
+				String skinHostname = getString(skinHost);
+				
+				if(from != null) {
+					from.authServer = authServerURL;
+					from.accountsServer = accountsServerURL;
+					from.sessionServer = sessionServerURL;
+					from.servicesServer = servicesServerURL;
+					from.skinHost = skinHostname;
+					return from;
+				}else {
+					ServerConfiguration servers = new ServerConfiguration();
+					servers.authServer = authServerURL;
+					servers.accountsServer = accountsServerURL;
+					servers.sessionServer = sessionServerURL;
+					servers.servicesServer = servicesServerURL;
+					servers.skinHost = skinHostname;
+					return servers;
+				}
+			}
+
+			return null;
+		});
+
+		return dialog.showAndWait().orElse(null);
 	}
     
     private String getString(TextField textField) {

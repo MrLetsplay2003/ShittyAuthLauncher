@@ -4,26 +4,60 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="480.0" minWidth="720.0" prefHeight="480.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthController">
    <children>
-      <Button layoutY="416.0" mnemonicParsing="false" onAction="#buttonPlay" prefHeight="55.0" text="Play Minecraft" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0" />
-      <ComboBox fx:id="dropdownVersions" layoutX="15.0" layoutY="429.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
-      <Label layoutX="14.0" layoutY="416.0" text="Choose your Minecraft version" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="15.0" />
-      <TextArea fx:id="areaLog" editable="false" prefHeight="357.0" prefWidth="690.0" promptText="Output from the latest launch will appear here" AnchorPane.bottomAnchor="110.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0" />
-      <Button layoutX="332.0" layoutY="381.0" mnemonicParsing="false" onAction="#buttonSettings" prefHeight="25.0" text="Settings" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="310.0" AnchorPane.rightAnchor="310.0" />
+      <TabPane layoutX="6.0" layoutY="5.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="105.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab text="Game Log">
+               <content>
+                  <TextArea fx:id="areaLog" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Output from the latest launch will appear here" AnchorPane.bottomAnchor="110.0" />
+               </content>
+          </Tab>
+            <Tab text="Installations">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#buttonNewInstallation" prefHeight="25.0" text="Create New..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                           <content>
+                              <VBox fx:id="boxInstallations" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+          <Tab text="Accounts">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#buttonNewAccount" prefHeight="25.0" text="Add Account..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                           <content>
+                              <VBox fx:id="boxAccounts" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </AnchorPane>
+               </content>
+          </Tab>
+        </tabs>
+      </TabPane>
       <CheckBox fx:id="checkboxShowAllVersions" layoutX="15.0" layoutY="384.0" mnemonicParsing="false" onAction="#checkboxShowAllVersions" prefHeight="25.0" text="Show all versions" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="15.0" />
-      <Button layoutX="476.0" layoutY="442.0" mnemonicParsing="false" onAction="#buttonInstallations" prefHeight="25.0" text="Edit Installations" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="15.0" />
-      <HBox layoutX="476.0" layoutY="373.0" spacing="10.0" AnchorPane.bottomAnchor="75.0" AnchorPane.rightAnchor="15.0">
-         <children>
-            <Label fx:id="textLoggedIn" maxHeight="1.7976931348623157E308" text="Not logged in" />
-            <Button mnemonicParsing="false" onAction="#buttonChangeUser" prefHeight="25.0" text="Change User" />
-         </children>
-      </HBox>
-      <ComboBox fx:id="dropdownInstallations" layoutX="555.0" layoutY="441.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0" />
-      <Label layoutX="505.0" layoutY="420.0" text="Installation" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="152.0" />
+      <Button layoutX="332.0" layoutY="381.0" mnemonicParsing="false" onAction="#buttonSettings" prefHeight="25.0" text="Settings" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="310.0" AnchorPane.rightAnchor="310.0" />
+      <Label layoutX="480.0" layoutY="385.0" maxHeight="1.7976931348623157E308" text="Account" AnchorPane.bottomAnchor="80.0" AnchorPane.rightAnchor="193.0" />
+      <ComboBox fx:id="dropdownAccounts" layoutX="556.0" layoutY="381.0" prefWidth="170.0" AnchorPane.bottomAnchor="75.0" AnchorPane.rightAnchor="15.0" />
+      <Label layoutX="14.0" layoutY="416.0" text="Minecraft version" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="15.0" />
+      <ComboBox fx:id="dropdownVersions" layoutX="15.0" layoutY="429.0" prefHeight="25.0" prefWidth="225.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+      <Button layoutY="416.0" mnemonicParsing="false" onAction="#buttonPlay" prefHeight="55.0" text="Play Minecraft" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0" />
+      <Label layoutX="480.0" layoutY="420.0" text="Installation" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="177.0" />
+      <ComboBox fx:id="dropdownInstallations" layoutX="555.0" layoutY="441.0" prefHeight="25.0" prefWidth="225.0" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0" />
    </children>
 </AnchorPane>

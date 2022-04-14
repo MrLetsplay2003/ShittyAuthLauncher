@@ -8,14 +8,12 @@ import me.mrletsplay.mrcore.http.HttpGeneric;
 import me.mrletsplay.mrcore.http.HttpRequest;
 import me.mrletsplay.mrcore.http.HttpResult;
 import me.mrletsplay.mrcore.json.JSONObject;
-import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class AuthHelper {
 	
-	public static LoginData authenticate(String username, String password) {
+	public static LoginData authenticate(String username, String password, ServerConfiguration servers) {
 		try {
-			ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
 			HttpGeneric post = HttpRequest.createGeneric("POST", servers.authServer + "/authenticate");
 			post.setHeaderParameter("Content-Type", "application/json");
 			
@@ -33,7 +31,11 @@ public class AuthHelper {
 				System.out.println("Error response: " + r.getErrorResponse());
 			}
 			JSONObject response = r.asJSONObject();
-			return new LoginData(response.getJSONObject("selectedProfile").getString("name"), response.getJSONObject("selectedProfile").getString("id"), response.getString("accessToken"));
+			
+			String name = response.getJSONObject("selectedProfile").getString("name");
+			String userId = response.getJSONObject("selectedProfile").getString("id");
+			String accessToken = response.getString("accessToken");
+			return new LoginData(name, userId, accessToken);
 		}catch(IllegalStateException e) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Error");

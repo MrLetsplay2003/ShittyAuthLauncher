@@ -19,17 +19,16 @@ public class LoginData implements JSONConvertible {
 	private LoginData() {}
 
 	public LoginData(String username, String uuid, String accessToken) {
-		super();
 		this.username = username;
 		this.uuid = uuid;
 		this.accessToken = accessToken;
 	}
-
+	
 	public String getUsername() {
 		return username;
 	}
 
-	public String getUuid() {
+	public String getUUID() {
 		return uuid;
 	}
 

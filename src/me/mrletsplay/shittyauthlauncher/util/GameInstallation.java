@@ -6,7 +6,8 @@ import me.mrletsplay.mrcore.json.converter.JSONValue;
 
 public class GameInstallation implements JSONConvertible {
 	
-	public static final GameInstallation DEFAULT_INSTALLATION = new GameInstallation(null, "default", null, null, null);
+	@JSONValue
+	public InstallationType type = InstallationType.CUSTOM;
 	
 	@JSONValue
 	public String id;
@@ -26,7 +27,8 @@ public class GameInstallation implements JSONConvertible {
 	@JSONConstructor
 	public GameInstallation() {}
 	
-	public GameInstallation(String id, String name, String gameDirectory, String javaPath, String lastVersionId) {
+	public GameInstallation(InstallationType type, String id, String name, String gameDirectory, String javaPath, String lastVersionId) {
+		this.type = type;
 		this.id = id;
 		this.name = name;
 		this.gameDirectory = gameDirectory;

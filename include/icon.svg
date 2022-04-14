@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="512" height="512" version="1.1" viewBox="0 0 135.47 135.47" xmlns="http://www.w3.org/2000/svg">
+ <g transform="matrix(1.504 0 0 1.504 -30.005 -35.958)">
+  <g fill="#fff">
+   <path d="m42.242 27.436c-7.9971 1.68e-4 -14.48 12.6-14.48 28.143 8.7e-5 15.543 6.4829 28.142 14.48 28.143 7.9971 9.1e-5 14.48-12.6 14.48-28.143 4.7e-5 -15.543-6.483-28.143-14.48-28.143z" opacity=".999" stroke="#000" stroke-linejoin="round" stroke-width="1.3229"/>
+   <path d="m42.242 27.436v56.286l45.312-0.0025v-0.01071c-7.9217-0.19769-14.291-12.732-14.294-28.129-1.06e-4 -15.543 6.4827-28.143 14.48-28.143z"/>
+   <path d="m87.74 27.436a14.48 28.143 0 0 0-14.48 28.143 14.48 28.143 0 0 0 14.48 28.143 14.48 28.143 0 0 0 14.48-28.143 14.48 28.143 0 0 0-14.48-28.143zm0 17.76a5.3425 10.383 0 0 1 5.3426 10.384 5.3425 10.383 0 0 1-5.3426 10.383 5.3425 10.383 0 0 1-5.3423-10.383 5.3425 10.383 0 0 1 5.3423-10.384z" opacity=".999" stroke="#000" stroke-linejoin="round" stroke-width="1.3229"/>
+  </g>
+  <path d="m42.242 27.436h45.5" fill="none" stroke="#000" stroke-width="1.3229"/>
+  <path d="m42.242 83.722 45.628-0.0046" fill="none" stroke="#000" stroke-width="1.3229"/>
+ </g>
+ <g transform="matrix(1.504 0 0 1.504 -30.034 -36.034)">
+  <rect x="27.77" y="55.88" width="45.509" height="54.872" fill="#fff" opacity=".999"/>
+  <path d="m73.279 55.629v54.872zm-45.509 5e-6 2e-6 54.872h45.509" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="1.3229"/>
+ </g>
+ <g transform="matrix(1.504 0 0 1.504 -30.021 -35.907)" stroke-width="1.3229">
+  <path d="m35.171 74.452 15.354 8.8644v17.729l-15.325-8.9136z" fill="#7c3f00"/>
+  <path d="m65.878 74.452-15.354 8.8644v17.729l15.325-8.9136z" fill="#7c3f00"/>
+  <g fill="#008a0a">
+   <path d="m35.171 74.452s15.354 8.8644 15.354 8.8644l15.354-8.8644-15.354-8.8644m-15.354 8.8644 15.354-8.8644" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3229"/>
+   <path d="m50.525 83.317 15.336-8.8544 0.01017 4.4263-15.346 8.8603z"/>
+   <path d="m50.525 83.317-15.336-8.8544-0.01017 4.4263 15.346 8.8603z"/>
+  </g>
+  <path d="m35.171 74.452 15.354 8.8644v17.729l-15.325-8.9136z" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3229"/>
+  <path d="m65.869 74.447-15.354 8.8644v17.729l15.325-8.9136z" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3229"/>
+ </g>
+ <path d="m11.732 48.01 68.445 0.01294" fill="none" stroke="#000" stroke-dasharray="7.95872014,7.95872014" stroke-dashoffset="1.5917" stroke-width="1.9897"/>
+</svg>

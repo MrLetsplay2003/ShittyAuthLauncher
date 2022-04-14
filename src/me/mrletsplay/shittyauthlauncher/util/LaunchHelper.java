@@ -38,7 +38,7 @@ import me.mrletsplay.shittyauthlauncher.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
-import me.mrletsplay.shittyauthlauncher.util.OS.OSType;
+import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthpatcher.util.LibraryPatcher;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
@@ -95,7 +95,7 @@ public class LaunchHelper {
 		return allow != null && allow;
 	}
 	
-	private static Task<List<File>> loadLibraries(MinecraftVersion version, JSONObject meta, File tempFolder) throws IOException {
+	private static Task<List<File>> loadLibraries(MinecraftVersion version, JSONObject meta, File tempFolder, MinecraftAccount account, GameInstallation installation) throws IOException {
 		return new CombinedTask<List<File>>() {
 			
 			@Override
@@ -107,7 +107,7 @@ public class LaunchHelper {
 					HttpRequest.createGet(downloadURL).execute().transferTo(minecraftJar);
 				}
 				
-				ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+				ServerConfiguration servers = account.getServers();
 				
 				File authLibFile = null;
 				
@@ -214,7 +214,7 @@ public class LaunchHelper {
 					File out = new File(authLibFile.getParentFile(), "patched-" + authLibFile.getName());
 					if(!out.exists() || ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) {
 						updateMessage("Patching authlib");
-						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), ShittyAuthLauncherSettings.getSkinHost(), servers);
+						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers);
 						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
 					}
 					libs.add(out);
@@ -258,7 +258,7 @@ public class LaunchHelper {
 				boolean pre16Assets = assetId.equals("pre-1.6");
 				
 				if(legacyAssets) assetsDownloadFolder = new File(assetsFolder, "virtual/legacy");
-				if(pre16Assets) assetsDownloadFolder = new File(installation != null ? installation.gameDirectory : ShittyAuthLauncherSettings.getGameDataPath(), "resources");
+				if(pre16Assets) assetsDownloadFolder = new File(installation.gameDirectory, "resources");
 				
 				assetsDownloadFolder.mkdirs();
 				
@@ -284,12 +284,13 @@ public class LaunchHelper {
 	public static void launch(MinecraftVersion version, GameInstallation installation) {
 		// TODO: check for already running Minecraft instance
 		try {
-			if(ShittyAuthLauncherSettings.getLoginData() == null) {
+			MinecraftAccount acc = ShittyAuthLauncherSettings.getActiveAccount();
+			if(acc == null || !acc.isLoggedIn()) {
 				DialogHelper.showWarning("You need to log in first");
 				return;
 			}
 			
-			ServerConfiguration servers = ShittyAuthLauncherSettings.getServers();
+			ServerConfiguration servers = acc.getServers();
 			
 			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
 			if(!keyFile.exists()) {
@@ -298,9 +299,7 @@ public class LaunchHelper {
 					HttpGet g = HttpRequest.createGet(servers.sessionServer + "/yggdrasil_session_pubkey.der");
 					HttpResult r = g.execute();
 					if(!r.isSuccess()) {
-						String msg = r.getErrorResponse() != null ? r.getErrorResponse() : String.valueOf(r.getException());
-						if(r.getException() != null) r.getException().printStackTrace();
-						DialogHelper.showError("Failed to download key file:\n" + msg);
+						DialogHelper.showError("Failed to download key file" + (r.getErrorResponse() != null ? ":\n" + r.getErrorResponse() : ""), r.getException());
 						return;
 					}
 					
@@ -339,7 +338,7 @@ public class LaunchHelper {
 						File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".json");
 						JSONObject meta = version.loadMetadata(metaFile);
 						
-						List<File> libs = runOther(loadLibraries(version, meta, tempFolder));
+						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, acc, installation));
 						if(isCancelled()) {
 							IOUtils.deleteFile(tempFolder);
 							return null;
@@ -352,7 +351,6 @@ public class LaunchHelper {
 							return null;
 						}
 						
-						LoginData data = ShittyAuthLauncherSettings.getLoginData();
 						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
 						String classPath = libs.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(libSeparator));
 				
@@ -414,13 +412,15 @@ public class LaunchHelper {
 						System.out.println("JVM args: " + jvmArgs);
 						System.out.println("Game args: " + gameArgs);
 						
+						LoginData data = acc.getLoginData();
+						
 						Map<String, String> params = new HashMap<>();
 						params.put("auth_player_name", data.getUsername());
 						params.put("version_name", version.getId());
-						params.put("game_directory", installation != null ? installation.gameDirectory : ShittyAuthLauncherSettings.getGameDataPath());
+						params.put("game_directory", installation.gameDirectory);
 						params.put("assets_root", assetsFolder.getAbsolutePath());
 						params.put("assets_index_name", meta.getString("assets"));
-						params.put("auth_uuid", data.getUuid());
+						params.put("auth_uuid", data.getUUID());
 						params.put("auth_access_token", data.getAccessToken());
 						params.put("version_type", meta.getString("type"));
 						params.put("user_type", "mojang");
@@ -438,7 +438,7 @@ public class LaunchHelper {
 						replacePlaceholders(jvmArgs, params);
 						
 						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
-						if(installation != null && installation.javaPath != null) javaPath = installation.javaPath;
+						if(installation.javaPath != null) javaPath = installation.javaPath;
 						
 						System.out.println("Java path: " + javaPath);
 						
