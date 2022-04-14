@@ -8,9 +8,6 @@ import javafx.scene.control.TextField;
 public class ShittyAuthSettingsController {
 
     @FXML
-    private TextField inputGameDataPath;
-
-    @FXML
     private TextField inputNewJavaPath;
 
     @FXML
@@ -30,7 +27,6 @@ public class ShittyAuthSettingsController {
     
     @FXML
     void buttonSave(ActionEvent event) {
-    	ShittyAuthLauncherSettings.setGameDataPath(getString(inputGameDataPath));
     	ShittyAuthLauncherSettings.setNewJavaPath(getString(inputNewJavaPath));
     	ShittyAuthLauncherSettings.setOldJavaPath(getString(inputOldJavaPath));
     	ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatchAuthlib.isSelected());
@@ -52,7 +48,6 @@ public class ShittyAuthSettingsController {
     }
     
     public void update() {
-    	inputGameDataPath.setText(ShittyAuthLauncherSettings.getGameDataPath());
     	inputNewJavaPath.setText(ShittyAuthLauncherSettings.getNewJavaPath());
     	inputOldJavaPath.setText(ShittyAuthLauncherSettings.getOldJavaPath());
     	

@@ -100,7 +100,7 @@ public class LaunchHelper {
 			
 			@Override
 			protected List<File> call() throws Exception {
-				File minecraftJar = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".jar");
+				File minecraftJar = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".jar");
 				if(!minecraftJar.exists()) {
 					System.out.println("Downloading " + minecraftJar + "...");
 					String downloadURL = meta.getJSONObject("downloads").getJSONObject("client").getString("url");
@@ -129,7 +129,7 @@ public class LaunchHelper {
 						JSONObject artifact = downloads.getJSONObject("artifact");
 						String path = artifact.getString("path");
 						
-						File libFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/" + path);
+						File libFile = new File(installation.gameDirectory, "libraries/" + path);
 						
 						if(!libFile.exists()) {
 							toDownload.put(libFile, artifact.getString("url"));
@@ -148,7 +148,7 @@ public class LaunchHelper {
 						if(!natives.has(os)) continue;
 						JSONObject nativeLib = lib.getJSONObject("downloads").getJSONObject("classifiers").getJSONObject(natives.getString(os).replace("${arch}", "64"));
 						String nativesPath = nativeLib.getString("path");
-						File libFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "libraries/" + nativesPath);
+						File libFile = new File(installation.gameDirectory, "libraries/" + nativesPath);
 						if(!libFile.exists()) {
 							toDownload.put(libFile, nativeLib.getString("url"));
 						}
@@ -333,9 +333,9 @@ public class LaunchHelper {
 				
 				@Override
 				protected Pair<ProcessBuilder, File> call() throws Exception {
-					File tempFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), UUID.randomUUID().toString());
+					File tempFolder = new File(installation.gameDirectory, UUID.randomUUID().toString());
 					try {
-						File metaFile = new File(ShittyAuthLauncherSettings.getGameDataPath(), "versions/" + version.getId() + "/" + version.getId() + ".json");
+						File metaFile = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".json");
 						JSONObject meta = version.loadMetadata(metaFile);
 						
 						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, acc, installation));
@@ -344,7 +344,7 @@ public class LaunchHelper {
 							return null;
 						}
 						
-						File assetsFolder = new File(ShittyAuthLauncherSettings.getGameDataPath(), "assets");
+						File assetsFolder = new File(installation.gameDirectory, "assets");
 						assetsFolder = runOther(loadAssets(meta, assetsFolder, installation));
 						if(isCancelled()) {
 							IOUtils.deleteFile(tempFolder);
@@ -460,7 +460,7 @@ public class LaunchHelper {
 						fullArgs.addAll(gameArgs);
 						
 						ProcessBuilder b = new ProcessBuilder(fullArgs);
-						b.directory(new File(ShittyAuthLauncherSettings.getGameDataPath()));
+						b.directory(new File(installation.gameDirectory));
 						return new Pair<>(b, tempFolder);
 					}catch(Exception e) {
 						IOUtils.deleteFile(tempFolder);

@@ -34,7 +34,6 @@ public class ShittyAuthLauncherSettings {
 		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {
-			setGameDataPath(DEFAULT_GAME_DATA_PATH);
 			setNewJavaPath("java");
 			setOldJavaPath("java");
 			setAlwaysPatchAuthlib(false);
@@ -60,15 +59,6 @@ public class ShittyAuthLauncherSettings {
 	
 	public static void save() {
 		config.saveToFile();
-	}
-	
-	public static void setGameDataPath(String path) {
-		config.set("game-data-path", path);
-		config.saveToFile();
-	}
-	
-	public static String getGameDataPath() {
-		return config.getString("game-data-path", DEFAULT_GAME_DATA_PATH, false);
 	}
 	
 	public static void setNewJavaPath(String path) {
