@@ -54,7 +54,7 @@ public class AdoptiumAPI {
 				JSONObject r = HttpRequest.createGet("https://api.adoptium.net/v3/assets/latest/" + ver + "/hotspot")
 						.setHeaderParameter("Accept", "application/json")
 						.addQueryParameter("architecture", "x64")
-						.addQueryParameter("image_type", "jre")
+						.addQueryParameter("image_type", "jdk")
 						.addQueryParameter("os", OS.getCurrentOS().getType().getAdoptiumName())
 						.execute().asJSONArray().getJSONObject(0);
 				
