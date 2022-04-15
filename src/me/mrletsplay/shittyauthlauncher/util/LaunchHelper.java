@@ -47,7 +47,7 @@ public class LaunchHelper {
 	
 	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{(?<name>[a-z_]+)\\}");
 	
-	private static Task<Void> downloadFiles(Map<File, String> toDownload) {
+	public static Task<Void> downloadFiles(Map<File, String> toDownload) {
 		return new Task<Void>() {
 
 			@Override
@@ -212,7 +212,7 @@ public class LaunchHelper {
 					}
 					
 					File out = new File(authLibFile.getParentFile(), "patched-" + authLibFile.getName());
-					if(!out.exists() || ShittyAuthLauncherSettings.isAlwaysPatchAuthlib()) {
+					if(!out.exists() || forcePatch) {
 						updateMessage("Patching authlib");
 						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers);
 						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
@@ -345,6 +345,29 @@ public class LaunchHelper {
 							return null;
 						}
 						
+						String javaPath = installation.javaPath;
+						if(javaPath == null) {
+							JSONObject javaVersion = meta.getJSONObject("javaVersion");
+							String jvmName = javaVersion.getString("component");
+							int majorVersion = javaVersion.getInt("majorVersion");
+							
+							File javaExecutable;
+							if(ShittyAuthLauncherSettings.isUseAdoptium()) {
+								File jvmFolder = new File(installation.gameDirectory, "runtime/adoptium-" + jvmName);
+								javaExecutable = runOther(AdoptiumAPI.downloadJRE(majorVersion, jvmFolder));
+							}else {
+								File jvmFolder = new File(installation.gameDirectory, "runtime/" + jvmName);
+								javaExecutable = runOther(JVMVersion.downloadJRE(JVMVersion.getVersion(jvmName), jvmFolder));
+							}
+							
+							if(isCancelled()) {
+								IOUtils.deleteFile(tempFolder);
+								return null;
+							}
+							
+							javaPath = javaExecutable.getAbsolutePath().toString().replace("\\", "/");
+						}
+						
 						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
 						String classPath = libs.stream().map(f -> f.getAbsolutePath().replace("\\", "/")).collect(Collectors.joining(libSeparator));
 				
@@ -431,8 +454,8 @@ public class LaunchHelper {
 						replacePlaceholders(gameArgs, params);
 						replacePlaceholders(jvmArgs, params);
 						
-						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
-						if(installation.javaPath != null) javaPath = installation.javaPath;
+//						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
+//						if(installation.javaPath != null) javaPath = installation.javaPath;
 						
 						System.out.println("Java path: " + javaPath);
 						

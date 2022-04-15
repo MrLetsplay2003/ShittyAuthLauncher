@@ -93,9 +93,9 @@ public class ShittyAuthController {
 		versionsListRelease = FXCollections.observableArrayList(releases);
 		dropdownVersions.setItems(versionsListRelease);
 		dropdownVersions.setOnAction(e -> {
-			GameInstallation inst = dropdownInstallations.getValue();
+			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
 			if(inst.type != InstallationType.CUSTOM) return;
-			MinecraftVersion ver = dropdownVersions.getValue();
+			MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
 			if(ver == null) return;
 			inst.lastVersionId = ver.getId();
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
@@ -117,7 +117,7 @@ public class ShittyAuthController {
 		dropdownInstallations.getSelectionModel().select(i);
 		selectInstallation(i);
 		dropdownInstallations.setOnAction(e -> {
-			GameInstallation inst = dropdownInstallations.getValue();
+			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
 			selectInstallation(inst);
 			ShittyAuthLauncherSettings.setActiveInstallation(inst);
 			ShittyAuthLauncherSettings.save();
@@ -135,7 +135,7 @@ public class ShittyAuthController {
 		dropdownAccounts.setItems(accountsList);
 		dropdownAccounts.getSelectionModel().select(ShittyAuthLauncherSettings.getActiveAccount());
 		dropdownAccounts.setOnAction(event -> {
-			MinecraftAccount acc = dropdownAccounts.getValue();
+			MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
 			ShittyAuthLauncherSettings.setActiveAccount(acc);
 		});
 	}
@@ -185,7 +185,7 @@ public class ShittyAuthController {
 			return;
 		}
 		
-		LaunchHelper.launch(ver, acc, dropdownInstallations.getValue());
+		LaunchHelper.launch(ver, acc, dropdownInstallations.getSelectionModel().getSelectedItem());
 	}
 
 	@FXML
@@ -293,6 +293,7 @@ public class ShittyAuthController {
 			edit.setOnAction(event -> {
 				showEditInstallationDialog(installation);
 				installationsList.set(installationsList.indexOf(installation), installation); // Cause a list update
+				dropdownInstallations.getSelectionModel().select(dropdownInstallations.getSelectionModel().getSelectedItem());
 				ShittyAuthLauncherSettings.setInstallations(installationsList);
 				ShittyAuthLauncherSettings.save();
 			});

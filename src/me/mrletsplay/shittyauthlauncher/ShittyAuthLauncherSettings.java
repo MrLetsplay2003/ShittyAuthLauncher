@@ -34,8 +34,7 @@ public class ShittyAuthLauncherSettings {
 		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {
-			setNewJavaPath("java");
-			setOldJavaPath("java");
+			setUseAdoptium(true);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
 			setMinimizeLauncher(true);
@@ -61,20 +60,12 @@ public class ShittyAuthLauncherSettings {
 		config.saveToFile();
 	}
 	
-	public static void setNewJavaPath(String path) {
-		config.set("new-java-path", path);
+	public static void setUseAdoptium(boolean alwaysPatchAuthlib) {
+		config.set("use-adoptium", alwaysPatchAuthlib);
 	}
 	
-	public static String getNewJavaPath() {
-		return config.getString("new-java-path", "java", false);
-	}
-	
-	public static void setOldJavaPath(String path) {
-		config.set("old-java-path", path);
-	}
-	
-	public static String getOldJavaPath() {
-		return config.getString("old-java-path", "java", false);
+	public static boolean isUseAdoptium() {
+		return config.getBoolean("use-adoptium");
 	}
 	
 	public static void setAlwaysPatchAuthlib(boolean alwaysPatchAuthlib) {
