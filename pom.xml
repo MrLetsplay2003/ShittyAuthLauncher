@@ -73,13 +73,13 @@
 	<pluginRepositories>
 		<pluginRepository>
 			<id>Graphite-Official</id>
-			<url>http://graphite-official.com/repo/</url>
+			<url>https://maven.graphite-official.com/</url>
 		</pluginRepository>
 	</pluginRepositories>
 	<repositories>
 		<repository>
 			<id>Graphite-Official</id>
-			<url>http://graphite-official.com/repo/</url>
+			<url>https://maven.graphite-official.com/</url>
 		</repository>
 	</repositories>
 	<dependencies>

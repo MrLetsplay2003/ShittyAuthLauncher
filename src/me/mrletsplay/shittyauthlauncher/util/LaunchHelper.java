@@ -346,7 +346,7 @@ public class LaunchHelper {
 						}
 						
 						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
-						String classPath = libs.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(libSeparator));
+						String classPath = libs.stream().map(f -> f.getAbsolutePath().replace("\\", "/")).collect(Collectors.joining(libSeparator));
 				
 						boolean requiresOldJava = true;
 						if(meta.containsKey("javaVersion")) {
@@ -411,8 +411,8 @@ public class LaunchHelper {
 						Map<String, String> params = new HashMap<>();
 						params.put("auth_player_name", data.getUsername());
 						params.put("version_name", version.getId());
-						params.put("game_directory", installation.gameDirectory);
-						params.put("assets_root", assetsFolder.getAbsolutePath());
+						params.put("game_directory", installation.gameDirectory.replace("\\", "/"));
+						params.put("assets_root", assetsFolder.getAbsolutePath().replace("\\", "/"));
 						params.put("assets_index_name", meta.getString("assets"));
 						params.put("auth_uuid", data.getUUID());
 						params.put("auth_access_token", data.getAccessToken());
@@ -420,14 +420,14 @@ public class LaunchHelper {
 						params.put("user_type", "mojang");
 						params.put("auth_session", data.getAccessToken());
 						params.put("user_properties", "{}");
-						params.put("game_assets", assetsFolder.getAbsolutePath() + "/");
-						params.put("natives_directory", tempFolder.getAbsolutePath());
+						params.put("game_assets", assetsFolder.getAbsolutePath().replace("\\", "/") + "/");
+						params.put("natives_directory", tempFolder.getAbsolutePath().replace("\\", "/"));
 						params.put("launcher_name", "ShittyAuthLauncher");
 						params.put("launcher_version", "69.420");
 						params.put("classpath", classPath);
 						params.put("auth_xuid", "nope"); // XBox UID
 						params.put("clientid", "nope");
-
+						
 						replacePlaceholders(gameArgs, params);
 						replacePlaceholders(jvmArgs, params);
 						
@@ -442,7 +442,7 @@ public class LaunchHelper {
 						
 						if(legacyArgs) {
 							jvmArgs.addAll(Arrays.asList(
-									"-Djava.library.path=" + tempFolder.getAbsolutePath(),
+									"-Djava.library.path=" + tempFolder.getAbsolutePath().replace("\\", "/"),
 									"-cp", classPath
 							));
 						}
