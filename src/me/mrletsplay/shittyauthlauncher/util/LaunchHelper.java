@@ -281,16 +281,10 @@ public class LaunchHelper {
 		};
 	}
 	
-	public static void launch(MinecraftVersion version, GameInstallation installation) {
+	public static void launch(MinecraftVersion version, MinecraftAccount account, GameInstallation installation) {
 		// TODO: check for already running Minecraft instance
 		try {
-			MinecraftAccount acc = ShittyAuthLauncherSettings.getActiveAccount();
-			if(acc == null || !acc.isLoggedIn()) {
-				DialogHelper.showWarning("You need to log in first");
-				return;
-			}
-			
-			ServerConfiguration servers = acc.getServers();
+			ServerConfiguration servers = account.getServers();
 			
 			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
 			if(!keyFile.exists()) {
@@ -338,7 +332,7 @@ public class LaunchHelper {
 						File metaFile = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".json");
 						JSONObject meta = version.loadMetadata(metaFile);
 						
-						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, acc, installation));
+						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, account, installation));
 						if(isCancelled()) {
 							IOUtils.deleteFile(tempFolder);
 							return null;
@@ -412,7 +406,7 @@ public class LaunchHelper {
 						System.out.println("JVM args: " + jvmArgs);
 						System.out.println("Game args: " + gameArgs);
 						
-						LoginData data = acc.getLoginData();
+						LoginData data = account.getLoginData();
 						
 						Map<String, String> params = new HashMap<>();
 						params.put("auth_player_name", data.getUsername());

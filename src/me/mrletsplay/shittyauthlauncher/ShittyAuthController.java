@@ -68,25 +68,22 @@ public class ShittyAuthController {
 	private ComboBox<MinecraftAccount> dropdownAccounts;
 
 	@FXML
-	private TextArea textLog;
-
-	@FXML
 	private CheckBox checkboxShowAllVersions;
 
-    @FXML
-    private TextArea areaLog;
-    
-    @FXML
-    private Button buttonNewInstallation;
-    
-    @FXML
-    private VBox boxInstallations;
-    
-    @FXML
-    private Button buttonNewAccount;
-    
-    @FXML
-    private VBox boxAccounts;
+	@FXML
+	private TextArea areaLog;
+
+	@FXML
+	private Button buttonNewInstallation;
+
+	@FXML
+	private VBox boxInstallations;
+
+	@FXML
+	private Button buttonNewAccount;
+
+	@FXML
+	private VBox boxAccounts;
 
 	public void init() {
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
@@ -95,7 +92,6 @@ public class ShittyAuthController {
 				.collect(Collectors.toList());
 		versionsListRelease = FXCollections.observableArrayList(releases);
 		dropdownVersions.setItems(versionsListRelease);
-		dropdownVersions.getSelectionModel().select(MinecraftVersion.LATEST_RELEASE);
 		dropdownVersions.setOnAction(e -> {
 			GameInstallation inst = dropdownInstallations.getValue();
 			if(inst.type != InstallationType.CUSTOM) return;
@@ -116,32 +112,15 @@ public class ShittyAuthController {
 		
 		installationsList.addAll(ShittyAuthLauncherSettings.getInstallations());
 		dropdownInstallations.setItems(installationsList);
-		dropdownInstallations.getSelectionModel().select(ShittyAuthLauncherSettings.getInstallations().get(0));
+		GameInstallation i = ShittyAuthLauncherSettings.getActiveInstallation();
+		if(i == null) i = ShittyAuthLauncherSettings.getInstallations().get(0);
+		dropdownInstallations.getSelectionModel().select(i);
+		selectInstallation(i);
 		dropdownInstallations.setOnAction(e -> {
 			GameInstallation inst = dropdownInstallations.getValue();
-			
-			MinecraftVersion ver;
-			switch(inst.type) {
-				default:
-				case LATEST_RELEASE:
-					ver = MinecraftVersion.LATEST_RELEASE;
-					dropdownVersions.setDisable(true);
-					break;
-				case LATEST_SNAPSHOT:
-					ver = MinecraftVersion.LATEST_SNAPSHOT;
-					dropdownVersions.setDisable(true);
-					break;
-				case CUSTOM:
-					ver = MinecraftVersion.getVersion(inst.lastVersionId);
-					dropdownVersions.setDisable(false);
-					break;
-			};
-			
-			if(!dropdownVersions.getItems().contains(ver)) {
-				checkboxShowAllVersions.setSelected(true);
-				dropdownVersions.setItems(versionsList);
-			}
-			dropdownVersions.getSelectionModel().select(ver);
+			selectInstallation(inst);
+			ShittyAuthLauncherSettings.setActiveInstallation(inst);
+			ShittyAuthLauncherSettings.save();
 		});
 		
 		accountsList = FXCollections.observableArrayList();
@@ -160,73 +139,30 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setActiveAccount(acc);
 		});
 	}
-
-	private void showLoginDialog(MinecraftAccount account) {
-		ButtonType login = new ButtonType("Login", ButtonData.OK_DONE);
-		Dialog<Pair<String, String>> dialog = new Dialog<>();
-		dialog.initOwner(ShittyAuthLauncher.stage);
-		dialog.initStyle(StageStyle.UTILITY);
-		dialog.setTitle("Login");
-		dialog.setHeaderText("Enter your credentials");
-		dialog.getDialogPane().getButtonTypes().addAll(login, ButtonType.CANCEL);
-
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(20, 150, 10, 10));
-
-		TextField username = new TextField();
-		username.setPromptText("Username");
-		PasswordField password = new PasswordField();
-		password.setPromptText("Password");
-
-		grid.add(new Label("Username"), 0, 0);
-		grid.add(username, 1, 0);
-		grid.add(new Label("Password"), 0, 1);
-		grid.add(password, 1, 1);
-
-		dialog.getDialogPane().setContent(grid);
-		Platform.runLater(() -> username.requestFocus());
+	
+	private void selectInstallation(GameInstallation inst) {
+		MinecraftVersion ver;
+		switch(inst.type) {
+			default:
+			case LATEST_RELEASE:
+				ver = MinecraftVersion.LATEST_RELEASE;
+				dropdownVersions.setDisable(true);
+				break;
+			case LATEST_SNAPSHOT:
+				ver = MinecraftVersion.LATEST_SNAPSHOT;
+				dropdownVersions.setDisable(true);
+				break;
+			case CUSTOM:
+				ver = MinecraftVersion.getVersion(inst.lastVersionId);
+				dropdownVersions.setDisable(false);
+				break;
+		};
 		
-		Button loginButton = (Button) dialog.getDialogPane().lookupButton(login);
-		loginButton.addEventFilter(ActionEvent.ACTION, ae -> {
-			String name = getString(username);
-			String pass = getString(password);
-			
-			if(name == null || pass == null) {
-				DialogHelper.showError("Need both username and password to log in");
-				ae.consume();
-			}
-		});
-
-		dialog.setResultConverter(type -> {
-			if (type == login) {
-				String name = getString(username);
-				String pass = getString(password);
-				return new Pair<>(name, pass);
-			}
-
-			return null;
-		});
-
-		Optional<Pair<String, String>> creds = dialog.showAndWait();
-		if (!creds.isPresent())
-			return;
-		Pair<String, String> p = creds.get();
-		String user = p.getKey();
-		String pass = p.getValue();
-		
-		try {
-			LoginData data = AuthHelper.authenticate(user, pass, account.getServers());
-			if(data != null) {
-				account.setLoginData(data);
-				accountsList.set(accountsList.indexOf(account), account);
-				ShittyAuthLauncherSettings.setAccounts(accountsList);
-				ShittyAuthLauncherSettings.save();
-			}
-		}catch(Exception e) {
-			DialogHelper.showError("Failed to log in", e);
+		if(!dropdownVersions.getItems().contains(ver)) {
+			checkboxShowAllVersions.setSelected(true);
+			dropdownVersions.setItems(versionsList);
 		}
+		dropdownVersions.getSelectionModel().select(ver);
 	}
 
 	@FXML
@@ -237,7 +173,19 @@ public class ShittyAuthController {
 			return;
 		}
 		
-		LaunchHelper.launch(ver, dropdownInstallations.getValue());
+		MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
+		if(acc == null || !acc.isLoggedIn()) {
+			DialogHelper.showWarning("You need to log in first");
+			return;
+		}
+		
+		GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
+		if(inst == null) {
+			DialogHelper.showError("No installation selected");
+			return;
+		}
+		
+		LaunchHelper.launch(ver, acc, dropdownInstallations.getValue());
 	}
 
 	@FXML
@@ -392,8 +340,10 @@ public class ShittyAuthController {
 		Button browseDir = new Button("Browse...");
 		browseDir.setOnAction(event -> {
 			DirectoryChooser ch = new DirectoryChooser();
-			File oldDir = new File(from.gameDirectory);	
-			if(oldDir.exists()) ch.setInitialDirectory(oldDir);
+			if(from != null) {
+				File oldDir = new File(from.gameDirectory);	
+				if(oldDir.exists()) ch.setInitialDirectory(oldDir);
+			}
 			File f = ch.showDialog(dialog.getDialogPane().getScene().getWindow());
 			if(f != null) directory.setText(f.getAbsolutePath());
 		});
@@ -405,8 +355,10 @@ public class ShittyAuthController {
 		Button browseJavaPath = new Button("Browse...");
 		browseJavaPath.setOnAction(event -> {
 			FileChooser ch = new FileChooser();
-			File oldDir = new File(from.javaPath).getParentFile();	
-			if(oldDir.exists()) ch.setInitialDirectory(oldDir);
+			if(from != null) {
+				File oldDir = new File(from.javaPath).getParentFile();	
+				if(oldDir.exists()) ch.setInitialDirectory(oldDir);
+			}
 			File f = ch.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
 			if(f != null) javaPath.setText(f.getAbsolutePath());
 		});
@@ -603,19 +555,87 @@ public class ShittyAuthController {
 
 		return dialog.showAndWait().orElse(null);
 	}
-    
-    private String getString(TextField textField) {
-    	String txt = textField.getText();
-    	if(txt == null || txt.isBlank()) txt = null;
-    	return txt;
-    }
-    
-    public void clearLog() {
-    	areaLog.setText(null);
-    }
-    
-    public void appendLog(String text) {
-    	areaLog.appendText(text);
-    }
+
+	private void showLoginDialog(MinecraftAccount account) {
+		ButtonType login = new ButtonType("Login", ButtonData.OK_DONE);
+		Dialog<Pair<String, String>> dialog = new Dialog<>();
+		dialog.initOwner(ShittyAuthLauncher.stage);
+		dialog.initStyle(StageStyle.UTILITY);
+		dialog.setTitle("Login");
+		dialog.setHeaderText("Enter your credentials");
+		dialog.getDialogPane().getButtonTypes().addAll(login, ButtonType.CANCEL);
+
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
+
+		TextField username = new TextField();
+		username.setPromptText("Username");
+		PasswordField password = new PasswordField();
+		password.setPromptText("Password");
+
+		grid.add(new Label("Username"), 0, 0);
+		grid.add(username, 1, 0);
+		grid.add(new Label("Password"), 0, 1);
+		grid.add(password, 1, 1);
+
+		dialog.getDialogPane().setContent(grid);
+		Platform.runLater(() -> username.requestFocus());
+		
+		Button loginButton = (Button) dialog.getDialogPane().lookupButton(login);
+		loginButton.addEventFilter(ActionEvent.ACTION, ae -> {
+			String name = getString(username);
+			String pass = getString(password);
+			
+			if(name == null || pass == null) {
+				DialogHelper.showError("Need both username and password to log in");
+				ae.consume();
+			}
+		});
+
+		dialog.setResultConverter(type -> {
+			if (type == login) {
+				String name = getString(username);
+				String pass = getString(password);
+				return new Pair<>(name, pass);
+			}
+
+			return null;
+		});
+
+		Optional<Pair<String, String>> creds = dialog.showAndWait();
+		if (!creds.isPresent())
+			return;
+		Pair<String, String> p = creds.get();
+		String user = p.getKey();
+		String pass = p.getValue();
+		
+		try {
+			LoginData data = AuthHelper.authenticate(user, pass, account.getServers());
+			if(data != null) {
+				account.setLoginData(data);
+				accountsList.set(accountsList.indexOf(account), account);
+				ShittyAuthLauncherSettings.setAccounts(accountsList);
+				ShittyAuthLauncherSettings.save();
+			}
+		}catch(Exception e) {
+			DialogHelper.showError("Failed to log in", e);
+		}
+	}
+	
+	private String getString(TextField textField) {
+		String txt = textField.getText();
+		if(txt == null || txt.isBlank()) txt = null;
+		return txt;
+	}
+	
+	public void clearLog() {
+		areaLog.setText(null);
+	}
+	
+	public void appendLog(String text) {
+		areaLog.appendText(text);
+	}
 
 }

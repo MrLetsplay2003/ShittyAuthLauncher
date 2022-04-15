@@ -109,6 +109,18 @@ public class ShittyAuthLauncherSettings {
 		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
 	}
 	
+	public static void setActiveInstallation(GameInstallation installation) {
+		config.set("active-installation", installation == null ? null : installation.id);
+	}
+	
+	public static GameInstallation getActiveInstallation() {
+		String inst = config.getString("active-installation");
+		if(inst == null) return null;
+		return getInstallations().stream()
+				.filter(i -> i.id.equals(inst))
+				.findFirst().orElse(null);
+	}
+	
 	public static void setAccounts(List<MinecraftAccount> accounts) {
 		tokenConfig.set("accounts", new ArrayList<>(accounts));
 		tokenConfig.saveToFile();
