@@ -103,8 +103,6 @@ public class JVMVersion {
 					throw new LaunchException(e);
 				}
 				
-				System.out.println(manifest);
-				
 				Map<File, String> filesToDownload = new HashMap<>();
 				List<Path> executableFiles = new ArrayList<>();
 				
@@ -120,7 +118,6 @@ public class JVMVersion {
 					}
 				}
 				
-				System.out.println(filesToDownload);
 				runOther(LaunchHelper.downloadFiles(filesToDownload));
 				
 				if(OS.getCurrentOS().getType() != OSType.WINDOWS) {
