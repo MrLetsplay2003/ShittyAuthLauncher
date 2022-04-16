@@ -24,14 +24,14 @@
    <children>
       <Label text="Always patch authlib" GridPane.rowIndex="1" />
       <CheckBox fx:id="checkboxAlwaysPatchAuthlib" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.vgrow="NEVER">
+      <HBox alignment="CENTER_RIGHT" spacing="10.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" GridPane.vgrow="NEVER">
          <children>
+            <Button mnemonicParsing="false" onAction="#buttonCancel" text="Cancel" />
             <Button mnemonicParsing="false" onAction="#buttonSave" text="Save">
                <HBox.margin>
-                  <Insets right="10.0" />
+                  <Insets />
                </HBox.margin>
             </Button>
-            <Button mnemonicParsing="false" onAction="#buttonCancel" text="Cancel" />
          </children>
       </HBox>
       <Label text="Always patch minecraft.jar" GridPane.rowIndex="2" />

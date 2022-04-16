@@ -46,12 +46,12 @@ public class ShittyAuthLauncherSettings {
 		
 		List<GameInstallation> installations = getInstallations();
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_RELEASE)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", DEFAULT_GAME_DATA_PATH, null, null));
+			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", null, DEFAULT_GAME_DATA_PATH, null, null));
 			setInstallations(installations);
 		}
 		
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_SNAPSHOT)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", DEFAULT_GAME_DATA_PATH, null, null));
+			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", null, DEFAULT_GAME_DATA_PATH, null, null));
 			setInstallations(installations);
 		}
 	}

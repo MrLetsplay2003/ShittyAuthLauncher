@@ -1,15 +1,14 @@
 package me.mrletsplay.shittyauthlauncher;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -17,7 +16,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
@@ -27,19 +25,13 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.StageStyle;
-import javafx.util.Pair;
 import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.auth.AuthHelper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
@@ -47,6 +39,9 @@ import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
 import me.mrletsplay.shittyauthlauncher.util.LaunchHelper;
+import me.mrletsplay.shittyauthlauncher.util.dialog.DialogData;
+import me.mrletsplay.shittyauthlauncher.util.dialog.DialogHelper;
+import me.mrletsplay.shittyauthlauncher.util.dialog.SimpleInputDialog;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
@@ -74,13 +69,7 @@ public class ShittyAuthController {
 	private TextArea areaLog;
 
 	@FXML
-	private Button buttonNewInstallation;
-
-	@FXML
 	private VBox boxInstallations;
-
-	@FXML
-	private Button buttonNewAccount;
 
 	@FXML
 	private VBox boxAccounts;
@@ -265,6 +254,11 @@ public class ShittyAuthController {
 	}
 
 	@FXML
+	void buttonImportInstallation(ActionEvent event) {
+		
+	}
+
+	@FXML
 	void buttonNewAccount(ActionEvent event) {
 		ServerConfiguration conf = showEditServersDialog(null);
 		if(conf != null) {
@@ -284,7 +278,10 @@ public class ShittyAuthController {
 			Parent pr = l.load(url.openStream());
 			
 			ImageView img = (ImageView) pr.lookup("#imageIcon");
-			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
+			String data = installation.imageData;
+			if(data == null) data = GameInstallation.DEFAULT_IMAGE_DATA;
+			byte[] bytes = Base64.getDecoder().decode(data);
+			img.setImage(new Image(new ByteArrayInputStream(bytes)));
 			
 			Label lbl = (Label) pr.lookup("#textName");
 			lbl.setText(installation.name);
@@ -316,103 +313,36 @@ public class ShittyAuthController {
 	}
 	
 	private GameInstallation showEditInstallationDialog(GameInstallation from) {
-		Dialog<GameInstallation> dialog = new Dialog<>();
-		dialog.initOwner(ShittyAuthLauncher.stage);
-		dialog.initStyle(StageStyle.UTILITY);
-		dialog.setTitle("Edit Installation");
-		dialog.setHeaderText("Enter installation settings");
-		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.FINISH, ButtonType.CANCEL);
-
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(20, 10, 10, 10));
-
-		TextField name = new TextField();
-		name.setPromptText("Name");
-		name.setPrefWidth(300);
-		if(from != null) name.setText(from.name);
-		if(from != null && from.type != InstallationType.CUSTOM) name.setDisable(true);
+		SimpleInputDialog dialog = new SimpleInputDialog()
+			.addString("name", "Installation Name", "Name", from != null ? from.name : null)
+			.addDirectory("directory", "Directory", "Directory", from != null ? new File(from.gameDirectory) : null)
+			.addFile("java", "Java Path", "empty = default", from != null && from.javaPath != null ? new File(from.javaPath) : null)
+			.setVerifier(d -> {
+				if(d.get("name") == null) return "Name may not be empty";
+				if(d.get("directory") == null) return "Directory may not be empty";
+				return null;
+			});
 		
-		TextField directory = new TextField();
-		directory.setPromptText("Directory");
-		directory.setPrefWidth(300);
-		if(from != null) directory.setText(from.gameDirectory);
-		Button browseDir = new Button("Browse...");
-		browseDir.setOnAction(event -> {
-			DirectoryChooser ch = new DirectoryChooser();
-			if(from != null) {
-				File oldDir = new File(from.gameDirectory);	
-				if(oldDir.exists()) ch.setInitialDirectory(oldDir);
-			}
-			File f = ch.showDialog(dialog.getDialogPane().getScene().getWindow());
-			if(f != null) directory.setText(f.getAbsolutePath());
-		});
+		if(from != null && from.type != InstallationType.CUSTOM) dialog.disable("name");
 		
-		TextField javaPath = new TextField();
-		javaPath.setPromptText("empty = default");
-		javaPath.setPrefWidth(300);
-		if(from != null) javaPath.setText(from.javaPath);
-		Button browseJavaPath = new Button("Browse...");
-		browseJavaPath.setOnAction(event -> {
-			FileChooser ch = new FileChooser();
-			if(from != null) {
-				File oldDir = new File(from.javaPath).getParentFile();	
-				if(oldDir.exists()) ch.setInitialDirectory(oldDir);
-			}
-			File f = ch.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
-			if(f != null) javaPath.setText(f.getAbsolutePath());
-		});
-
-		grid.add(new Label("Installation Name"), 0, 0);
-		grid.add(name, 1, 0);
-		grid.add(new Label("Directory"), 0, 1);
-		grid.add(directory, 1, 1);
-		grid.add(browseDir, 2, 1);
-		grid.add(new Label("Java Path"), 0, 2);
-		grid.add(javaPath, 1, 2);
-		grid.add(browseJavaPath, 2, 2);
-
-		dialog.getDialogPane().setContent(grid);
-		Platform.runLater(() -> name.requestFocus());
+		DialogData data = dialog.show("Edit Installation", "Enter installation settings");
+		if(data == null) return null;
 		
-		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.FINISH);
-		okButton.addEventFilter(ActionEvent.ACTION, ae -> {
-			String nm = getString(name);
-			String gameDir = getString(directory);
-			
-			if(nm == null || gameDir == null) {
-				DialogHelper.showError("Both name and game directory need to be set");
-				ae.consume();
-			}
-		});
-
-		dialog.setResultConverter(type -> {
-			if (type == ButtonType.FINISH) {
-				String nm = getString(name);
-				String gameDir = getString(directory);
-				String java = getString(javaPath);
-				
-				if(from != null) {
-					from.name = nm;
-					from.gameDirectory = gameDir;
-					from.javaPath = java;
-					return from;
-				}else {
-					GameInstallation inst = new GameInstallation();
-					inst.id = UUID.randomUUID().toString();
-					inst.name = nm;
-					inst.gameDirectory = gameDir;
-					inst.javaPath = java;
-					inst.lastVersionId = MinecraftVersion.LATEST_RELEASE.getId();
-					return inst;
-				}
-			}
-
-			return null;
-		});
-
-		return dialog.showAndWait().orElse(null);
+		if(from != null) {
+			from.name = data.get("name");
+			from.gameDirectory = data.<File>get("directory").getAbsolutePath();
+			File java = data.get("java");
+			from.javaPath = java == null ? null : java.getAbsolutePath();
+			return from;
+		}else {
+			GameInstallation inst = new GameInstallation();
+			inst.name = data.get("name");
+			inst.gameDirectory = data.<File>get("directory").getAbsolutePath();
+			File java = data.get("java");
+			inst.javaPath = java == null ? null : java.getAbsolutePath();
+			inst.lastVersionId = MinecraftVersion.LATEST_RELEASE.getId();
+			return inst;
+		}
 	}
 	
 	private Node createAccountItem(MinecraftAccount account) {
@@ -456,166 +386,65 @@ public class ShittyAuthController {
 	}
 	
 	private ServerConfiguration showEditServersDialog(ServerConfiguration from) {
-		Dialog<ServerConfiguration> dialog = new Dialog<>();
-		dialog.initOwner(ShittyAuthLauncher.stage);
-		dialog.initStyle(StageStyle.UTILITY);
-		dialog.setTitle("Edit Servers");
-		dialog.setHeaderText("Enter server settings");
-		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.FINISH, ButtonType.CANCEL);
-
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(20, 10, 10, 10));
-
-		TextField authServer = new TextField();
-		authServer.setPromptText("e.g. http://auth.example.com");
-		authServer.setPrefWidth(300);
-		if(from != null) authServer.setText(from.authServer);
-
-		TextField accountsServer = new TextField();
-		accountsServer.setPromptText("e.g. http://account.example.com");
-		accountsServer.setPrefWidth(300);
-		if(from != null) accountsServer.setText(from.accountsServer);
-
-		TextField sessionServer = new TextField();
-		sessionServer.setPromptText("e.g. http://session.example.com");
-		sessionServer.setPrefWidth(300);
-		if(from != null) sessionServer.setText(from.sessionServer);
-
-		TextField servicesServer = new TextField();
-		servicesServer.setPromptText("e.g. http://services.example.com");
-		servicesServer.setPrefWidth(300);
-		if(from != null) servicesServer.setText(from.servicesServer);
-
-		TextField skinHost = new TextField();
-		skinHost.setPromptText("e.g. skins.example.com");
-		skinHost.setPrefWidth(300);
-		if(from != null) skinHost.setText(from.skinHost);
-
-		grid.add(new Label("Authentication server URL"), 0, 0);
-		grid.add(authServer, 1, 0);
-		grid.add(new Label("Accounts server URL"), 0, 1);
-		grid.add(accountsServer, 1, 1);
-		grid.add(new Label("Session server URL"), 0, 2);
-		grid.add(sessionServer, 1, 2);
-		grid.add(new Label("Services server URL"), 0, 3);
-		grid.add(servicesServer, 1, 3);
-		grid.add(new Label("Skin/Cape host"), 0, 4);
-		grid.add(skinHost, 1, 4);
-
-		dialog.getDialogPane().setContent(grid);
-		Platform.runLater(() -> authServer.requestFocus());
+		DialogData data = new SimpleInputDialog()
+			.addString("auth", "Authentication server URL", "e.g. http://auth.example.com", from != null ? from.authServer : null)
+			.addString("accounts", "Accounts server URL", "e.g. http://account.example.com", from != null ? from.accountsServer : null)
+			.addString("session", "Session server URL", "e.g. http://session.example.com", from != null ? from.sessionServer : null)
+			.addString("services", "Services server URL", "e.g. http://services.example.com", from != null ? from.servicesServer : null)
+			.addString("skin", "Skin/Cape host", "e.g. skins.example.com", from != null ? from.skinHost : null)
+			.setVerifier(d -> d.get("auth") == null
+						|| d.get("accounts") == null
+						|| d.get("session") == null
+						|| d.get("services") == null
+						|| d.get("skin") == null ?
+								"All servers must be set" : null)
+			.show("Edit Servers", "Enter server settings");
 		
-		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.FINISH);
-		okButton.addEventFilter(ActionEvent.ACTION, ae -> {
-			String authServerURL = getString(authServer);
-			String accountsServerURL = getString(accountsServer);
-			String sessionServerURL = getString(sessionServer);
-			String servicesServerURL = getString(servicesServer);
-			String skinHostname = getString(skinHost);
-			
-			if(authServerURL == null
-					|| accountsServerURL == null
-					|| sessionServerURL == null
-					|| servicesServerURL == null
-					|| skinHostname == null) {
-				DialogHelper.showError("All server URLs need to be set");
-				ae.consume();
-			}
-		});
+		if(data == null) return null;
 
-		dialog.setResultConverter(type -> {
-			if (type == ButtonType.FINISH) {
-				String authServerURL = getString(authServer);
-				String accountsServerURL = getString(accountsServer);
-				String sessionServerURL = getString(sessionServer);
-				String servicesServerURL = getString(servicesServer);
-				String skinHostname = getString(skinHost);
-				
-				if(from != null) {
-					from.authServer = authServerURL;
-					from.accountsServer = accountsServerURL;
-					from.sessionServer = sessionServerURL;
-					from.servicesServer = servicesServerURL;
-					from.skinHost = skinHostname;
-					return from;
-				}else {
-					ServerConfiguration servers = new ServerConfiguration();
-					servers.authServer = authServerURL;
-					servers.accountsServer = accountsServerURL;
-					servers.sessionServer = sessionServerURL;
-					servers.servicesServer = servicesServerURL;
-					servers.skinHost = skinHostname;
-					return servers;
-				}
-			}
-
-			return null;
-		});
-
-		return dialog.showAndWait().orElse(null);
+		String authServerURL = data.get("auth");
+		String accountsServerURL = data.get("accounts");
+		String sessionServerURL = data.get("session");
+		String servicesServerURL = data.get("services");
+		String skinHostname = data.get("skin");
+		if(from != null) {
+			from.authServer = authServerURL;
+			from.accountsServer = accountsServerURL;
+			from.sessionServer = sessionServerURL;
+			from.servicesServer = servicesServerURL;
+			from.skinHost = skinHostname;
+			return from;
+		}else {
+			ServerConfiguration servers = new ServerConfiguration();
+			servers.authServer = authServerURL;
+			servers.accountsServer = accountsServerURL;
+			servers.sessionServer = sessionServerURL;
+			servers.servicesServer = servicesServerURL;
+			servers.skinHost = skinHostname;
+			return servers;
+		}
 	}
 
 	private void showLoginDialog(MinecraftAccount account) {
-		ButtonType login = new ButtonType("Login", ButtonData.OK_DONE);
-		Dialog<Pair<String, String>> dialog = new Dialog<>();
-		dialog.initOwner(ShittyAuthLauncher.stage);
-		dialog.initStyle(StageStyle.UTILITY);
-		dialog.setTitle("Login");
-		dialog.setHeaderText("Enter your credentials");
-		dialog.getDialogPane().getButtonTypes().addAll(login, ButtonType.CANCEL);
-
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(20, 150, 10, 10));
-
-		TextField username = new TextField();
-		username.setPromptText("Username");
-		PasswordField password = new PasswordField();
-		password.setPromptText("Password");
-
-		grid.add(new Label("Username"), 0, 0);
-		grid.add(username, 1, 0);
-		grid.add(new Label("Password"), 0, 1);
-		grid.add(password, 1, 1);
-
-		dialog.getDialogPane().setContent(grid);
-		Platform.runLater(() -> username.requestFocus());
+		ButtonType loginButton = new ButtonType("Login", ButtonData.OK_DONE);
+		DialogData data = new SimpleInputDialog()
+				.addString("username", "Username", "Username")
+				.addString("password", "Password", "Password")
+				.setVerifier(d -> {
+					return d.get("username") == null || d.get("password") == null ?
+							"Need both username and password to log in" : null;
+				})
+				.setConfirmButton(loginButton)
+				.show("Login", "Enter your credentials");
 		
-		Button loginButton = (Button) dialog.getDialogPane().lookupButton(login);
-		loginButton.addEventFilter(ActionEvent.ACTION, ae -> {
-			String name = getString(username);
-			String pass = getString(password);
-			
-			if(name == null || pass == null) {
-				DialogHelper.showError("Need both username and password to log in");
-				ae.consume();
-			}
-		});
-
-		dialog.setResultConverter(type -> {
-			if (type == login) {
-				String name = getString(username);
-				String pass = getString(password);
-				return new Pair<>(name, pass);
-			}
-
-			return null;
-		});
-
-		Optional<Pair<String, String>> creds = dialog.showAndWait();
-		if (!creds.isPresent())
-			return;
-		Pair<String, String> p = creds.get();
-		String user = p.getKey();
-		String pass = p.getValue();
+		if(data == null) return;
 		
 		try {
-			LoginData data = AuthHelper.authenticate(user, pass, account.getServers());
-			if(data != null) {
-				account.setLoginData(data);
+			String user = data.get("username");
+			String pass = data.get("password");
+			LoginData login = AuthHelper.authenticate(user, pass, account.getServers());
+			if(login != null) {
+				account.setLoginData(login);
 				accountsList.set(accountsList.indexOf(account), account);
 				ShittyAuthLauncherSettings.setAccounts(accountsList);
 				ShittyAuthLauncherSettings.save();
@@ -623,12 +452,6 @@ public class ShittyAuthController {
 		}catch(Exception e) {
 			DialogHelper.showError("Failed to log in", e);
 		}
-	}
-	
-	private String getString(TextField textField) {
-		String txt = textField.getText();
-		if(txt == null || txt.isBlank()) txt = null;
-		return txt;
 	}
 	
 	public void clearLog() {
