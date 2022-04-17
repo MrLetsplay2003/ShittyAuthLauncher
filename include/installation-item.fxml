@@ -13,7 +13,7 @@
          <children>
             <Label fx:id="textName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="My Installation" />
             <Label fx:id="textGameDir" text="Game Dir: /path/to/.minecraft-shitty" />
-            <Label fx:id="textVersion" layoutX="10.0" layoutY="45.0" text="Version: 1.18.2" />
+            <Label fx:id="textVersion" text="Version: 1.18.2" />
          </children>
       </VBox>
       <VBox fx:id="boxButtons" alignment="CENTER" spacing="10.0" />
