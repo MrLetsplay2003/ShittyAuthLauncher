@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ImageView fx:id="imageIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-      <Label fx:id="textName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="My Installation" HBox.hgrow="ALWAYS" />
-      <VBox alignment="CENTER" spacing="10.0">
+      <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
          <children>
-            <Button fx:id="buttonEdit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Edit" />
-            <Button fx:id="buttonDelete" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Delete" />
+            <Label fx:id="textName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="My Installation" />
+            <Label fx:id="textGameDir" text="Game Dir: /path/to/.minecraft-shitty" />
+            <Label fx:id="textVersion" layoutX="10.0" layoutY="45.0" text="Version: 1.18.2" />
          </children>
       </VBox>
+      <VBox fx:id="boxButtons" alignment="CENTER" spacing="10.0" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

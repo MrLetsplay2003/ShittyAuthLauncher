@@ -4,12 +4,16 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -32,6 +36,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.StageStyle;
+import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.auth.AuthHelper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
@@ -47,6 +52,8 @@ import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
 
 public class ShittyAuthController {
+	
+	private static final Pattern BASE64_DATA_URL = Pattern.compile("data:image/png;base64,(?<base64>.+)");
 
 	private ObservableList<MinecraftVersion> versionsListRelease;
 	private ObservableList<MinecraftVersion> versionsList;
@@ -93,9 +100,9 @@ public class ShittyAuthController {
 		
 		installationsList = FXCollections.observableArrayList();
 		installationsList.addListener((ListChangeListener<GameInstallation>) v -> {
-			boxInstallations.getChildren().removeIf(c -> !(c instanceof Button));
+			boxInstallations.getChildren().clear();
 			for(GameInstallation inst : installationsList) {
-				boxInstallations.getChildren().add(createInstallationItem(inst));
+				boxInstallations.getChildren().add(createInstallationItem(inst, false));
 			}
 		});
 		
@@ -192,58 +199,6 @@ public class ShittyAuthController {
 	}
 
 	@FXML
-	void buttonInstallations(ActionEvent event) throws IOException {
-		Dialog<ButtonType> dialog = new Dialog<>();
-		dialog.initOwner(ShittyAuthLauncher.stage);
-		dialog.initStyle(StageStyle.UTILITY);
-		dialog.setTitle("Installations");
-		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
-		
-		VBox vbox = new VBox(10);
-		vbox.setMaxWidth(Double.MAX_VALUE);
-		vbox.setMaxHeight(Double.MAX_VALUE);
-		vbox.setFillWidth(true);
-		
-		ScrollPane scroll = new ScrollPane(vbox);
-		scroll.setPrefWidth(500);
-		scroll.setPrefHeight(300);
-		scroll.setMaxWidth(Double.MAX_VALUE);
-		scroll.setMaxHeight(Double.MAX_VALUE);
-		scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
-		scroll.setFitToWidth(true);
-		
-		for(GameInstallation inst : installationsList) {
-			vbox.getChildren().add(createInstallationItem(inst));
-		}
-		
-		Button newInst = new Button("Create New...");
-		newInst.setOnAction(e -> {
-			GameInstallation inst = showEditInstallationDialog(null);
-			if(inst != null) {
-				installationsList.add(inst);
-				ShittyAuthLauncherSettings.setInstallations(installationsList);
-				ShittyAuthLauncherSettings.save();
-			}
-		});
-		vbox.getChildren().add(newInst);
-		
-		InvalidationListener l = v -> {
-			vbox.getChildren().clear();
-			for(GameInstallation inst : installationsList) {
-				vbox.getChildren().add(createInstallationItem(inst));
-			}
-			vbox.getChildren().add(newInst);
-		};
-		
-		installationsList.addListener(l);
-		
-		dialog.getDialogPane().setContent(scroll);
-
-		dialog.showAndWait();
-		installationsList.removeListener(l);
-	}
-
-	@FXML
 	void buttonNewInstallation(ActionEvent event) {
 		GameInstallation inst = showEditInstallationDialog(null);
 		if(inst != null) {
@@ -255,7 +210,85 @@ public class ShittyAuthController {
 
 	@FXML
 	void buttonImportInstallation(ActionEvent event) {
+		DialogData data = new SimpleInputDialog()
+				.addFile("profiles", "Path to launcher_profiles.json", "Path to launcher_profiles.json", new File(ShittyAuthLauncherSettings.DEFAULT_MINECRAFT_PATH + "/launcher_profiles.json"))
+				.setVerifier(d -> d.get("profiles") == null ? "Need path to launcher_profiles.json" : null)
+				.show("Profiles path", "Where is launcher_profiles.json located?");
 		
+		if(data == null) return;
+		
+		File profiles = data.get("profiles");
+		if(!profiles.exists()) {
+			DialogHelper.showError("The selected file does not exist");
+			return;
+		}
+		
+		JSONObject p;
+		try {
+			p = new JSONObject(Files.readString(profiles.toPath(), StandardCharsets.UTF_8));
+		} catch (IOException e) {
+			DialogHelper.showError("Failed to read file", e);
+			return;
+		}
+		
+		List<GameInstallation> installationsToImport = new ArrayList<>();
+		
+		JSONObject pr = p.getJSONObject("profiles");
+		for(String k : pr.keySet()) {
+			JSONObject profile = pr.getJSONObject(k);
+			if(!profile.getString("type").equals("custom")) continue;
+			
+			String ver = profile.getString("lastVersionId");
+			MinecraftVersion version = MinecraftVersion.getVersion(ver);
+			if(version == null) continue; // Unknown version (e.g. modded, not yet supported)
+			
+			String icon = profile.optString("icon").orElse(null);
+			System.out.println(icon);
+			if(icon != null) {
+				Matcher m = BASE64_DATA_URL.matcher(icon);
+				if(!m.matches()) {
+					icon = null;
+				}else {
+					icon = m.group("base64");
+				}
+			}
+			
+			GameInstallation inst = new GameInstallation(
+					InstallationType.CUSTOM,
+					UUID.randomUUID().toString(),
+					profile.getString("name"),
+					icon,
+					profile.optString("gameDir").orElse(profiles.getParentFile().getAbsolutePath()),
+					profile.optString("javaDir").orElse(null),
+					ver);
+			installationsToImport.add(inst);
+		}
+		
+		Dialog<ButtonType> dialog = new Dialog<>();
+		dialog.initOwner(ShittyAuthLauncher.stage);
+		dialog.initStyle(StageStyle.UTILITY);
+		dialog.setTitle("Import Installations");
+		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK);
+		
+		VBox vbox = new VBox(10);
+		vbox.setMaxWidth(Double.MAX_VALUE);
+		vbox.setMaxHeight(Double.MAX_VALUE);
+		vbox.setFillWidth(true);
+		
+		ScrollPane scroll = new ScrollPane(vbox);
+		scroll.setPrefWidth(600);
+		scroll.setPrefHeight(300);
+		scroll.setMaxWidth(Double.MAX_VALUE);
+		scroll.setMaxHeight(Double.MAX_VALUE);
+		scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
+		scroll.setFitToWidth(true);
+		
+		for(GameInstallation inst : installationsToImport) {
+			vbox.getChildren().add(createInstallationItem(inst, true));
+		}
+		
+		dialog.getDialogPane().setContent(scroll);
+		dialog.showAndWait();
 	}
 
 	@FXML
@@ -269,7 +302,7 @@ public class ShittyAuthController {
 		}
 	}
 	
-	private Node createInstallationItem(GameInstallation installation) {
+	private Node createInstallationItem(GameInstallation installation, boolean isImport) {
 		try {
 			URL url = ShittyAuthLauncher.class.getResource("/include/installation-item.fxml");
 			if(url == null) url = new File("./include/installation-item.fxml").toURI().toURL();
@@ -283,28 +316,62 @@ public class ShittyAuthController {
 			byte[] bytes = Base64.getDecoder().decode(data);
 			img.setImage(new Image(new ByteArrayInputStream(bytes)));
 			
-			Label lbl = (Label) pr.lookup("#textName");
-			lbl.setText(installation.name);
+			Label name = (Label) pr.lookup("#textName");
+			name.setText(installation.name);
 			
-			Button edit = (Button) pr.lookup("#buttonEdit");
-			edit.setOnAction(event -> {
-				showEditInstallationDialog(installation);
-				installationsList.set(installationsList.indexOf(installation), installation); // Cause a list update
-				dropdownInstallations.getSelectionModel().select(dropdownInstallations.getSelectionModel().getSelectedItem());
-				ShittyAuthLauncherSettings.setInstallations(installationsList);
-				ShittyAuthLauncherSettings.save();
-			});
+			Label gameDir = (Label) pr.lookup("#textGameDir");
+			gameDir.setText("Game Directory: " + installation.gameDirectory);
 			
-			Button delete = (Button) pr.lookup("#buttonDelete");
-			if(installation.type != InstallationType.CUSTOM) delete.setDisable(true);
-			delete.setOnAction(event -> {
-				if(DialogHelper.showYesNo("Do you really want to delete the installation '" + installation.name + "'?\n\n"
-						+ "Note: This will only remove it from the launcher, the game data folder will not be deleted")) {
-					installationsList.remove(installation);
+			Label version = (Label) pr.lookup("#textVersion");
+			String ver = installation.lastVersionId;
+			switch(installation.type) {
+				case LATEST_RELEASE:
+					ver = MinecraftVersion.LATEST_RELEASE.getId();
+					break;
+				case LATEST_SNAPSHOT:
+					ver = MinecraftVersion.LATEST_SNAPSHOT.getId();
+					break;
+				default:
+					break;
+			}
+			version.setText("Version: " + ver);
+			
+			VBox buttons = (VBox) pr.lookup("#boxButtons");
+			
+			if(!isImport) {
+				Button edit = new Button("Edit");
+				edit.setMaxWidth(Double.MAX_VALUE);
+				edit.setOnAction(event -> {
+					showEditInstallationDialog(installation);
+					installationsList.set(installationsList.indexOf(installation), installation); // Cause a list update
+					dropdownInstallations.getSelectionModel().select(dropdownInstallations.getSelectionModel().getSelectedItem());
 					ShittyAuthLauncherSettings.setInstallations(installationsList);
 					ShittyAuthLauncherSettings.save();
-				}
-			});
+				});
+				buttons.getChildren().add(edit);
+	
+				Button delete = new Button("Delete");
+				delete.setMaxWidth(Double.MAX_VALUE);
+				if(installation.type != InstallationType.CUSTOM) delete.setDisable(true);
+				delete.setOnAction(event -> {
+					if(DialogHelper.showYesNo("Do you really want to delete the installation '" + installation.name + "'?\n\n"
+							+ "Note: This will only remove it from the launcher, the game data folder will not be deleted")) {
+						installationsList.remove(installation);
+						ShittyAuthLauncherSettings.setInstallations(installationsList);
+						ShittyAuthLauncherSettings.save();
+					}
+				});
+				buttons.getChildren().add(delete);
+			}else {
+				Button importBtn = new Button("Import");
+				importBtn.setMaxWidth(Double.MAX_VALUE);
+				importBtn.setOnAction(event -> {
+					installationsList.add(installation);
+					importBtn.setText("Imported");
+					importBtn.setDisable(true);
+				});
+				buttons.getChildren().add(importBtn);
+			}
 			
 			return pr;
 		}catch(IOException e) {
@@ -403,9 +470,13 @@ public class ShittyAuthController {
 		if(data == null) return null;
 
 		String authServerURL = data.get("auth");
+		if(authServerURL.endsWith("/")) authServerURL = authServerURL.substring(0, authServerURL.length() - 1);
 		String accountsServerURL = data.get("accounts");
+		if(accountsServerURL.endsWith("/")) accountsServerURL = accountsServerURL.substring(0, accountsServerURL.length() - 1);
 		String sessionServerURL = data.get("session");
+		if(sessionServerURL.endsWith("/")) sessionServerURL = sessionServerURL.substring(0, sessionServerURL.length() - 1);
 		String servicesServerURL = data.get("services");
+		if(servicesServerURL.endsWith("/")) servicesServerURL = servicesServerURL.substring(0, servicesServerURL.length() - 1);
 		String skinHostname = data.get("skin");
 		if(from != null) {
 			from.authServer = authServerURL;
