@@ -30,6 +30,7 @@ public class SimpleInputDialog {
 	private List<String> disabled;
 	private Function<DialogData, String> verifier; // Data -> Error message (null = success)
 	private ButtonType confirmButton;
+	private String text;
 	
 	public SimpleInputDialog() {
 		this.elements = new ArrayList<>();
@@ -97,6 +98,11 @@ public class SimpleInputDialog {
 		return this;
 	}
 	
+	public SimpleInputDialog text(String text) {
+		this.text = text;
+		return this;
+	}
+	
 	public DialogData show(String title, String header) {
 		Dialog<DialogData> dialog = new Dialog<>();
 		dialog.initOwner(ShittyAuthLauncher.stage);
@@ -113,8 +119,14 @@ public class SimpleInputDialog {
 		grid.setAlignment(Pos.CENTER);
 		grid.setPadding(new Insets(20, 10, 10, 10));
 
+		if(text != null) {
+			Label textLabel = new Label(text);
+			GridPane.setColumnSpan(textLabel, GridPane.REMAINING);
+			grid.add(textLabel, 0, 0);
+		}
+		
 		Map<String, Supplier<Object>> nodeValueFunctions = new HashMap<>();
-		int row = 0;
+		int row = text == null ? 0 : 1;
 		for(DialogElement e : elements) {
 			grid.add(new Label(e.getName()), 0, row);
 			switch(e.getType()) {

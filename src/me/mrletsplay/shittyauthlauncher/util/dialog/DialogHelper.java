@@ -19,6 +19,7 @@ public class DialogHelper {
 		Alert a = new Alert(AlertType.WARNING);
 		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(warning);
+		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		a.showAndWait();
 	}
 	
@@ -26,6 +27,7 @@ public class DialogHelper {
 		Alert a = new Alert(AlertType.ERROR);
 		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(error);
+		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		a.showAndWait();
 	}
 	

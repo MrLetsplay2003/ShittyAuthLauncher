@@ -4,14 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -42,23 +41,26 @@ import me.mrletsplay.shittyauthlauncher.auth.AuthHelper;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
 import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
+import me.mrletsplay.shittyauthlauncher.util.ImportedVersion;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
 import me.mrletsplay.shittyauthlauncher.util.LaunchHelper;
+import me.mrletsplay.shittyauthlauncher.util.ProfilesHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogData;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.SimpleInputDialog;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
+import me.mrletsplay.shittyauthpatcher.version.meta.VersionMetadata;
 
 public class ShittyAuthController {
-	
-	private static final Pattern BASE64_DATA_URL = Pattern.compile("data:image/png;base64,(?<base64>.+)");
 
 	private ObservableList<MinecraftVersion> versionsListRelease;
 	private ObservableList<MinecraftVersion> versionsList;
 	private ObservableList<GameInstallation> installationsList;
 	private ObservableList<MinecraftAccount> accountsList;
+	
+	private Map<String, List<ImportedVersion>> versions = new HashMap<>();
 
 	@FXML
 	private ComboBox<MinecraftVersion> dropdownVersions;
@@ -82,6 +84,9 @@ public class ShittyAuthController {
 	private VBox boxAccounts;
 
 	public void init() {
+		loadAllVersions();
+		loadAllInstallationsFromJSON();
+		
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
 		List<MinecraftVersion> releases = MinecraftVersion.VERSIONS.stream()
 				.filter(v -> v.getType() == MinecraftVersionType.RELEASE)
@@ -223,46 +228,7 @@ public class ShittyAuthController {
 			return;
 		}
 		
-		JSONObject p;
-		try {
-			p = new JSONObject(Files.readString(profiles.toPath(), StandardCharsets.UTF_8));
-		} catch (IOException e) {
-			DialogHelper.showError("Failed to read file", e);
-			return;
-		}
-		
-		List<GameInstallation> installationsToImport = new ArrayList<>();
-		
-		JSONObject pr = p.getJSONObject("profiles");
-		for(String k : pr.keySet()) {
-			JSONObject profile = pr.getJSONObject(k);
-			if(!profile.getString("type").equals("custom")) continue;
-			
-			String ver = profile.getString("lastVersionId");
-			MinecraftVersion version = MinecraftVersion.getVersion(ver);
-			if(version == null) continue; // Unknown version (e.g. modded, not yet supported)
-			
-			String icon = profile.optString("icon").orElse(null);
-			System.out.println(icon);
-			if(icon != null) {
-				Matcher m = BASE64_DATA_URL.matcher(icon);
-				if(!m.matches()) {
-					icon = null;
-				}else {
-					icon = m.group("base64");
-				}
-			}
-			
-			GameInstallation inst = new GameInstallation(
-					InstallationType.CUSTOM,
-					UUID.randomUUID().toString(),
-					profile.getString("name"),
-					icon,
-					profile.optString("gameDir").orElse(profiles.getParentFile().getAbsolutePath()),
-					profile.optString("javaDir").orElse(null),
-					ver);
-			installationsToImport.add(inst);
-		}
+		List<GameInstallation> installationsToImport = ProfilesHelper.loadInstallations(profiles);
 		
 		Dialog<ButtonType> dialog = new Dialog<>();
 		dialog.initOwner(ShittyAuthLauncher.stage);
@@ -366,7 +332,32 @@ public class ShittyAuthController {
 				Button importBtn = new Button("Import");
 				importBtn.setMaxWidth(Double.MAX_VALUE);
 				importBtn.setOnAction(event -> {
+					MinecraftVersion instVer = MinecraftVersion.getVersion(installation.lastVersionId);
+//					boolean reloadVersions = false;
+					if(instVer == null || (instVer.isImported() /* && version not installed */)) {
+						// TODO: check whether the version is installed in gameDir, otherwise ask where it is and copy it
+						/*DialogData d = new SimpleInputDialog()
+								.addDirectory("path", "Path to .minecraft", "Path to .minecraft", new File(ShittyAuthLauncherSettings.DEFAULT_MINECRAFT_PATH))
+								.text("This installation requires a custom (modded) version of Minecraft. For this to work correctly, some files need to be copied from the .minecraft folder.\n\n"
+										+ "Please select the path to the .minecraft folder which contains the version '" + installation.lastVersionId + "'")
+								.setVerifier(dt -> dt.get("path") == null ? "Path must be set" : null)
+								.show("Custom version required", "Select path");
+						System.out.println(d);
+						if(d == null) return;
+						List<ImportedVersion> vers = loadVersions(d.<File>get("path"));
+						ImportedVersion versionToImport = vers.stream()
+								.filter(v -> v.getId().equals(installation.lastVersionId))
+								.findFirst().orElse(null);
+						ProfilesHelper.installVersion(versionToImport, d.get("path"), new File(installation.gameDirectory));
+						reloadVersions = true;*/
+						DialogHelper.showError("Importing installations with modded versions is currently not supported");
+						return;
+					}
+					
 					installationsList.add(installation);
+					ShittyAuthLauncherSettings.setInstallations(installationsList);
+					ShittyAuthLauncherSettings.save();
+//					if(reloadVersions) loadAllVersions();
 					importBtn.setText("Imported");
 					importBtn.setDisable(true);
 				});
@@ -531,6 +522,132 @@ public class ShittyAuthController {
 	
 	public void appendLog(String text) {
 		areaLog.appendText(text);
+	}
+	
+	private void loadVersions(GameInstallation inst) {
+		File versionsFolder = new File(inst.gameDirectory, "versions");
+		if(!versionsFolder.exists()) return;
+		System.out.println("Loading versions for '" + inst.name + "'...");
+		List<ImportedVersion> imported = new ArrayList<>();
+		List<ImportedVersion> vers = loadVersions(new File(inst.gameDirectory));
+		for(ImportedVersion v : vers) {
+			MinecraftVersion ver = MinecraftVersion.getVersion(v.getId());
+			if(ver != null) {
+				if(ver.isImported()) imported.add(v);
+				continue;
+			}
+			
+			VersionMetadata verMeta = v.loadMetadata();
+			ver = new MinecraftVersion(v.getId(), MinecraftVersionType.decodePrimitive(verMeta.getType()), verMeta.getReleaseTime());
+			MinecraftVersion.addVersion(ver);
+			imported.add(v);
+			System.out.println("Loaded version '" + v.getId() + "'");
+		}
+		versions.put(inst.id, imported);
+	}
+	
+	private List<ImportedVersion> loadVersions(File gameDir) {
+		File versionsFolder = new File(gameDir, "versions");
+		if(!versionsFolder.exists()) return Collections.emptyList();
+		System.out.println("Loading versions from " + gameDir.getAbsolutePath() + "...");
+		List<ImportedVersion> versions = new ArrayList<>();
+		for(File v : versionsFolder.listFiles()) {
+			if(!v.isDirectory()) continue;
+			File jsonFile = new File(v, v.getName() + ".json");
+			if(!jsonFile.exists()) continue;
+			JSONObject meta;
+			try {
+				meta = new JSONObject(Files.readString(jsonFile.toPath()));
+			} catch (IOException e) {
+				System.err.println("Failed to load version at " + jsonFile.getAbsolutePath());
+				e.printStackTrace();
+				continue;
+			}
+			String id = meta.getString("id");
+			versions.add(new ImportedVersion(jsonFile));
+			System.out.println("Loaded version '" + id + "'");
+		}
+		return versions;
+	}
+	
+	private void loadAllVersions() {
+		System.out.println("Loading versions...");
+		MinecraftVersion.VERSIONS.removeIf(v -> v.isImported());
+		for(GameInstallation inst : ShittyAuthLauncherSettings.getInstallations()) {
+			loadVersions(inst);
+		}
+	}
+	
+	// Provides compatibility for installers such as Forge
+	private void loadAllInstallationsFromJSON() {
+		System.out.println("Loading installations from launcher_profiles.json...");
+		List<GameInstallation> oldInsts = ShittyAuthLauncherSettings.getInstallations();
+		List<GameInstallation> insts = new ArrayList<>();
+		for(GameInstallation inst : oldInsts) {
+			System.out.println("Loading installations for '" + inst.name + "'...");
+			File profilesJSON = new File(inst.gameDirectory, "launcher_profiles.json");
+			if(profilesJSON.exists()) {
+				JSONObject obj;
+				try {
+					obj = new JSONObject(Files.readString(profilesJSON.toPath()));
+					if(!obj.has("shittyauth_autoImport")) {
+						System.out.println("Ignoring " + profilesJSON.getAbsolutePath() + ", because it doesn't have the 'shittyauth_autoImport' key set");
+						continue;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+					continue;
+				}
+				
+				JSONObject profiles = obj.getJSONObject("profiles");
+				List<GameInstallation> installations = ProfilesHelper.loadInstallations(profilesJSON);
+				for(GameInstallation newInst : installations) {
+					if(oldInsts.stream().anyMatch(i -> i.id.equals(newInst.id))) {
+						profiles.remove(newInst.id);
+						continue;
+					}
+					loadVersions(newInst);
+					
+					MinecraftVersion ver = MinecraftVersion.getVersion(newInst.lastVersionId);
+					if(ver == null || (ver.isImported() && getImportedVersion(inst.id, newInst.lastVersionId) == null)) {
+						System.out.println("Installation '" + newInst.name + "' in launcher_profiles.json references invalid version '" + newInst.lastVersionId + "', not importing");
+						continue;
+					}
+					
+					insts.add(newInst);
+					profiles.remove(newInst.id);
+				}
+				
+				try {
+					Files.writeString(profilesJSON.toPath(), obj.toFancyString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}else {
+				try {
+					JSONObject obj = new JSONObject();
+					obj.put("shittyauth_autoImport", true);
+					obj.put("profiles", new JSONObject());
+					Files.writeString(profilesJSON.toPath(), obj.toFancyString());
+				} catch (IOException e) {
+					System.err.println("Failed to write file");
+					e.printStackTrace();
+					continue;
+				}
+			}
+		}
+		
+		oldInsts.addAll(insts);
+		ShittyAuthLauncherSettings.setInstallations(oldInsts);
+		ShittyAuthLauncherSettings.save();
+	}
+	
+	public ImportedVersion getImportedVersion(String instId, String versionId) {
+		List<ImportedVersion> vers = versions.get(instId);
+		if(vers == null) return null;
+		return vers.stream()
+				.filter(v -> v.getId().equals(versionId))
+				.findFirst().orElse(null);
 	}
 
 }

@@ -32,7 +32,6 @@ import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
-import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.mrcore.json.converter.JSONConverter;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
@@ -42,6 +41,11 @@ import me.mrletsplay.shittyauthlauncher.util.dialog.DialogHelper;
 import me.mrletsplay.shittyauthpatcher.util.LibraryPatcher;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersion;
+import me.mrletsplay.shittyauthpatcher.version.meta.AssetIndex;
+import me.mrletsplay.shittyauthpatcher.version.meta.DownloadableFile;
+import me.mrletsplay.shittyauthpatcher.version.meta.JavaVersion;
+import me.mrletsplay.shittyauthpatcher.version.meta.Library;
+import me.mrletsplay.shittyauthpatcher.version.meta.VersionMetadata;
 
 public class LaunchHelper {
 	
@@ -95,15 +99,15 @@ public class LaunchHelper {
 		return allow != null && allow;
 	}
 	
-	private static Task<List<File>> loadLibraries(MinecraftVersion version, JSONObject meta, File tempFolder, MinecraftAccount account, GameInstallation installation) throws IOException {
+	private static Task<List<File>> loadLibraries(MinecraftVersion version, VersionMetadata meta, File tempFolder, MinecraftAccount account, GameInstallation installation) throws IOException {
 		return new CombinedTask<List<File>>() {
 			
 			@Override
 			protected List<File> call() throws Exception {
 				File minecraftJar = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".jar");
-				if(!minecraftJar.exists()) {
+				if(!minecraftJar.exists() || minecraftJar.length() == 0) {
 					System.out.println("Downloading " + minecraftJar + "...");
-					String downloadURL = meta.getJSONObject("downloads").getJSONObject("client").getString("url");
+					String downloadURL = meta.getClientDownloadURL();
 					HttpRequest.createGet(downloadURL).execute().transferTo(minecraftJar);
 				}
 				
@@ -116,43 +120,34 @@ public class LaunchHelper {
 				List<File> libs = new ArrayList<>();
 				List<File> nativeLibs = new ArrayList<>();
 				Map<File, String> toDownload = new HashMap<>();
-				for(Object o : meta.getJSONArray("libraries")) {
-					JSONObject lib = (JSONObject) o;
-					String name = lib.getString("name");
+				for(Library lib : meta.getLibraries()) {
+					String name = lib.getName();
+					String path = lib.getGeneratedPath();
+					File libFile = new File(installation.gameDirectory, "libraries/" + path);
 					
-					JSONArray rules = lib.optJSONArray("rules").orElse(null);
+					JSONArray rules = lib.getRules();
 					if(rules != null && !checkRules(rules)) continue;
 					
-					JSONObject downloads = lib.getJSONObject("downloads");
-					
-					if(downloads.has("artifact")) {
-						JSONObject artifact = downloads.getJSONObject("artifact");
-						String path = artifact.getString("path");
-						
-						File libFile = new File(installation.gameDirectory, "libraries/" + path);
-						
-						if(!libFile.exists()) {
-							toDownload.put(libFile, artifact.getString("url"));
+					DownloadableFile artifact = lib.getArtifactDownload();
+					if(artifact != null) {
+						if(!libFile.exists() || libFile.length() == 0) {
+							toDownload.put(libFile, artifact.getURL());
 						}
-						
-						if(name.startsWith("com.mojang:authlib")) {
-							authLibFile = libFile;
-							continue;
-						}
-						
-						libs.add(libFile);
 					}
 					
-					JSONObject natives = lib.optJSONObject("natives").orElse(null);
+					DownloadableFile natives = lib.getNativesDownload(os);
 					if(natives != null) {
-						if(!natives.has(os)) continue;
-						JSONObject nativeLib = lib.getJSONObject("downloads").getJSONObject("classifiers").getJSONObject(natives.getString(os).replace("${arch}", "64"));
-						String nativesPath = nativeLib.getString("path");
-						File libFile = new File(installation.gameDirectory, "libraries/" + nativesPath);
-						if(!libFile.exists()) {
-							toDownload.put(libFile, nativeLib.getString("url"));
+						File nativesFile = new File(installation.gameDirectory, "libraries/" + natives.getPath());
+						if(!nativesFile.exists()) {
+							toDownload.put(nativesFile, natives.getURL());
 						}
-						nativeLibs.add(libFile);
+						if(!nativeLibs.contains(nativesFile)) nativeLibs.add(nativesFile);
+					}
+					
+					if(name.startsWith("com.mojang:authlib")) {
+						authLibFile = libFile;
+					}else {
+						if(!libs.contains(libFile)) libs.add(libFile);
 					}
 				}
 				
@@ -223,12 +218,14 @@ public class LaunchHelper {
 					System.out.println("Couldn't find authlib");
 				}
 				
+				System.out.println("Libraries: " + libs);
+				
 				return libs;
 			}
 		};
 	}
 	
-	private static Task<File> loadAssets(JSONObject meta, File assetsFolder, GameInstallation installation) throws IOException {
+	private static Task<File> loadAssets(VersionMetadata meta, File assetsFolder, GameInstallation installation) throws IOException {
 		return new CombinedTask<File>() {
 			
 			@Override
@@ -236,13 +233,14 @@ public class LaunchHelper {
 				File indexesFolder = new File(assetsFolder, "indexes");
 				indexesFolder.mkdirs();
 				
-				JSONObject assetIndex = meta.getJSONObject("assetIndex");
-				
-				File indexFile = new File(indexesFolder, assetIndex.getString("id") + ".json");
+				AssetIndex assetIndex = meta.getAssetIndex();
+
+				String assetId = assetIndex.getID();
+				File indexFile = new File(indexesFolder, assetId + ".json");
 				if(!indexFile.exists()) {
 					System.out.println("Downloading " + indexFile + "...");
 					updateMessage("Downloading " + indexFile + "...");
-					HttpRequest.createGet(assetIndex.getString("url")).execute().transferTo(indexFile);
+					HttpRequest.createGet(assetIndex.getURL()).execute().transferTo(indexFile);
 				}
 				
 				JSONObject index;
@@ -252,7 +250,6 @@ public class LaunchHelper {
 					throw new LaunchException(e);
 				}
 				
-				String assetId = assetIndex.getString("id");
 				File assetsDownloadFolder = new File(assetsFolder, "objects");
 				boolean legacyAssets = assetId.equals("legacy");
 				boolean pre16Assets = assetId.equals("pre-1.6");
@@ -330,7 +327,17 @@ public class LaunchHelper {
 					File tempFolder = new File(installation.gameDirectory, UUID.randomUUID().toString());
 					try {
 						File metaFile = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".json");
-						JSONObject meta = version.loadMetadata(metaFile);
+						
+						VersionMetadata meta;
+						if(!version.isImported()) {
+							meta = version.loadMetadata(metaFile);
+						}else {
+							ImportedVersion imported = ShittyAuthLauncher.controller.getImportedVersion(installation.id, version.getId());
+							if(imported == null) {
+								throw new VersionNotFoundException("The version '" + installation.lastVersionId + "' is not currently installed in the selected installation");
+							}
+							meta = imported.loadMetadata();
+						}
 						
 						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, account, installation));
 						if(isCancelled()) {
@@ -347,9 +354,9 @@ public class LaunchHelper {
 						
 						String javaPath = installation.javaPath;
 						if(javaPath == null) {
-							JSONObject javaVersion = meta.getJSONObject("javaVersion");
-							String jvmName = javaVersion.getString("component");
-							int majorVersion = javaVersion.getInt("majorVersion");
+							JavaVersion javaVersion = meta.getJavaVersion();
+							String jvmName = javaVersion.getComponent();
+							int majorVersion = javaVersion.getMajorVersion();
 							
 							File javaExecutable;
 							if(ShittyAuthLauncherSettings.isUseAdoptium()) {
@@ -371,63 +378,20 @@ public class LaunchHelper {
 						String libSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? ";" : ":";
 						String classPath = libs.stream().map(f -> f.getAbsolutePath().replace("\\", "/")).collect(Collectors.joining(libSeparator));
 				
-						boolean requiresOldJava = true;
-						if(meta.containsKey("javaVersion")) {
-							int major = meta.getJSONObject("javaVersion").getInt("majorVersion");
-							if(major > 8) requiresOldJava = false;
-						}
-						System.out.println("Requires old Java? " + requiresOldJava);
-						
-						boolean legacyArgs = false;
 						List<String> gameArgs = new ArrayList<>();
 						List<String> jvmArgs = new ArrayList<>();
-						if(meta.has("arguments")) {
-							JSONObject args = meta.getJSONObject("arguments");
-							
-							JSONArray game = args.getJSONArray("game");
-							for(int i = 0; i < game.size(); i++) {
-								Object o = game.get(i);
-								if(o instanceof String) {
-									gameArgs.add((String) o);
-									continue;
-								}
-								
-								JSONObject r = (JSONObject) o;
-								if(!checkRules(r.getJSONArray("rules"))) continue;
-								if(r.isOfType("value", JSONType.STRING)) {
-									gameArgs.add(r.getString("value"));
-								}else {
-									gameArgs.addAll(r.getJSONArray("value").stream()
-											.map(s -> (String) s)
-											.collect(Collectors.toList()));
-								}
-							}
-							
-							JSONArray jvm = args.getJSONArray("jvm");
-							for(int i = 0; i < jvm.size(); i++) {
-								Object o = jvm.get(i);
-								if(o instanceof String) {
-									jvmArgs.add((String) o);
-									continue;
-								}
-								
-								JSONObject r = (JSONObject) o;
-								if(!checkRules(r.getJSONArray("rules"))) continue;
-								if(r.isOfType("value", JSONType.STRING)) {
-									jvmArgs.add(r.getString("value"));
-								}else {
-									jvmArgs.addAll(r.getJSONArray("value").stream()
-											.map(s -> (String) s)
-											.collect(Collectors.toList()));
-								}
-							}
-						}else {
-							legacyArgs = true;
-							gameArgs.addAll(Arrays.asList(meta.getString("minecraftArguments").split(" ")));
-						}
 						
-						System.out.println("JVM args: " + jvmArgs);
-						System.out.println("Game args: " + gameArgs);
+						meta.getGameArguments().forEach(a -> {
+							if(a.getRules() != null && !checkRules(a.getRules())) return;
+							gameArgs.addAll(a.getValue());
+						});
+						
+						meta.getJVMArguments().forEach(a -> {
+							if(a.getRules() != null && !checkRules(a.getRules())) return;
+							jvmArgs.addAll(a.getValue());
+						});
+						
+						if(installation.jvmArgs != null) jvmArgs.addAll(installation.jvmArgs);
 						
 						LoginData data = account.getLoginData();
 						
@@ -436,10 +400,10 @@ public class LaunchHelper {
 						params.put("version_name", version.getId());
 						params.put("game_directory", installation.gameDirectory.replace("\\", "/"));
 						params.put("assets_root", assetsFolder.getAbsolutePath().replace("\\", "/"));
-						params.put("assets_index_name", meta.getString("assets"));
+						params.put("assets_index_name", meta.getAssets());
 						params.put("auth_uuid", data.getUUID());
 						params.put("auth_access_token", data.getAccessToken());
-						params.put("version_type", meta.getString("type"));
+						params.put("version_type", meta.getType());
 						params.put("user_type", "mojang");
 						params.put("auth_session", data.getAccessToken());
 						params.put("user_properties", "{}");
@@ -450,12 +414,8 @@ public class LaunchHelper {
 						params.put("classpath", classPath);
 						params.put("auth_xuid", "nope"); // XBox UID
 						params.put("clientid", "nope");
-						
-						replacePlaceholders(gameArgs, params);
-						replacePlaceholders(jvmArgs, params);
-						
-//						String javaPath = requiresOldJava ? ShittyAuthLauncherSettings.getOldJavaPath() : ShittyAuthLauncherSettings.getNewJavaPath();
-//						if(installation.javaPath != null) javaPath = installation.javaPath;
+						params.put("library_directory", new File(installation.gameDirectory, "libraries").getAbsolutePath());
+						params.put("classpath_separator", libSeparator);
 						
 						System.out.println("Java path: " + javaPath);
 						
@@ -463,18 +423,28 @@ public class LaunchHelper {
 							gameArgs.add(0, "-XstartOnFirstThread");
 						}
 						
-						if(legacyArgs) {
+						if(meta.usesLegacyArgs()) {
 							jvmArgs.addAll(Arrays.asList(
 									"-Djava.library.path=" + tempFolder.getAbsolutePath().replace("\\", "/"),
 									"-cp", classPath
 							));
 						}
 						
+						jvmArgs.add("-Dfml.ignoreInvalidMinecraftCertificates=true"); // Forge complains if we patch the Minecraft
+						
+						System.out.println("JVM args: " + jvmArgs);
+						System.out.println("Game args: " + gameArgs);
+						
+						replacePlaceholders(gameArgs, params);
+						replacePlaceholders(jvmArgs, params);
+						
 						List<String> fullArgs = new ArrayList<>();
 						fullArgs.add(javaPath);
 						fullArgs.addAll(jvmArgs);
-						fullArgs.add(meta.getString("mainClass"));
+						fullArgs.add(meta.getMainClass());
 						fullArgs.addAll(gameArgs);
+						
+						System.out.println(fullArgs);
 						
 						ProcessBuilder b = new ProcessBuilder(fullArgs);
 						b.directory(new File(installation.gameDirectory));
@@ -490,13 +460,20 @@ public class LaunchHelper {
 			d.setOnCloseRequest(event -> launch.cancel());
 			launch.setOnFailed(event -> {
 				d.hide();
-				DialogHelper.showError("Failed to launch", launch.getException());
+				
+				Throwable e = launch.getException();
+				if(e instanceof VersionNotFoundException) {
+					DialogHelper.showError(e.getMessage());
+				}else {
+					DialogHelper.showError("Failed to launch", launch.getException());
+				}
 			});
 			launch.setOnSucceeded(event -> {
 				d.hide();
 				Pair<ProcessBuilder, File> pair;
 				try {
 					pair = launch.get();
+					if(pair == null) return;
 				} catch (InterruptedException | ExecutionException e1) {
 					e1.printStackTrace();
 					return;
