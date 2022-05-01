@@ -2,3 +2,5 @@
 /target/
 /shittyauthlauncher/
 dependency-reduced-pom.xml
+.idea
+/lib
