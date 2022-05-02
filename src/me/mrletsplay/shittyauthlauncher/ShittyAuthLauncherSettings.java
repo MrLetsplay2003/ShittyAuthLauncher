@@ -18,8 +18,9 @@ import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
 	
-	private static final String
+	public static final String
 		DEFAULT_MINECRAFT_CONTAINER = System.getProperty("os.name").toLowerCase().contains("windows") ? System.getenv("APPDATA") : System.getProperty("user.home"),
+		DEFAULT_MINECRAFT_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft",		
 		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty";
 	
 	private static FileCustomConfig config;
@@ -34,8 +35,7 @@ public class ShittyAuthLauncherSettings {
 		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {
-			setNewJavaPath("java");
-			setOldJavaPath("java");
+			setUseAdoptium(true);
 			setAlwaysPatchAuthlib(false);
 			setAlwaysPatchMinecraft(false);
 			setMinimizeLauncher(true);
@@ -47,12 +47,12 @@ public class ShittyAuthLauncherSettings {
 		
 		List<GameInstallation> installations = getInstallations();
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_RELEASE)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", DEFAULT_GAME_DATA_PATH, null, null));
+			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", null, DEFAULT_GAME_DATA_PATH, null, null, null));
 			setInstallations(installations);
 		}
 		
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_SNAPSHOT)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", DEFAULT_GAME_DATA_PATH, null, null));
+			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", null, DEFAULT_GAME_DATA_PATH, null, null, null));
 			setInstallations(installations);
 		}
 	}
@@ -61,20 +61,12 @@ public class ShittyAuthLauncherSettings {
 		config.saveToFile();
 	}
 	
-	public static void setNewJavaPath(String path) {
-		config.set("new-java-path", path);
+	public static void setUseAdoptium(boolean alwaysPatchAuthlib) {
+		config.set("use-adoptium", alwaysPatchAuthlib);
 	}
 	
-	public static String getNewJavaPath() {
-		return config.getString("new-java-path", "java", false);
-	}
-	
-	public static void setOldJavaPath(String path) {
-		config.set("old-java-path", path);
-	}
-	
-	public static String getOldJavaPath() {
-		return config.getString("old-java-path", "java", false);
+	public static boolean isUseAdoptium() {
+		return config.getBoolean("use-adoptium");
 	}
 	
 	public static void setAlwaysPatchAuthlib(boolean alwaysPatchAuthlib) {
@@ -107,6 +99,18 @@ public class ShittyAuthLauncherSettings {
 	
 	public static List<GameInstallation> getInstallations() {
 		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
+	}
+	
+	public static void setActiveInstallation(GameInstallation installation) {
+		config.set("active-installation", installation == null ? null : installation.id);
+	}
+	
+	public static GameInstallation getActiveInstallation() {
+		String inst = config.getString("active-installation");
+		if(inst == null) return null;
+		return getInstallations().stream()
+				.filter(i -> i.id.equals(inst))
+				.findFirst().orElse(null);
 	}
 	
 	public static void setAccounts(List<MinecraftAccount> accounts) {

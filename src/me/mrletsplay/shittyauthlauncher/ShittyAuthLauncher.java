@@ -65,5 +65,5 @@ public class ShittyAuthLauncher extends Application {
 		primaryStage.setScene(sc);
 		primaryStage.show();
 	}
-
+	
 }

@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauthlauncher;
+package me.mrletsplay.shittyauthlauncher.util.dialog;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,6 +11,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 
 public class DialogHelper {
 
@@ -18,6 +19,7 @@ public class DialogHelper {
 		Alert a = new Alert(AlertType.WARNING);
 		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(warning);
+		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		a.showAndWait();
 	}
 	
@@ -25,6 +27,7 @@ public class DialogHelper {
 		Alert a = new Alert(AlertType.ERROR);
 		a.initOwner(ShittyAuthLauncher.stage);
 		a.setContentText(error);
+		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		a.showAndWait();
 	}
 	
