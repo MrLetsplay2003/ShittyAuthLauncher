@@ -114,15 +114,15 @@ public class ShittyAuthSettingsController {
 
 			boolean custom = mirror3.getBoolean("custom");
 			String name = mirror3.getString("name");
-			String version_manifest = mirror3.getString("version_manifest");
-			String assets_url = mirror3.getString("assets_url");
+			String version_manifest = mirror3.getString("versionManifest");
+			String assets_url = mirror3.getString("assetsURL");
 
 
 			DownloadsMirror toAdd = new DownloadsMirror();
 			toAdd.custom = custom;
 			toAdd.name = name;
-			toAdd.version_manifest = version_manifest;
-			toAdd.assets_url = assets_url;
+			toAdd.versionManifest = version_manifest;
+			toAdd.assetsURL = assets_url;
 			mirrors.add(toAdd);
 		}
 		return mirrors;
@@ -155,8 +155,8 @@ public class ShittyAuthSettingsController {
 					System.out.println(mirror.name);
 					JSONObject mirror2 = new JSONObject();
 					mirror2.set("name", mirror.name);
-					mirror2.set("version_manifest", mirror.version_manifest);
-					mirror2.set("assets_url", mirror.assets_url);
+					mirror2.set("version_manifest", mirror.versionManifest);
+					mirror2.set("assets_url", mirror.assetsURL);
 					mirror2.set("custom", mirror.custom);
 					checkedMirrors.add(mirror2);
 				}
@@ -176,8 +176,8 @@ public class ShittyAuthSettingsController {
 		DownloadsMirror example = new MojangMirror();
 		SimpleInputDialog dialog = new SimpleInputDialog()
 				.addString("name", "Mirror Name", "Name", from != null ? from.name : example.name)
-				.addString("manifest", "Manifest URL", "Manifest", from != null ? from.version_manifest : example.version_manifest)
-				.addString("resources", "Resources URL", "Resources", from != null ? from.assets_url : example.assets_url)
+				.addString("manifest", "Manifest URL", "Manifest", from != null ? from.versionManifest : example.versionManifest)
+				.addString("resources", "Resources URL", "Resources", from != null ? from.assetsURL : example.assetsURL)
 				.setVerifier(d -> {
 					if (d.get("name") == null) return "Name may not be empty";
 					if (d.get("manifest") == null) return "Manifest URL may not be empty";
@@ -190,14 +190,14 @@ public class ShittyAuthSettingsController {
 
 		if (from != null) {
 			from.name = data.get("name");
-			from.version_manifest = data.get("manifest");
-			from.assets_url = data.get("resources");
+			from.versionManifest = data.get("manifest");
+			from.assetsURL = data.get("resources");
 			return from;
 		} else {
 			DownloadsMirror inst = new DownloadsMirror();
 			inst.name = data.get("name");
-			inst.version_manifest = data.get("manifest");
-			inst.assets_url = data.get("resources");
+			inst.versionManifest = data.get("manifest");
+			inst.assetsURL = data.get("resources");
 			return inst;
 		}
 	}
@@ -215,10 +215,10 @@ public class ShittyAuthSettingsController {
 			lbl.setText(mirror.name);
 
 			Label lbl1 = (Label) pr.lookup("#textManifest");
-			lbl1.setText(mirror.version_manifest);
+			lbl1.setText(mirror.versionManifest);
 
 			Label lbl2 = (Label) pr.lookup("#textResources");
-			lbl2.setText(mirror.assets_url);
+			lbl2.setText(mirror.assetsURL);
 
 
 			Button switchMirror = (Button) pr.lookup("#buttonApply");
