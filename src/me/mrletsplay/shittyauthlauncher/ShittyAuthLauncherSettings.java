@@ -14,6 +14,7 @@ import me.mrletsplay.mrcore.json.converter.SerializationOption;
 import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
+import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
@@ -100,7 +101,7 @@ public class ShittyAuthLauncherSettings {
 	public static List<GameInstallation> getInstallations() {
 		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
 	}
-	
+
 	public static void setActiveInstallation(GameInstallation installation) {
 		config.set("active-installation", installation == null ? null : installation.id);
 	}

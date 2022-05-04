@@ -49,7 +49,26 @@
                 </content>
             </Tab>
             <Tab text="Mirrors">
-
+                <content>
+                    <AnchorPane>
+                        <children>
+                            <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="35.0" spacing="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                <children>
+                                    <Button mnemonicParsing="false" onAction="#buttonNewMirror" prefHeight="25.0" text="Create New..." />
+                                    <Label fx:id="textUsing" text="Current Mirror: Mojang" />
+                                </children>
+                                <padding>
+                                    <Insets left="5.0" right="5.0" />
+                                </padding>
+                            </HBox>
+                            <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                                <content>
+                                    <VBox fx:id="boxMirrors" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                                </content>
+                            </ScrollPane>
+                        </children>
+                    </AnchorPane>
+                </content>
             </Tab>
         </tabs>
     </TabPane>

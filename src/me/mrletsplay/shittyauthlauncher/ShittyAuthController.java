@@ -55,10 +55,10 @@ import me.mrletsplay.shittyauthpatcher.version.meta.VersionMetadata;
 
 public class ShittyAuthController {
 
-	private ObservableList<MinecraftVersion> versionsListRelease;
-	private ObservableList<MinecraftVersion> versionsList;
-	private ObservableList<GameInstallation> installationsList;
-	private ObservableList<MinecraftAccount> accountsList;
+	public static ObservableList<MinecraftVersion> versionsListRelease;
+	public static ObservableList<MinecraftVersion> versionsList;
+	public static ObservableList<GameInstallation> installationsList;
+	public static ObservableList<MinecraftAccount> accountsList;
 	
 	private Map<String, List<ImportedVersion>> versions = new HashMap<>();
 
@@ -83,16 +83,20 @@ public class ShittyAuthController {
 	@FXML
 	private VBox boxAccounts;
 
-	public void init() {
-		loadAllVersions();
-		loadAllInstallationsFromJSON();
-		
+	public void loadVersions(){
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
 		List<MinecraftVersion> releases = MinecraftVersion.VERSIONS.stream()
 				.filter(v -> v.getType() == MinecraftVersionType.RELEASE)
 				.collect(Collectors.toList());
 		versionsListRelease = FXCollections.observableArrayList(releases);
 		dropdownVersions.setItems(versionsListRelease);
+		dropdownVersions.setDisable(false);
+		dropdownVersions.setValue(MinecraftVersion.LATEST_RELEASE);
+		loadAllVersions();
+	}
+
+	public void init() {
+		loadAllInstallationsFromJSON();
 		dropdownVersions.setOnAction(e -> {
 			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
 			if(inst.type != InstallationType.CUSTOM) return;

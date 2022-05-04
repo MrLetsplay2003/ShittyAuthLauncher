@@ -9,15 +9,20 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
+import me.mrletsplay.shittyauthpatcher.mirrors.MojangMirror;
 
 public class ShittyAuthLauncher extends Application {
 
 	public static Stage stage;
 	public static Stage settingsStage;
 	public static ShittyAuthController controller;
+	public static ShittyAuthSettingsController settingsController;
+	public static DownloadsMirror mirror;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		mirror = new MojangMirror();
 		URL url = ShittyAuthLauncher.class.getResource("/include/launcher.fxml");
 		if(url == null) url = new File("./include/launcher.fxml").toURI().toURL();
 		
@@ -35,7 +40,8 @@ public class ShittyAuthLauncher extends Application {
 		
 		FXMLLoader l2 = new FXMLLoader(url2);
 		Parent settings = l2.load(url2.openStream());
-		ShittyAuthSettingsController settingsController = l2.getController();
+		settingsController = l2.getController();
+		settingsController.init(controller);
 		
 		Scene settingsScene = new Scene(settings);
 		

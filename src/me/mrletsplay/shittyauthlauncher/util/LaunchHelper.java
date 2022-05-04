@@ -267,7 +267,7 @@ public class LaunchHelper {
 					String path = hash.substring(0, 2) + "/" + hash;
 					File objFile = new File(assetsDownloadFolder, (legacyAssets || pre16Assets) ? name : path);
 					if(!objFile.exists()) {
-						toDownload.put(objFile, "http://resources.download.minecraft.net/" + path);
+						toDownload.put(objFile, ShittyAuthLauncher.mirror + path);
 					}
 				}
 				
