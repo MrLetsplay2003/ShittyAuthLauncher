@@ -93,6 +93,10 @@ public class ShittyAuthController {
 		dropdownVersions.setDisable(false);
 		dropdownVersions.setValue(MinecraftVersion.LATEST_RELEASE);
 		loadAllVersions();
+
+		GameInstallation latest = ShittyAuthLauncherSettings.getInstallations().get(0);
+		dropdownInstallations.getSelectionModel().select(latest);
+		selectInstallation(latest);
 	}
 
 	public void init() {
@@ -106,7 +110,7 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
 			ShittyAuthLauncherSettings.save();
 		});
-		
+
 		installationsList = FXCollections.observableArrayList();
 		installationsList.addListener((ListChangeListener<GameInstallation>) v -> {
 			boxInstallations.getChildren().clear();
@@ -114,7 +118,7 @@ public class ShittyAuthController {
 				boxInstallations.getChildren().add(createInstallationItem(inst, false));
 			}
 		});
-		
+
 		installationsList.addAll(ShittyAuthLauncherSettings.getInstallations());
 		dropdownInstallations.setItems(installationsList);
 		GameInstallation i = ShittyAuthLauncherSettings.getActiveInstallation();
@@ -127,7 +131,7 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setActiveInstallation(inst);
 			ShittyAuthLauncherSettings.save();
 		});
-		
+
 		accountsList = FXCollections.observableArrayList();
 		accountsList.addListener((ListChangeListener<MinecraftAccount>) v -> {
 			boxAccounts.getChildren().removeIf(c -> !(c instanceof Button));
@@ -135,7 +139,7 @@ public class ShittyAuthController {
 				boxAccounts.getChildren().add(createAccountItem(acc));
 			}
 		});
-		
+
 		accountsList.addAll(ShittyAuthLauncherSettings.getAccounts());
 		dropdownAccounts.setItems(accountsList);
 		dropdownAccounts.getSelectionModel().select(ShittyAuthLauncherSettings.getActiveAccount());

@@ -23,7 +23,6 @@ public class ShittyAuthLauncher extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		mirror = new MojangMirror();
 		URL url = ShittyAuthLauncher.class.getResource("/include/launcher.fxml");
 		if(url == null) url = new File("./include/launcher.fxml").toURI().toURL();
 		
