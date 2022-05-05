@@ -198,19 +198,19 @@ public class ShittyAuthSettingsController {
 		if (from != null) {
 			from.name = data.get("name");
 			from.versionManifest = data.get("manifest");
-			if(!from.versionManifest.endsWith("/")){
-				from.versionManifest = from.versionManifest.concat("/");
-			}
 			from.assetsURL = data.get("resources");
+			if(!from.assetsURL.endsWith("/")){
+				from.assetsURL = from.assetsURL.concat("/");
+			}
 			return from;
 		} else {
 			DownloadsMirror mirror = new DownloadsMirror();
 			mirror.name = data.get("name");
 			mirror.versionManifest = data.get("manifest");
-			if(!mirror.versionManifest.endsWith("/")){
-				mirror.versionManifest = mirror.versionManifest.concat("/");
-			}
 			mirror.assetsURL = data.get("resources");
+			if(!mirror.assetsURL.endsWith("/")){
+				mirror.assetsURL = mirror.assetsURL.concat("/");
+			}
 			return mirror;
 		}
 	}
