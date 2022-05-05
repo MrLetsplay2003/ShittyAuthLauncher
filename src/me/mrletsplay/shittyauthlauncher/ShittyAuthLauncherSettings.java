@@ -28,8 +28,8 @@ public class ShittyAuthLauncherSettings {
 	private static FileCustomConfig tokenConfig;
 
 	public static String dataPath = "shittyauthlauncher";
-	public static String launcherVersion = "ShittyAuthLauncher";
-	public static String launcherBrand = "69.420";
+	public static String launcherBrand = "ShittyAuthLauncher";
+	public static String launcherVersion = "69.420";
 	
 	static {
 		config = ConfigLoader.loadFileConfig(new File(ShittyAuthLauncherSettings.dataPath+"/settings.yml"));
