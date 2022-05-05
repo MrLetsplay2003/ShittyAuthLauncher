@@ -26,13 +26,17 @@ public class ShittyAuthLauncherSettings {
 	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
+
+	public static String dataPath = "shittyauthlauncher";
+	public static String launcherVersion = "ShittyAuthLauncher";
+	public static String launcherBrand = "69.420";
 	
 	static {
-		config = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/settings.yml"));
+		config = ConfigLoader.loadFileConfig(new File(ShittyAuthLauncherSettings.dataPath+"/settings.yml"));
 		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		config.registerMapper(JSONObjectMapper.create(GameInstallation.class, EnumSet.of(SerializationOption.SHORT_ENUMS, SerializationOption.DONT_INCLUDE_CLASS), EnumSet.of(DeserializationOption.SHORT_ENUMS)));
 		
-		tokenConfig = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/token.yml"));
+		tokenConfig = ConfigLoader.loadFileConfig(new File(ShittyAuthLauncherSettings.dataPath+"/token.yml"));
 		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {

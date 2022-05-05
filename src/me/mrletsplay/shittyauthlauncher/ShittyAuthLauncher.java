@@ -1,6 +1,7 @@
 package me.mrletsplay.shittyauthlauncher;
 
 import java.io.File;
+import java.io.StringReader;
 import java.net.URL;
 
 import javafx.application.Application;
@@ -17,9 +18,9 @@ public class ShittyAuthLauncher extends Application {
 	public static Stage stage;
 	public static Stage settingsStage;
 	public static ShittyAuthController controller;
-	public static ShittyAuthSettingsController settingsController;
 	public static DownloadsMirror mirror;
-	
+	private static ShittyAuthSettingsController settingsController;
+
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		mirror = new MojangMirror();
@@ -46,7 +47,7 @@ public class ShittyAuthLauncher extends Application {
 		Scene settingsScene = new Scene(settings);
 		
 		settingsStage = new Stage();
-		settingsStage.setTitle("ShittyAuthLauncher - Settings");
+		settingsStage.setTitle(ShittyAuthLauncherSettings.launcherBrand+" - Settings");
 		settingsStage.setScene(settingsScene);
 		settingsStage.initOwner(stage);
 		settingsStage.setResizable(false);
@@ -65,7 +66,7 @@ public class ShittyAuthLauncher extends Application {
 		primaryStage.getIcons().add(new Image(iconURL.openStream()));
 		
 		Scene sc = new Scene(pr, 720, 480);
-		primaryStage.setTitle("ShittyAuthLauncher");
+		primaryStage.setTitle(ShittyAuthLauncherSettings.launcherBrand);
 		primaryStage.setMinWidth(720);
 		primaryStage.setMinHeight(480);
 		primaryStage.setScene(sc);

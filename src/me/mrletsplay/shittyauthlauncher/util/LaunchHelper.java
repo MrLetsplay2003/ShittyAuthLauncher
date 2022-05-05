@@ -283,7 +283,7 @@ public class LaunchHelper {
 		try {
 			ServerConfiguration servers = account.getServers();
 			
-			File keyFile = new File("shittyauthlauncher/yggdrasil_session_pubkey.der");
+			File keyFile = new File(ShittyAuthLauncherSettings.dataPath+"/yggdrasil_session_pubkey.der");
 			if(!keyFile.exists()) {
 				boolean b = DialogHelper.showYesNo("You don't have a public key file yet.\nAttempt to download it from the session server? (only available if using ShittyAuthServer)\n\nNote: Without a key file, skins won't work");
 				if(b) {
@@ -409,8 +409,8 @@ public class LaunchHelper {
 						params.put("user_properties", "{}");
 						params.put("game_assets", assetsFolder.getAbsolutePath().replace("\\", "/") + "/");
 						params.put("natives_directory", tempFolder.getAbsolutePath().replace("\\", "/"));
-						params.put("launcher_name", "ShittyAuthLauncher");
-						params.put("launcher_version", "69.420");
+						params.put("launcher_name", ShittyAuthLauncherSettings.launcherBrand);
+						params.put("launcher_version", ShittyAuthLauncherSettings.launcherVersion);
 						params.put("classpath", classPath);
 						params.put("auth_xuid", "nope"); // XBox UID
 						params.put("clientid", "nope");
@@ -517,7 +517,7 @@ public class LaunchHelper {
 			while(m.find()) {
 				String val = placeholders.get(m.group("name"));
 				if(val == null) {
-					System.out.println("Missing parameter: " + val + ", skipping!");
+					System.out.println("Missing parameter: " + arg + ", skipping!");
 				}else {
 					m.appendReplacement(sb, val);
 				}

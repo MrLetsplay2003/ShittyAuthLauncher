@@ -15,9 +15,6 @@ import javafx.scene.layout.VBox;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.misc.FriendlyException;
-import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
-import me.mrletsplay.shittyauthlauncher.util.InstallationType;
-import me.mrletsplay.shittyauthlauncher.util.ProfilesHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogData;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.SimpleInputDialog;
@@ -32,12 +29,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 
 public class ShittyAuthSettingsController {
-	public static ObservableList<DownloadsMirror> MirrorsList;
+	public static ObservableList<DownloadsMirror> mirrors;
 	private ShittyAuthController controller;
 	
 	@FXML
@@ -60,22 +55,22 @@ public class ShittyAuthSettingsController {
 
 	public void init(ShittyAuthController controller) {
 		this.controller = controller;
-		MirrorsList = FXCollections.observableArrayList(new ArrayList<>());
+		mirrors = FXCollections.observableArrayList(new ArrayList<>());
 
-		MirrorsList.addListener((ListChangeListener<DownloadsMirror>) v -> {
+		mirrors.addListener((ListChangeListener<DownloadsMirror>) v -> {
 			boxMirrors.getChildren().removeIf(c -> !(c instanceof Button));
-			for(DownloadsMirror acc : MirrorsList) {
+			for(DownloadsMirror acc : mirrors) {
 				boxMirrors.getChildren().add(createMirrorItem(acc));
 			}
 		});
 
 		//<Default Mirror>
 		DownloadsMirror mirror = new MojangMirror();
-		MirrorsList.add(mirror);
+		mirrors.add(mirror);
+		ShittyAuthLauncher.mirror = mirror;
 		MinecraftVersion.initVersions(mirror);
 		controller.loadVersions();
 		textUsing.setText("Current Mirror: "+mirror.name);
-		ShittyAuthLauncher.mirror = mirror;
 		//</Default Mirror>
 
 		File mirrorsJSON = new File("shittyauthlauncher/mirrors.json");
@@ -94,7 +89,7 @@ public class ShittyAuthSettingsController {
 				e.printStackTrace();
 			}
 		};
-		MirrorsList.addAll(checkedMirrors);
+		mirrors.addAll(checkedMirrors);
 	}
 
 
@@ -106,26 +101,26 @@ public class ShittyAuthSettingsController {
 			throw new FriendlyException("Failed to read file", e);
 		}
 
-		List<DownloadsMirror> mirrors = new ArrayList<>();
+		List<DownloadsMirror> mirrorsToLoad = new ArrayList<>();
 
 		JSONArray pr = p.getJSONArray("mirrors");
-		for(Object mirror2 : pr.toArray()) {
-			JSONObject mirror3 = (JSONObject) mirror2;
+		for(Object loopMirror : pr.toArray()) {
+			JSONObject mirrorJSON = (JSONObject) loopMirror;
 
-			boolean custom = mirror3.getBoolean("custom");
-			String name = mirror3.getString("name");
-			String version_manifest = mirror3.getString("versionManifest");
-			String assets_url = mirror3.getString("assetsURL");
+			boolean custom = mirrorJSON.getBoolean("custom");
+			String name = mirrorJSON.getString("name");
+			String versionManifest = mirrorJSON.getString("versionManifest");
+			String assetsURL = mirrorJSON.getString("assetsURL");
 
 
-			DownloadsMirror toAdd = new DownloadsMirror();
-			toAdd.custom = custom;
-			toAdd.name = name;
-			toAdd.versionManifest = version_manifest;
-			toAdd.assetsURL = assets_url;
-			mirrors.add(toAdd);
+			DownloadsMirror mirrorAdding = new DownloadsMirror();
+			mirrorAdding.custom = custom;
+			mirrorAdding.name = name;
+			mirrorAdding.versionManifest = versionManifest;
+			mirrorAdding.assetsURL = assetsURL;
+			mirrorsToLoad.add(mirrorAdding);
 		}
-		return mirrors;
+		return mirrorsToLoad;
 	}
 
 	@FXML
@@ -145,20 +140,20 @@ public class ShittyAuthSettingsController {
 
 	@FXML
 	void buttonNewMirror(ActionEvent event) {
-		DownloadsMirror inst = showEditMirrorDialog(null);
-		if(inst != null) {
-			inst.custom = true;
-			MirrorsList.add(inst);
+		DownloadsMirror mirror = showEditMirrorDialog(null);
+		if(mirror != null) {
+			mirror.custom = true;
+			mirrors.add(mirror);
 			JSONArray checkedMirrors = new JSONArray();
-			for(DownloadsMirror mirror: MirrorsList){
-				if(mirror.custom){
-					System.out.println(mirror.name);
-					JSONObject mirror2 = new JSONObject();
-					mirror2.set("name", mirror.name);
-					mirror2.set("version_manifest", mirror.versionManifest);
-					mirror2.set("assets_url", mirror.assetsURL);
-					mirror2.set("custom", mirror.custom);
-					checkedMirrors.add(mirror2);
+			for(DownloadsMirror loopMirror: mirrors){
+				if(loopMirror.custom){
+					System.out.println(loopMirror.name);
+					JSONObject mirrorJSON = new JSONObject();
+					mirrorJSON.set("name", loopMirror.name);
+					mirrorJSON.set("versionManifest", loopMirror.versionManifest);
+					mirrorJSON.set("assetsURL", loopMirror.assetsURL);
+					mirrorJSON.set("custom", loopMirror.custom);
+					checkedMirrors.add(mirrorJSON);
 				}
 			}
 			try {
@@ -173,11 +168,23 @@ public class ShittyAuthSettingsController {
 	}
 
 	private DownloadsMirror showEditMirrorDialog(DownloadsMirror from) {
-		DownloadsMirror example = new MojangMirror();
+		DownloadsMirror defaultMirror = new MojangMirror();
 		SimpleInputDialog dialog = new SimpleInputDialog()
-				.addString("name", "Mirror Name", "Name", from != null ? from.name : example.name)
-				.addString("manifest", "Manifest URL", "Manifest", from != null ? from.versionManifest : example.versionManifest)
-				.addString("resources", "Resources URL", "Resources", from != null ? from.assetsURL : example.assetsURL)
+				.addString("name",
+						"Mirror Name",
+						"Name",
+						from != null ? from.name : defaultMirror.name)
+
+				.addString("manifest",
+						"Manifest URL",
+						"Manifest",
+						from != null ? from.versionManifest : defaultMirror.versionManifest)
+
+				.addString("resources",
+						"Resources URL",
+						"Resources",
+						from != null ? from.assetsURL : defaultMirror.assetsURL)
+
 				.setVerifier(d -> {
 					if (d.get("name") == null) return "Name may not be empty";
 					if (d.get("manifest") == null) return "Manifest URL may not be empty";
@@ -191,14 +198,20 @@ public class ShittyAuthSettingsController {
 		if (from != null) {
 			from.name = data.get("name");
 			from.versionManifest = data.get("manifest");
+			if(!from.versionManifest.endsWith("/")){
+				from.versionManifest = from.versionManifest.concat("/");
+			}
 			from.assetsURL = data.get("resources");
 			return from;
 		} else {
-			DownloadsMirror inst = new DownloadsMirror();
-			inst.name = data.get("name");
-			inst.versionManifest = data.get("manifest");
-			inst.assetsURL = data.get("resources");
-			return inst;
+			DownloadsMirror mirror = new DownloadsMirror();
+			mirror.name = data.get("name");
+			mirror.versionManifest = data.get("manifest");
+			if(!mirror.versionManifest.endsWith("/")){
+				mirror.versionManifest = mirror.versionManifest.concat("/");
+			}
+			mirror.assetsURL = data.get("resources");
+			return mirror;
 		}
 	}
 
@@ -232,13 +245,13 @@ public class ShittyAuthSettingsController {
 			Button edit = (Button) pr.lookup("#buttonEdit");
 			edit.setOnAction(event -> {
 				showEditMirrorDialog(mirror);
-				MirrorsList.set(MirrorsList.indexOf(mirror), mirror); // Cause a list update
+				mirrors.set(mirrors.indexOf(mirror), mirror); // Cause a list update
 			});
 
 			Button delete = (Button) pr.lookup("#buttonDelete");
 			delete.setOnAction(event -> {
 				if(DialogHelper.showYesNo("Do you really want to delete the mirror '" + mirror.name + "'?")) {
-					MirrorsList.remove(mirror);
+					mirrors.remove(mirror);
 				}
 			});
 
