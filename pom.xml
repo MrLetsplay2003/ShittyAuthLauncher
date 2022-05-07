@@ -81,12 +81,6 @@
 			<id>Graphite-Official</id>
 			<url>https://maven.graphite-official.com/</url>
 		</repository>
-		<!--<for ajh123>-->
-		<repository>
-			<id>local-maven-repo</id>
-			<url>file://E:\web\maven\repositories\releases</url>
-		</repository>
-		<!--</for ajh123>-->
 	</repositories>
 	<dependencies>
 		<dependency>
