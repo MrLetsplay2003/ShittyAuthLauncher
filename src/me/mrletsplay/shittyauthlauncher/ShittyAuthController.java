@@ -97,10 +97,7 @@ public class ShittyAuthController {
 		GameInstallation latest = ShittyAuthLauncherSettings.getInstallations().get(0);
 		dropdownInstallations.getSelectionModel().select(latest);
 		selectInstallation(latest);
-	}
 
-	public void init() {
-		loadAllInstallationsFromJSON();
 		dropdownVersions.setOnAction(e -> {
 			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
 			if(inst.type != InstallationType.CUSTOM) return;
@@ -110,7 +107,10 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
 			ShittyAuthLauncherSettings.save();
 		});
+	}
 
+	public void init() {
+		loadAllInstallationsFromJSON();
 		installationsList = FXCollections.observableArrayList();
 		installationsList.addListener((ListChangeListener<GameInstallation>) v -> {
 			boxInstallations.getChildren().clear();
