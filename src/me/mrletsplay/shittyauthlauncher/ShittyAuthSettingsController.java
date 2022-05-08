@@ -36,8 +36,7 @@ import java.util.Objects;
 
 public class ShittyAuthSettingsController {
 	public static ObservableList<DownloadsMirror> mirrors;
-	public ShittyAuthController controller;
-	
+
 	@FXML
 	private CheckBox checkboxAlwaysPatchAuthlib;
 	
@@ -90,7 +89,7 @@ public class ShittyAuthSettingsController {
 		mirrors.add(mirror);
 		ShittyAuthLauncher.mirror = mirror;
 		MinecraftVersion.initVersions(mirror);
-		controller.loadVersions();
+		ShittyAuthLauncher.controller.loadVersions();
 		textUsing.setText("Current Mirror: "+mirror.name);
 		//</Default Mirror>
 
@@ -101,7 +100,7 @@ public class ShittyAuthSettingsController {
 		}else {
 			try {
 				JSONObject obj = new JSONObject();
-				obj.put("mirrors", new JSONObject());
+				obj.put("mirrors", new JSONArray());
 				obj.put("currentMirror", mirror.name);
 				Files.writeString(mirrorsJSON.toPath(), obj.toFancyString());
 			} catch (IOException e) {
@@ -121,8 +120,8 @@ public class ShittyAuthSettingsController {
 					System.out.println(mirrorName);
 					if(checking.name.equals(mirrorName)){
 						MinecraftVersion.initVersions(checking);
-						controller.loadVersions();
-						controller.init();
+						ShittyAuthLauncher.controller.loadVersions();
+						ShittyAuthLauncher.controller.init();
 						textUsing.setText("Current Mirror: "+checking.name);
 						ShittyAuthLauncher.mirror = checking;
 					}
@@ -135,21 +134,19 @@ public class ShittyAuthSettingsController {
 
 
 	public static List<DownloadsMirror> loadMirrors(File mirrorsFile) {
-		JSONObject p;
+		List<DownloadsMirror> mirrorsToLoad = new ArrayList<>();
 		try {
-			p = new JSONObject(Files.readString(mirrorsFile.toPath(), StandardCharsets.UTF_8));
+			JSONObject p = new JSONObject(Files.readString(mirrorsFile.toPath(), StandardCharsets.UTF_8));
+			JSONArray pr = p.getJSONArray("mirrors");
+			for(Object loopMirror : pr.toArray()) {
+				JSONObject mirrorJSON = (JSONObject) loopMirror;
+				DownloadsMirror mirror = JSONConverter.decodeObject(mirrorJSON, DownloadsMirror.class);
+				mirrorsToLoad.add(mirror);
+			}
 		} catch (IOException e) {
 			throw new FriendlyException("Failed to read file", e);
 		}
 
-		List<DownloadsMirror> mirrorsToLoad = new ArrayList<>();
-
-		JSONArray pr = p.getJSONArray("mirrors");
-		for(Object loopMirror : pr.toArray()) {
-			JSONObject mirrorJSON = (JSONObject) loopMirror;
-			DownloadsMirror mirror = JSONConverter.decodeObject(mirrorJSON, DownloadsMirror.class);
-			mirrorsToLoad.add(mirror);
-		}
 		return mirrorsToLoad;
 	}
 
@@ -197,9 +194,11 @@ public class ShittyAuthSettingsController {
 						from != null ? from.assetsURL : defaultMirror.assetsURL)
 
 				.setVerifier(d -> {
-					if (from==null){
-						for (DownloadsMirror checking : mirrors){
-							if(checking.name.equals(d.get("name"))) return "Mirror with that name already exits";
+					for (DownloadsMirror checking : mirrors){
+						if(from != checking) {
+							//This is true, if the 'from' mirror is in 'mirrors',
+							//if the class is already there, we know we are just editing it, so false.
+							if (checking.name.equals(d.get("name"))) return "Mirror with that name already exits";
 						}
 					}
 					if (d.get("name") == null) return "Name may not be empty";
@@ -253,8 +252,8 @@ public class ShittyAuthSettingsController {
 			Button switchMirror = (Button) pr.lookup("#buttonApply");
 			switchMirror.setOnAction(event -> {
 				MinecraftVersion.initVersions(mirror);
-				controller.loadVersions();
-				controller.init();
+				ShittyAuthLauncher.controller.loadVersions();
+				ShittyAuthLauncher.controller.init();
 				textUsing.setText("Current Mirror: "+mirror.name);
 				ShittyAuthLauncher.mirror = mirror;
 				saveMirrors();

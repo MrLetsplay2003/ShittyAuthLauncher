@@ -97,16 +97,6 @@ public class ShittyAuthController {
 		GameInstallation latest = ShittyAuthLauncherSettings.getInstallations().get(0);
 		dropdownInstallations.getSelectionModel().select(latest);
 		selectInstallation(latest);
-
-		dropdownVersions.setOnAction(e -> {
-			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
-			if(inst.type != InstallationType.CUSTOM) return;
-			MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
-			if(ver == null) return;
-			inst.lastVersionId = ver.getId();
-			ShittyAuthLauncherSettings.setInstallations(installationsList);
-			ShittyAuthLauncherSettings.save();
-		});
 	}
 
 	public void init() {
@@ -146,6 +136,16 @@ public class ShittyAuthController {
 		dropdownAccounts.setOnAction(event -> {
 			MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
 			ShittyAuthLauncherSettings.setActiveAccount(acc);
+		});
+
+		dropdownVersions.setOnAction(e -> {
+			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
+			if(inst.type != InstallationType.CUSTOM) return;
+			MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
+			if(ver == null) return;
+			inst.lastVersionId = ver.getId();
+			ShittyAuthLauncherSettings.setInstallations(installationsList);
+			ShittyAuthLauncherSettings.save();
 		});
 	}
 	
