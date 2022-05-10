@@ -14,6 +14,7 @@ import me.mrletsplay.mrcore.json.converter.SerializationOption;
 import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
+import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class ShittyAuthLauncherSettings {
@@ -25,13 +26,17 @@ public class ShittyAuthLauncherSettings {
 	
 	private static FileCustomConfig config;
 	private static FileCustomConfig tokenConfig;
+
+	public static String dataPath = "shittyauthlauncher";
+	public static String launcherBrand = "ShittyAuthLauncher";
+	public static String launcherVersion = "69.420";
 	
 	static {
-		config = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/settings.yml"));
+		config = ConfigLoader.loadFileConfig(new File(ShittyAuthLauncherSettings.dataPath+"/settings.yml"));
 		config.registerMapper(JSONObjectMapper.create(ServerConfiguration.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		config.registerMapper(JSONObjectMapper.create(GameInstallation.class, EnumSet.of(SerializationOption.SHORT_ENUMS, SerializationOption.DONT_INCLUDE_CLASS), EnumSet.of(DeserializationOption.SHORT_ENUMS)));
 		
-		tokenConfig = ConfigLoader.loadFileConfig(new File("shittyauthlauncher/token.yml"));
+		tokenConfig = ConfigLoader.loadFileConfig(new File(ShittyAuthLauncherSettings.dataPath+"/token.yml"));
 		tokenConfig.registerMapper(JSONObjectMapper.create(MinecraftAccount.class, EnumSet.of(SerializationOption.DONT_INCLUDE_CLASS), EnumSet.noneOf(DeserializationOption.class)));
 		
 		if(config.isEmpty()) {
@@ -100,7 +105,7 @@ public class ShittyAuthLauncherSettings {
 	public static List<GameInstallation> getInstallations() {
 		return config.getGenericList("installations", GameInstallation.class, new ArrayList<>(), false);
 	}
-	
+
 	public static void setActiveInstallation(GameInstallation installation) {
 		config.set("active-installation", installation == null ? null : installation.id);
 	}

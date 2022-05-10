@@ -55,10 +55,10 @@ import me.mrletsplay.shittyauthpatcher.version.meta.VersionMetadata;
 
 public class ShittyAuthController {
 
-	private ObservableList<MinecraftVersion> versionsListRelease;
-	private ObservableList<MinecraftVersion> versionsList;
-	private ObservableList<GameInstallation> installationsList;
-	private ObservableList<MinecraftAccount> accountsList;
+	public static ObservableList<MinecraftVersion> versionsListRelease;
+	public static ObservableList<MinecraftVersion> versionsList;
+	public static ObservableList<GameInstallation> installationsList;
+	public static ObservableList<MinecraftAccount> accountsList;
 	
 	private Map<String, List<ImportedVersion>> versions = new HashMap<>();
 
@@ -83,26 +83,24 @@ public class ShittyAuthController {
 	@FXML
 	private VBox boxAccounts;
 
-	public void init() {
-		loadAllVersions();
-		loadAllInstallationsFromJSON();
-		
+	public void loadVersions(){
 		versionsList = FXCollections.observableArrayList(new ArrayList<>(MinecraftVersion.VERSIONS));
 		List<MinecraftVersion> releases = MinecraftVersion.VERSIONS.stream()
 				.filter(v -> v.getType() == MinecraftVersionType.RELEASE)
 				.collect(Collectors.toList());
 		versionsListRelease = FXCollections.observableArrayList(releases);
 		dropdownVersions.setItems(versionsListRelease);
-		dropdownVersions.setOnAction(e -> {
-			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
-			if(inst.type != InstallationType.CUSTOM) return;
-			MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
-			if(ver == null) return;
-			inst.lastVersionId = ver.getId();
-			ShittyAuthLauncherSettings.setInstallations(installationsList);
-			ShittyAuthLauncherSettings.save();
-		});
-		
+		dropdownVersions.setDisable(false);
+		dropdownVersions.setValue(MinecraftVersion.LATEST_RELEASE);
+		loadAllVersions();
+
+		GameInstallation latest = ShittyAuthLauncherSettings.getInstallations().get(0);
+		dropdownInstallations.getSelectionModel().select(latest);
+		selectInstallation(latest);
+	}
+
+	public void init() {
+		loadAllInstallationsFromJSON();
 		installationsList = FXCollections.observableArrayList();
 		installationsList.addListener((ListChangeListener<GameInstallation>) v -> {
 			boxInstallations.getChildren().clear();
@@ -110,7 +108,7 @@ public class ShittyAuthController {
 				boxInstallations.getChildren().add(createInstallationItem(inst, false));
 			}
 		});
-		
+
 		installationsList.addAll(ShittyAuthLauncherSettings.getInstallations());
 		dropdownInstallations.setItems(installationsList);
 		GameInstallation i = ShittyAuthLauncherSettings.getActiveInstallation();
@@ -123,7 +121,7 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setActiveInstallation(inst);
 			ShittyAuthLauncherSettings.save();
 		});
-		
+
 		accountsList = FXCollections.observableArrayList();
 		accountsList.addListener((ListChangeListener<MinecraftAccount>) v -> {
 			boxAccounts.getChildren().removeIf(c -> !(c instanceof Button));
@@ -131,13 +129,23 @@ public class ShittyAuthController {
 				boxAccounts.getChildren().add(createAccountItem(acc));
 			}
 		});
-		
+
 		accountsList.addAll(ShittyAuthLauncherSettings.getAccounts());
 		dropdownAccounts.setItems(accountsList);
 		dropdownAccounts.getSelectionModel().select(ShittyAuthLauncherSettings.getActiveAccount());
 		dropdownAccounts.setOnAction(event -> {
 			MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
 			ShittyAuthLauncherSettings.setActiveAccount(acc);
+		});
+
+		dropdownVersions.setOnAction(e -> {
+			GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
+			if(inst.type != InstallationType.CUSTOM) return;
+			MinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
+			if(ver == null) return;
+			inst.lastVersionId = ver.getId();
+			ShittyAuthLauncherSettings.setInstallations(installationsList);
+			ShittyAuthLauncherSettings.save();
 		});
 	}
 	
