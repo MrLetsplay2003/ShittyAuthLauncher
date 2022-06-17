@@ -13,13 +13,14 @@ import java.util.regex.Pattern;
 
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.misc.FriendlyException;
+import me.mrletsplay.shittyauthpatcher.version.ImportedMinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.meta.Library;
 import me.mrletsplay.shittyauthpatcher.version.meta.VersionMetadata;
 
 public class ProfilesHelper {
-	
+
 	private static final Pattern BASE64_DATA_URL = Pattern.compile("data:image/png;base64,(?<base64>.+)");
-	
+
 	public static List<GameInstallation> loadInstallations(File profilesFile) {
 		JSONObject p;
 		try {
@@ -27,16 +28,16 @@ public class ProfilesHelper {
 		} catch (IOException e) {
 			throw new FriendlyException("Failed to read file", e);
 		}
-		
+
 		List<GameInstallation> installations = new ArrayList<>();
-		
+
 		JSONObject pr = p.getJSONObject("profiles");
 		for(String k : pr.keySet()) {
 			JSONObject profile = pr.getJSONObject(k);
 			if(!profile.getString("type").equals("custom")) continue;
-			
+
 			String ver = profile.getString("lastVersionId");
-			
+
 			String icon = profile.optString("icon").orElse(null);
 			if(icon != null) {
 				Matcher m = BASE64_DATA_URL.matcher(icon);
@@ -46,7 +47,7 @@ public class ProfilesHelper {
 					icon = m.group("base64");
 				}
 			}
-			
+
 			GameInstallation inst = new GameInstallation(
 					InstallationType.CUSTOM,
 					k,
@@ -60,14 +61,14 @@ public class ProfilesHelper {
 		}
 		return installations;
 	}
-	
-	public static void installVersion(ImportedVersion version, File fromGameDir, File toGameDir) {
+
+	public static void installVersion(ImportedMinecraftVersion version, File fromGameDir, File toGameDir) {
 		VersionMetadata m = version.loadMetadata();
 		File metaDest = new File(toGameDir, "versions/" + version.getId() + "/" + version.getId() + ".json");
 		metaDest.getParentFile().mkdirs();
 		if(metaDest.exists()) return;
 		try {
-			Files.copy(version.getMetaFile().toPath(), metaDest.toPath());
+			Files.copy(version.getMetadataFile().toPath(), metaDest.toPath());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

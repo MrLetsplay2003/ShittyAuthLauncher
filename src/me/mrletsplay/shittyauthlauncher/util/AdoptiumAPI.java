@@ -32,9 +32,9 @@ import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 
 public class AdoptiumAPI {
-	
+
 	private static final List<Integer> AVAILABLE_VERSIONS;
-	
+
 	static {
 		AVAILABLE_VERSIONS = new ArrayList<>();
 		JSONObject releases = HttpRequest.createGet("https://api.adoptium.net/v3/info/available_releases").execute().asJSONObject();
@@ -44,31 +44,31 @@ public class AdoptiumAPI {
 		}
 		Collections.sort(AVAILABLE_VERSIONS);
 	}
-	
+
 	public static Task<File> downloadJRE(int majorVersion, File folder) {
 		int ver = AVAILABLE_VERSIONS.stream()
 				.filter(v -> v >= majorVersion)
 				.findFirst().orElseThrow(() -> new LaunchException("Release not available from Adoptium: " + majorVersion));
-		
+
 		return new CombinedTask<File>() {
-			
+
 			@Override
 			protected File call() throws Exception {
 				File executable = new File(folder, OS.getCurrentOS().getType().getJavaPath());
 				if(executable.exists()) return executable;
-				
-				updateMessage("Downloading package from Adoptium");
-				
+
+				updateMessage("Downloading runtime package from Adoptium");
+
 				JSONObject r = HttpRequest.createGet("https://api.adoptium.net/v3/assets/latest/" + ver + "/hotspot")
-						.setHeaderParameter("Accept", "application/json")
+						.setHeader("Accept", "application/json")
 						.addQueryParameter("architecture", "x64")
 						.addQueryParameter("image_type", "jdk")
 						.addQueryParameter("os", OS.getCurrentOS().getType().getAdoptiumName())
 						.execute().asJSONArray().getJSONObject(0);
-				
+
 				String dl = r.getJSONObject("binary").getJSONObject("package").getString("link");
 				File file = new File(folder, "download");
-				
+
 				HttpClient client = HttpClient.newBuilder().followRedirects(Redirect.ALWAYS).build();
 				java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder(URI.create(dl))
 						.header("Accept", "application/json")
@@ -76,7 +76,7 @@ public class AdoptiumAPI {
 				HttpResponse<InputStream> res = client.send(request, BodyHandlers.ofInputStream());
 				InputStream in = res.body();
 				long length = Long.valueOf(res.headers().firstValue("Content-Length").orElse("0"));
-				
+
 				IOUtils.createFile(file);
 				try(FileOutputStream fOut = new FileOutputStream(file)) {
 					byte[] buf = new byte[1024];
@@ -88,24 +88,24 @@ public class AdoptiumAPI {
 						updateProgress(read, length);
 					}
 				}
-				
+
 				updateMessage("Extracting package from Adoptium");
-				
+
 				if(dl.endsWith(".tar.gz")) {
 					runOther(extractTarGZ(file, folder));
 				}else {
 					runOther(extractZip(file, folder));
 				}
 				file.delete();
-				
+
 				return executable;
 			}
 		};
 	}
-	
+
 	private static Task<Void> extractTarGZ(File archiveFile, File folder) {
 		return new CombinedTask<Void>() {
-			
+
 			@Override
 			protected Void call() throws Exception {
 				try(TarArchiveInputStream in = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archiveFile)))) {
@@ -127,7 +127,7 @@ public class AdoptiumAPI {
 								updateProgress(read, en.getSize());
 							}
 						}
-						
+
 						if(OS.getCurrentOS().getType() != OSType.WINDOWS) {
 							if((en.getMode() & (1 << 6)) == (1 << 6)) { // owner executable flag
 								Set<PosixFilePermission> perms = new HashSet<>();
@@ -145,10 +145,10 @@ public class AdoptiumAPI {
 			}
 		};
 	}
-	
+
 	private static Task<Void> extractZip(File archiveFile, File folder) {
 		return new CombinedTask<Void>() {
-			
+
 			@Override
 			protected Void call() throws Exception {
 				try(ZipArchiveInputStream in = new ZipArchiveInputStream(new FileInputStream(archiveFile))) {
@@ -170,7 +170,7 @@ public class AdoptiumAPI {
 								updateProgress(read, en.getSize());
 							}
 						}
-						
+
 						if(OS.getCurrentOS().getType() != OSType.WINDOWS) {
 							if((en.getUnixMode() & (1 << 6)) == (1 << 6)) { // owner executable flag
 								Set<PosixFilePermission> perms = new HashSet<>();

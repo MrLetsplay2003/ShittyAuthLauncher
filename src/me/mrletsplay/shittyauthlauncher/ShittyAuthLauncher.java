@@ -9,14 +9,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 
 public class ShittyAuthLauncher extends Application {
 
 	public static Stage stage;
 	public static Stage settingsStage;
 	public static ShittyAuthController controller;
-	public static DownloadsMirror mirror;
 	private static ShittyAuthSettingsController settingsController;
 
 	@Override
@@ -44,13 +42,16 @@ public class ShittyAuthLauncher extends Application {
 		Scene settingsScene = new Scene(settings);
 
 		settingsStage = new Stage();
-		settingsStage.setTitle(ShittyAuthLauncherSettings.launcherBrand+" - Settings");
+		settingsStage.setTitle(ShittyAuthLauncherSettings.LAUNCHER_BRAND + " - Settings");
 		settingsStage.setScene(settingsScene);
 		settingsStage.initOwner(stage);
-		settingsStage.setResizable(false);
 		settingsStage.sizeToScene();
 		settingsStage.setOnShown(event -> {
 			settingsController.update();
+			settingsStage.setMinWidth(settings.prefWidth(-1));
+			settingsStage.setMinHeight(settings.prefHeight(-1));
+			settingsStage.setWidth(settings.prefWidth(-1));
+			settingsStage.setHeight(settings.prefHeight(-1));
 		});
 
 		settingsStage.setOnCloseRequest(e -> {
@@ -63,7 +64,7 @@ public class ShittyAuthLauncher extends Application {
 		primaryStage.getIcons().add(new Image(iconURL.openStream()));
 
 		Scene sc = new Scene(pr, 720, 480);
-		primaryStage.setTitle(ShittyAuthLauncherSettings.launcherBrand);
+		primaryStage.setTitle(ShittyAuthLauncherSettings.LAUNCHER_BRAND);
 		primaryStage.setMinWidth(720);
 		primaryStage.setMinHeight(480);
 		primaryStage.setScene(sc);

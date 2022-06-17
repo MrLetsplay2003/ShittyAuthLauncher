@@ -8,12 +8,14 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -25,84 +27,94 @@ import javafx.stage.StageStyle;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 
 public class SimpleInputDialog {
-	
+
 	private List<DialogElement> elements;
 	private List<String> disabled;
 	private Function<DialogData, String> verifier; // Data -> Error message (null = success)
 	private ButtonType confirmButton;
 	private String text;
-	
+
 	public SimpleInputDialog() {
 		this.elements = new ArrayList<>();
 		this.disabled = new ArrayList<>();
 		this.verifier = d -> null;
 		this.confirmButton = ButtonType.FINISH;
 	}
-	
-	private void addInput(DialogInputType type, String id, String name, String prompt, Object initialValue) {
-		elements.add(new DialogElement(type, id, name, prompt, initialValue));
+
+	private void addInput(DialogInputType type, String id, String name, String prompt, Object initialValue, List<Object> choices) {
+		elements.add(new DialogElement(type, id, name, prompt, initialValue, choices));
 	}
-	
+
 	public SimpleInputDialog addString(String id, String name, String prompt) {
-		addInput(DialogInputType.STRING, id, name, prompt, null);
+		addInput(DialogInputType.STRING, id, name, prompt, null, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addString(String id, String name, String prompt, String initialValue) {
-		addInput(DialogInputType.STRING, id, name, prompt, initialValue);
+		addInput(DialogInputType.STRING, id, name, prompt, initialValue, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addBoolean(String id, String name) {
-		addInput(DialogInputType.BOOLEAN, id, name, null, false);
+		addInput(DialogInputType.BOOLEAN, id, name, null, false, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addBoolean(String id, String name, boolean initialValue) {
-		addInput(DialogInputType.BOOLEAN, id, name, null, initialValue);
+		addInput(DialogInputType.BOOLEAN, id, name, null, initialValue, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addFile(String id, String name, String prompt) {
-		addInput(DialogInputType.FILE, id, name, prompt, null);
+		addInput(DialogInputType.FILE, id, name, prompt, null, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addFile(String id, String name, String prompt, File initialValue) {
-		addInput(DialogInputType.FILE, id, name, prompt, initialValue);
+		addInput(DialogInputType.FILE, id, name, prompt, initialValue, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addDirectory(String id, String name, String prompt) {
-		addInput(DialogInputType.DIRECTORY, id, name, prompt, null);
+		addInput(DialogInputType.DIRECTORY, id, name, prompt, null, null);
 		return this;
 	}
-	
+
 	public SimpleInputDialog addDirectory(String id, String name, String prompt, File initialValue) {
-		addInput(DialogInputType.DIRECTORY, id, name, prompt, initialValue);
+		addInput(DialogInputType.DIRECTORY, id, name, prompt, initialValue, null);
 		return this;
 	}
-	
+
+	public SimpleInputDialog addChoice(String id, String name, List<? extends Object> choices) {
+		addInput(DialogInputType.CHOICE, id, name, null, choices.get(0), new ArrayList<>(choices));
+		return this;
+	}
+
+	public SimpleInputDialog addChoice(String id, String name, Object initialValue, List<? extends Object> choices) {
+		addInput(DialogInputType.CHOICE, id, name, null, initialValue, new ArrayList<>(choices));
+		return this;
+	}
+
 	public SimpleInputDialog setVerifier(Function<DialogData, String> verifier) {
 		this.verifier = verifier;
 		return this;
 	}
-	
+
 	public SimpleInputDialog setConfirmButton(ButtonType confirmButton) {
 		this.confirmButton = confirmButton;
 		return this;
 	}
-	
+
 	public SimpleInputDialog disable(String elementID) {
 		disabled.add(elementID);
 		return this;
 	}
-	
+
 	public SimpleInputDialog text(String text) {
 		this.text = text;
 		return this;
 	}
-	
+
 	public DialogData show(String title, String header) {
 		Dialog<DialogData> dialog = new Dialog<>();
 		dialog.initOwner(ShittyAuthLauncher.stage);
@@ -110,7 +122,7 @@ public class SimpleInputDialog {
 		dialog.setTitle(title);
 		dialog.setHeaderText(header);
 		dialog.getDialogPane().getButtonTypes().addAll(confirmButton, ButtonType.CANCEL);
-		
+
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(10);
@@ -124,7 +136,7 @@ public class SimpleInputDialog {
 			GridPane.setColumnSpan(textLabel, GridPane.REMAINING);
 			grid.add(textLabel, 0, 0);
 		}
-		
+
 		Map<String, Supplier<Object>> nodeValueFunctions = new HashMap<>();
 		int row = text == null ? 0 : 1;
 		for(DialogElement e : elements) {
@@ -210,6 +222,19 @@ public class SimpleInputDialog {
 					grid.add(name, 1, row);
 					break;
 				}
+				case CHOICE:
+				{
+					ChoiceBox<Object> cb = new ChoiceBox<>();
+					cb.setPrefWidth(300);
+					GridPane.setHgrow(cb, Priority.ALWAYS);
+					cb.setMaxWidth(Double.MAX_VALUE);
+					cb.setItems(FXCollections.observableArrayList(e.getChoices()));
+					if(e.getInitialValue() != null) cb.getSelectionModel().select(e.getInitialValue());
+					if(disabled.contains(e.getID())) cb.setDisable(true);
+					nodeValueFunctions.put(e.getID(), () -> cb.getSelectionModel().getSelectedItem());
+					grid.add(cb, 1, row);
+					break;
+				}
 				default:
 					throw new UnsupportedOperationException("Invalid element type");
 			}
@@ -217,7 +242,7 @@ public class SimpleInputDialog {
 		}
 
 		dialog.getDialogPane().setContent(grid);
-		
+
 		Button okButton = (Button) dialog.getDialogPane().lookupButton(confirmButton);
 		okButton.addEventFilter(ActionEvent.ACTION, ae -> {
 			Map<String, Object> data = new HashMap<>();
@@ -241,7 +266,7 @@ public class SimpleInputDialog {
 
 		return dialog.showAndWait().orElse(null);
 	}
-	
+
 	private static String getString(TextField textField) {
 		String txt = textField.getText();
 		if(txt == null || txt.isBlank()) txt = null;

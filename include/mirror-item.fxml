@@ -1,32 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.Button?>
 <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0">
+      <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" HBox.hgrow="ALWAYS">
          <children>
-            <VBox alignment="CENTER_LEFT" spacing="10.0">
-               <children>
-                  <Label fx:id="textName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Mojang Mirror" />
-                  <Label fx:id="textManifest" text="Version Manifest: http://launchermeta.mojang.com/mc/game/version_manifest.json" />
-                  <Label fx:id="textResources" text="Resources: http://resources.download.minecraft.net/" />
-               </children>
-            </VBox>
-            <VBox alignment="CENTER" spacing="10.0">
-               <children>
-                  <Button fx:id="buttonApply" layoutX="10.0" layoutY="14.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Switch Mirror" />
-                  <Button fx:id="buttonEdit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Edit Mirror" />
-                  <Button fx:id="buttonDelete" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Delete" />
-               </children>
-            </VBox>
+            <Label fx:id="textName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Mirror Name" />
+            <Label fx:id="textManifest" text="Version Manifest: https://example.com/versions.json" />
+            <Label fx:id="textResources" text="Resources: https://example.com/" />
          </children>
-      </HBox>
-      <VBox fx:id="boxButtons" alignment="CENTER" spacing="10.0" />
+      </VBox>
+      <VBox alignment="CENTER" spacing="10.0">
+         <children>
+            <Button fx:id="buttonEdit" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Edit Mirror" />
+            <Button fx:id="buttonDelete" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Delete" />
+         </children>
+      </VBox>
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

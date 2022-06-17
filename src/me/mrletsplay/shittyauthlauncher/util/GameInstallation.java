@@ -11,11 +11,14 @@ import me.mrletsplay.mrcore.json.converter.JSONConvertible;
 import me.mrletsplay.mrcore.json.converter.JSONListType;
 import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.mrcore.misc.FriendlyException;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
+import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
+import me.mrletsplay.shittyauthpatcher.version.VersionsList;
 
 public class GameInstallation implements JSONConvertible {
-	
+
 	public static final String DEFAULT_IMAGE_DATA;
-	
+
 	static {
 		try(InputStream in = GameInstallation.class.getResourceAsStream("/include/icon.png")) {
 			byte[] bytes = in.readAllBytes();
@@ -24,35 +27,40 @@ public class GameInstallation implements JSONConvertible {
 			throw new FriendlyException(e);
 		}
 	}
-	
+
 	@JSONValue
 	public InstallationType type = InstallationType.CUSTOM;
-	
+
 	@JSONValue
 	public String id;
 
 	@JSONValue
 	public String name;
-	
+
 	@JSONValue
 	public String imageData;
-	
+
 	@JSONValue
 	public String gameDirectory;
-	
+
 	@JSONValue
 	public String javaPath;
-	
+
 	@JSONValue
 	@JSONListType(JSONType.STRING)
 	public List<String> jvmArgs;
-	
+
 	@JSONValue
 	public String lastVersionId;
-	
+
+	@JSONValue
+	public String mirror;
+
+	private VersionsList versions;
+
 	@JSONConstructor
 	public GameInstallation() {}
-	
+
 	public GameInstallation(InstallationType type, String id, String name, String imageData, String gameDirectory, String javaPath, List<String> jvmArgs, String lastVersionId) {
 		this.type = type;
 		this.id = id;
@@ -63,10 +71,34 @@ public class GameInstallation implements JSONConvertible {
 		this.jvmArgs = jvmArgs;
 		this.lastVersionId = lastVersionId;
 	}
-	
+
+	private VersionsList loadVersions() {
+		VersionsList v = new VersionsList();
+		v.addVersions(getMirror().getVersions());
+		return v;
+	}
+
+	public void updateVersions() {
+		versions = loadVersions();
+	}
+
+	public VersionsList getVersions() {
+		if(versions == null) versions = loadVersions(); // TODO: combine mirror versions and load versions from folder
+		return versions;
+	}
+
+	public DownloadsMirror getMirror() {
+		DownloadsMirror m = ShittyAuthLauncherSettings.getMirror(mirror);
+		if(m == null) {
+			System.err.println("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default Mojang mirror");
+			return DownloadsMirror.MOJANG;
+		}
+		return m;
+	}
+
 	@Override
 	public String toString() {
 		return name;
 	}
-	
+
 }
