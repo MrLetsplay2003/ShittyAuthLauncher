@@ -69,6 +69,7 @@ public class AuthHelper {
 		post.setData(JSONObjectData.of(req));
 
 		HttpResult r = post.execute();
+		if(!r.isSuccess()) return null;
 		return getLoginData(r.asJSONObject());
 	}
 

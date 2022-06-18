@@ -194,9 +194,18 @@ public class ShittyAuthController {
 		}
 
 		MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
-		if(acc == null || !acc.isLoggedIn()) {
-			DialogHelper.showWarning("You need to log in first");
+		if(acc == null) {
+			DialogHelper.showWarning("You need to create an account first");
 			return;
+		}
+
+		if(!AuthHelper.validate(acc.getLoginData(), acc.getServers())) {
+			acc.setLoginData(AuthHelper.refresh(acc.getLoginData(), acc.getServers()));
+		}
+
+		if(!acc.isLoggedIn()) {
+			showLoginDialog(acc);
+			if(!acc.isLoggedIn()) return;
 		}
 
 		GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
@@ -545,6 +554,8 @@ public class ShittyAuthController {
 				accountsList.set(accountsList.indexOf(account), account);
 				ShittyAuthLauncherSettings.setAccounts(accountsList);
 				ShittyAuthLauncherSettings.save();
+			}else {
+				DialogHelper.showError("Invalid credentials");
 			}
 		}catch(Exception e) {
 			DialogHelper.showError("Failed to log in", e);
