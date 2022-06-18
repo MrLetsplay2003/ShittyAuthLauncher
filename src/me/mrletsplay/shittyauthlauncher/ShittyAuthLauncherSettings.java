@@ -162,10 +162,11 @@ public class ShittyAuthLauncherSettings {
 
 	private static List<DownloadsMirror> loadMirrors() {
 		try {
+			if(!Files.exists(MIRRORS_PATH)) return new ArrayList<>();
 			JSONArray p = new JSONArray(Files.readString(MIRRORS_PATH, StandardCharsets.UTF_8));
 			return p.stream()
 				.map(m -> JSONConverter.decodeObject((JSONObject) m, DownloadsMirror.class))
-				.collect(Collectors.toList());
+				.collect(Collectors.toCollection(ArrayList::new));
 		} catch (IOException e) {
 			throw new FriendlyException("Failed to read file", e);
 		}
