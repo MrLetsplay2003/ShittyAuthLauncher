@@ -58,6 +58,20 @@
                   </AnchorPane>
                </content>
           </Tab>
+            <Tab text="Mirrors">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#buttonNewMirror" prefHeight="25.0" text="Add Mirror..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                           <content>
+                              <VBox fx:id="boxMirrors" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
       <CheckBox fx:id="checkboxShowAllVersions" layoutX="15.0" layoutY="384.0" mnemonicParsing="false" onAction="#checkboxShowAllVersions" prefHeight="25.0" text="Show all versions" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="15.0" />

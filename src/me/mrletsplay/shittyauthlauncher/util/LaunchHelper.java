@@ -3,7 +3,7 @@ package me.mrletsplay.shittyauthlauncher.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -33,7 +33,6 @@ import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
-import me.mrletsplay.mrcore.json.converter.JSONConverter;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
@@ -168,51 +167,34 @@ public class LaunchHelper {
 
 				if(version.isOlderThan(DownloadsMirror.MOJANG.getVersions().getVersion("1.7.6"))) {
 					// New skins API was introduced in release 1.7.6
-					File patchServers = new File(minecraftJar.getParentFile(), "patch-servers.json");
-
 					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
-					try {
-						ServerConfiguration conf = JSONConverter.decodeObject(new JSONObject(Files.readString(patchServers.toPath())), ServerConfiguration.class);
-						if(!conf.equals(servers)) forcePatch = true;
-					}catch(IOException e) {
-						forcePatch = true;
-					}
-
 					if(forcePatch) {
 						System.out.println("Forcibly repatching Minecraft");
 					}
 
-					File out = new File(minecraftJar.getParentFile(), "patched-" + minecraftJar.getName());
+					File out = new File(minecraftJar.getParentFile(), "patched/" + account.getServers().hashString() + ".jar");
 					if(!out.exists() || forcePatch) {
 						updateMessage("Patching minecraft");
+						IOUtils.createFile(out);
 						LibraryPatcher.patchMinecraft(minecraftJar.toPath(), out.toPath(), servers);
-						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
 					}
+
 					minecraftJar = out;
 				}
 				libs.add(minecraftJar);
 				System.out.println("Minecraft jar: " + minecraftJar.getAbsolutePath());
 
 				if(authLibFile != null) {
-					File patchServers = new File(authLibFile.getParentFile(), "patch-servers.json");
-
 					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
-					try {
-						ServerConfiguration conf = JSONConverter.decodeObject(new JSONObject(Files.readString(patchServers.toPath())), ServerConfiguration.class);
-						if(!conf.equals(servers)) forcePatch = true;
-					}catch(IOException e) {
-						forcePatch = true;
-					}
-
 					if(forcePatch) {
 						System.out.println("Forcibly repatching authlib");
 					}
 
-					File out = new File(authLibFile.getParentFile(), "patched-" + authLibFile.getName());
+					File out = new File(authLibFile.getParentFile(), "patched/" + account.getServers().hashString() + ".jar");
 					if(!out.exists() || forcePatch) {
 						updateMessage("Patching authlib");
+						IOUtils.createFile(out);
 						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers);
-						Files.writeString(patchServers.toPath(), servers.toJSON().toString());
 					}
 					libs.add(out);
 					System.out.println("Using authlib at: " + out.getAbsolutePath());
@@ -285,7 +267,7 @@ public class LaunchHelper {
 		try {
 			ServerConfiguration servers = account.getServers();
 
-			File keyFile = new File(ShittyAuthLauncherSettings.DATA_PATH + "/keys/" + URI.create(account.getServers().authServer).getHost() + ".der");
+			File keyFile = new File(ShittyAuthLauncherSettings.DATA_PATH + "/keys/" + account.getServers().hashString() + ".der");
 			if(!keyFile.exists()) {
 				String[] choices = {"Yes", "No", "Use default Mojang key"};
 				int c = DialogHelper.showChoice("You don't have a public key file yet.\nAttempt to download it from the session server? (only available if using ShittyAuthServer)\n\nNote: Without a key file, skins won't work", choices);
@@ -306,7 +288,8 @@ public class LaunchHelper {
 						break;
 					case 2: // Use Mojang key
 					{
-						// TODO: copy Mojang key
+						URL res = LaunchHelper.class.getResource("/include/mojang_yggdrasil_session_pubkey.der");
+						IOUtils.writeBytes(keyFile, IOUtils.readAllBytes(res.openStream()));
 					}
 				}
 			}
@@ -448,7 +431,7 @@ public class LaunchHelper {
 						fullArgs.add(meta.getMainClass());
 						fullArgs.addAll(gameArgs);
 
-						System.out.println(fullArgs);
+						System.out.println("Command line: " + fullArgs);
 
 						ProcessBuilder b = new ProcessBuilder(fullArgs);
 						b.directory(new File(installation.gameDirectory));

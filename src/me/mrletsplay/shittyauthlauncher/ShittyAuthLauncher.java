@@ -37,7 +37,6 @@ public class ShittyAuthLauncher extends Application {
 		FXMLLoader l2 = new FXMLLoader(url2);
 		Parent settings = l2.load(url2.openStream());
 		settingsController = l2.getController();
-		settingsController.init();
 
 		Scene settingsScene = new Scene(settings);
 

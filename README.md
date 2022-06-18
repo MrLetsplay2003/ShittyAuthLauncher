@@ -7,6 +7,7 @@ ShittyAuthLauncher is a Minecraft launcher that's not tied to any specific authe
 
 # Installing
 Just download the latest launcher JAR file from the [releases](https://github.com/MrLetsplay2003/ShittyAuthLauncher/releases) section. You can then run it using any Java 11+ VM on Linux or Windows.
+Running the launcher on MacOS should also work, but I can't really test that.
 
 # Features
 - Automatically patches Mojang's authlib as well as the Minecraft JAR

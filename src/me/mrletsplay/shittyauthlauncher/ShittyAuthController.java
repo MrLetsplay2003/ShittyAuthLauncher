@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -59,6 +62,7 @@ public class ShittyAuthController {
 	public static FilteredList<AbstractMinecraftVersion> versionsListRelease;
 	public static ObservableList<GameInstallation> installationsList;
 	public static ObservableList<MinecraftAccount> accountsList;
+	public static ObservableList<DownloadsMirror> mirrors;
 
 	@FXML
 	private ComboBox<AbstractMinecraftVersion> dropdownVersions;
@@ -80,6 +84,9 @@ public class ShittyAuthController {
 
 	@FXML
 	private VBox boxAccounts;
+
+	@FXML
+	private VBox boxMirrors;
 
 	public void init() {
 		importInstallationsFromJSON();
@@ -133,6 +140,15 @@ public class ShittyAuthController {
 			ShittyAuthLauncherSettings.setInstallations(installationsList);
 			ShittyAuthLauncherSettings.save();
 		});
+
+		mirrors = FXCollections.observableArrayList();
+		mirrors.addListener((ListChangeListener<DownloadsMirror>) v -> {
+			boxMirrors.getChildren().clear();
+			for(DownloadsMirror mirror : mirrors) {
+				boxMirrors.getChildren().add(createMirrorItem(mirror));
+			}
+		});
+		mirrors.addAll(ShittyAuthLauncherSettings.getMirrors());
 
 		GameInstallation i = ShittyAuthLauncherSettings.getActiveInstallation();
 		if(i == null) i = ShittyAuthLauncherSettings.getInstallations().get(0);
@@ -271,6 +287,15 @@ public class ShittyAuthController {
 		}
 	}
 
+	@FXML
+	void buttonNewMirror(ActionEvent event) {
+		DownloadsMirror mirror = showEditMirrorDialog(null);
+		if(mirror != null) {
+			mirrors.add(mirror);
+			ShittyAuthLauncherSettings.setMirrors(mirrors);
+		}
+	}
+
 	private Node createInstallationItem(GameInstallation installation, boolean isImport) {
 		try {
 			URL url = ShittyAuthLauncher.class.getResource("/include/installation-item.fxml");
@@ -316,15 +341,19 @@ public class ShittyAuthController {
 					dropdownInstallations.getSelectionModel().select(dropdownInstallations.getSelectionModel().getSelectedItem());
 					ShittyAuthLauncherSettings.setInstallations(installationsList);
 					ShittyAuthLauncherSettings.save();
+					if(dropdownInstallations.getValue() == installation) selectInstallation(installation);
 				});
 				buttons.getChildren().add(edit);
 
 				Button clone = new Button("Clone");
-				clone.setDisable(true);
 				clone.setMaxWidth(Double.MAX_VALUE);
 				clone.setOnAction(event -> {
-					showEditInstallationDialog(null);
-					// TODO: clone
+					GameInstallation inst = showEditInstallationDialog(null, installation);
+					if(inst != null) {
+						installationsList.add(inst);
+						ShittyAuthLauncherSettings.setInstallations(installationsList);
+						ShittyAuthLauncherSettings.save();
+					}
 				});
 				buttons.getChildren().add(clone);
 
@@ -382,12 +411,13 @@ public class ShittyAuthController {
 		}
 	}
 
-	private GameInstallation showEditInstallationDialog(GameInstallation from) {
+	private GameInstallation showEditInstallationDialog(GameInstallation from, GameInstallation initWith) {
 		SimpleInputDialog dialog = new SimpleInputDialog()
-			.addString("name", "Installation Name", "Name", from != null ? from.name : null)
-			.addDirectory("directory", "Directory", "Directory", from != null ? new File(from.gameDirectory) : null)
-			.addFile("java", "Java Path", "empty = default", from != null && from.javaPath != null ? new File(from.javaPath) : null)
-			.addChoice("mirror", "Mirror", from == null ? DownloadsMirror.MOJANG : from.getMirror(), ShittyAuthLauncherSettings.getMirrors())
+			.addString("name", "Installation Name", "Name", initWith != null ? initWith.name : null)
+			.addDirectory("directory", "Directory", "Directory", initWith != null ? new File(initWith.gameDirectory) : null)
+			.addFile("java", "Java Path", "empty = default", initWith != null && initWith.javaPath != null ? new File(initWith.javaPath) : null)
+			.addString("jvmArgs", "JVM arguments", "empty = none", initWith != null ? Optional.ofNullable(initWith.jvmArgs).map(a -> a.stream().collect(Collectors.joining(" "))).orElse("") : "")
+			.addChoice("mirror", "Mirror", initWith == null ? DownloadsMirror.MOJANG : initWith.getMirror(), ShittyAuthLauncherSettings.getMirrors())
 			.setVerifier(d -> {
 				if(d.get("name") == null) return "Name may not be empty";
 				if(d.get("directory") == null) return "Directory may not be empty";
@@ -404,10 +434,16 @@ public class ShittyAuthController {
 		from.gameDirectory = data.<File>get("directory").getAbsolutePath();
 		File java = data.get("java");
 		from.javaPath = java == null ? null : java.getAbsolutePath();
+		String jvmArgs = data.get("jvmArgs");
+		from.jvmArgs = jvmArgs == null ? Collections.emptyList() : Arrays.asList(jvmArgs.split(" "));
 		if(from.lastVersionId == null) from.lastVersionId = from.getVersions().getLatestRelease().getId();
 		from.mirror = data.<DownloadsMirror>get("mirror").getName();
 		loadVersions(from);
 		return from;
+	}
+
+	private GameInstallation showEditInstallationDialog(GameInstallation from) {
+		return showEditInstallationDialog(from, from);
 	}
 
 	private Node createAccountItem(MinecraftAccount account) {
@@ -512,6 +548,100 @@ public class ShittyAuthController {
 			}
 		}catch(Exception e) {
 			DialogHelper.showError("Failed to log in", e);
+		}
+	}
+
+
+
+	private DownloadsMirror showEditMirrorDialog(DownloadsMirror from) {
+		DownloadsMirror defaultMirror = DownloadsMirror.MOJANG;
+		SimpleInputDialog dialog = new SimpleInputDialog()
+				.addString("name",
+						"Mirror Name",
+						"Name",
+						from != null ? from.getName() : defaultMirror.getName())
+
+				.addString("manifest",
+						"Manifest URL",
+						"Manifest",
+						from != null ? from.getVersionManifestURL() : defaultMirror.getVersionManifestURL())
+
+				.addString("resources",
+						"Resources URL",
+						"Resources",
+						from != null ? from.getAssetsURL() : defaultMirror.getAssetsURL())
+
+				.setVerifier(d -> {
+					if(from == null) {
+						// New mirror, check if one with that name already exists
+						for (DownloadsMirror checking : mirrors){
+							if (checking.getName().equals(d.get("name"))) return "Mirror with that name already exists";
+						}
+					}
+
+					if (d.get("name") == null) return "Name may not be empty";
+					if (d.get("manifest") == null) return "Manifest URL may not be empty";
+					if (d.get("resources") == null) return "Resources URL may not be empty";
+					return null;
+				});
+
+		DialogData data = dialog.show("Edit Mirror", "Enter Mirror settings");
+		if (data == null) return null;
+
+		DownloadsMirror mirror = from == null ? new DownloadsMirror() : from;
+		mirror.setName(data.get("name"));
+		mirror.setVersionManifestURL(data.get("manifest"));
+		mirror.setAssetsURL(data.get("resources"));
+		if(!mirror.getAssetsURL().endsWith("/")){
+			mirror.setAssetsURL(from.getAssetsURL().concat("/"));
+		}
+		return mirror;
+	}
+
+	private Node createMirrorItem(DownloadsMirror mirror) {
+		try {
+			URL url = ShittyAuthLauncher.class.getResource("/include/mirror-item.fxml");
+			if(url == null) url = new File("./include/mirror-item.fxml").toURI().toURL();
+
+			FXMLLoader l = new FXMLLoader(url);
+			Parent pr = l.load(url.openStream());
+
+
+			Label lbl = (Label) pr.lookup("#textName");
+			lbl.setText(mirror.getName());
+
+			Label lbl1 = (Label) pr.lookup("#textManifest");
+			lbl1.setText(mirror.getVersionManifestURL());
+
+			Label lbl2 = (Label) pr.lookup("#textResources");
+			lbl2.setText(mirror.getAssetsURL());
+
+			Button edit = (Button) pr.lookup("#buttonEdit");
+			edit.setOnAction(event -> {
+				showEditMirrorDialog(mirror);
+				mirrors.set(mirrors.indexOf(mirror), mirror); // Cause a list update
+				ShittyAuthLauncherSettings.setMirrors(mirrors);
+			});
+
+			Button delete = (Button) pr.lookup("#buttonDelete");
+			delete.setOnAction(event -> {
+				if(DialogHelper.showYesNo("Do you really want to delete the mirror '" + mirror.getName() + "'?")) {
+					mirrors.remove(mirror);
+					ShittyAuthLauncherSettings.setMirrors(mirrors);
+				}
+			});
+
+			if(mirror == DownloadsMirror.MOJANG){
+				edit.setDisable(true);
+				delete.setDisable(true);
+			} else {
+				edit.setDisable(false);
+				delete.setDisable(false);
+			}
+
+			return pr;
+		}catch(IOException e) {
+			throw new FriendlyException(e);
 		}
 	}
 
