@@ -9,10 +9,10 @@ import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class MinecraftAccount implements JSONConvertible {
-	
+
 	@JSONValue
 	private String id;
-	
+
 	@JSONValue
 	private ServerConfiguration servers;
 
@@ -21,32 +21,32 @@ public class MinecraftAccount implements JSONConvertible {
 
 	@JSONConstructor
 	private MinecraftAccount() {}
-	
+
 	public MinecraftAccount(ServerConfiguration servers) {
 		this.id = UUID.randomUUID().toString();
 		this.servers = servers;
 	}
-	
+
 	public String getId() {
 		return id;
 	}
-	
+
 	public ServerConfiguration getServers() {
 		return servers;
 	}
-	
+
 	public void setLoginData(LoginData loginData) {
 		this.loginData = loginData;
 	}
-	
+
 	public LoginData getLoginData() {
 		return loginData;
 	}
-	
+
 	public boolean isLoggedIn() {
 		return loginData != null;
 	}
-	
+
 	@Override
 	public String toString() {
 		return (isLoggedIn() ? loginData.getUsername() : "Not logged in") + " (" + servers.authServer + ")";
@@ -68,5 +68,5 @@ public class MinecraftAccount implements JSONConvertible {
 		MinecraftAccount other = (MinecraftAccount) obj;
 		return Objects.equals(id, other.id);
 	}
-	
+
 }

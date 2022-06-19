@@ -1,6 +1,8 @@
 package me.mrletsplay.shittyauthlauncher;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -12,6 +14,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -46,6 +50,7 @@ import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
 import me.mrletsplay.shittyauthlauncher.util.LaunchHelper;
 import me.mrletsplay.shittyauthlauncher.util.ProfilesHelper;
+import me.mrletsplay.shittyauthlauncher.util.SkinHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogData;
 import me.mrletsplay.shittyauthlauncher.util.dialog.DialogHelper;
 import me.mrletsplay.shittyauthlauncher.util.dialog.SimpleInputDialog;
@@ -465,6 +470,13 @@ public class ShittyAuthController {
 
 			ImageView img = (ImageView) pr.lookup("#imageIcon"); // TODO: e.g. use head of Minecraft skin
 			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
+
+			BufferedImage accHead = SkinHelper.getSkinHead(account.getServers(), account.getLoginData().getUUID());
+			if(accHead != null) {
+				ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+				ImageIO.write(accHead, "PNG", bOut);
+				img.setImage(new Image(new ByteArrayInputStream(bOut.toByteArray())));
+			}
 
 			Label lbl = (Label) pr.lookup("#textName");
 			lbl.setText(account.getLoginData() != null ? account.getLoginData().getUsername() : "Not Logged In");
