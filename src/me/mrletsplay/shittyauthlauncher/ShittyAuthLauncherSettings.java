@@ -23,6 +23,8 @@ import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
 import me.mrletsplay.shittyauthlauncher.util.GameInstallation;
 import me.mrletsplay.shittyauthlauncher.util.InstallationType;
+import me.mrletsplay.shittyauthlauncher.util.OS;
+import me.mrletsplay.shittyauthlauncher.util.OSType;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
@@ -33,7 +35,7 @@ public class ShittyAuthLauncherSettings {
 	public static final String LAUNCHER_VERSION = "69.420";
 
 	public static final String
-		DEFAULT_MINECRAFT_CONTAINER = System.getProperty("os.name").toLowerCase().contains("windows") ? System.getenv("APPDATA") : System.getProperty("user.home"),
+		DEFAULT_MINECRAFT_CONTAINER = OS.getCurrentOS().getType() == OSType.WINDOWS ? System.getenv("APPDATA") : System.getProperty("user.home"),
 		DEFAULT_MINECRAFT_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft",
 		DEFAULT_GAME_DATA_PATH = DEFAULT_MINECRAFT_CONTAINER + "/.minecraft-shitty";
 

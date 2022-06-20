@@ -13,8 +13,9 @@ Running the launcher on MacOS should also work, but I can't really test that.
 - Automatically patches Mojang's authlib as well as the Minecraft JAR
 - Configurable auth/session/api/services servers
 - Supports custom skin hosts
-- Supports authentication and skins in modern versions of Minecraft as well as older ones (as low as beta 1.8 when using [ShittyAuthServer](https://github.com/MrLetsplay2003/ShittyAuthServer))
+- Supports authentication and skins in modern versions of Minecraft as well as older ones (as low as beta 1.0 when using [ShittyAuthServer](https://github.com/MrLetsplay2003/ShittyAuthServer))
 - Works completely independently of the normal Minecraft launcher
+- Supports having multiple accounts on different auth servers, multiple installations and mirrors and mix-and-matching between them
 
 # Compiling the launcher yourself
 The launcher uses Maven for building.

@@ -204,7 +204,7 @@ public class ShittyAuthController {
 			return;
 		}
 
-		if(!AuthHelper.validate(acc.getLoginData(), acc.getServers())) {
+		if(acc.getLoginData() != null && !AuthHelper.validate(acc.getLoginData(), acc.getServers())) {
 			acc.setLoginData(AuthHelper.refresh(acc.getLoginData(), acc.getServers()));
 		}
 
@@ -471,7 +471,7 @@ public class ShittyAuthController {
 			ImageView img = (ImageView) pr.lookup("#imageIcon"); // TODO: e.g. use head of Minecraft skin
 			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
 
-			BufferedImage accHead = SkinHelper.getSkinHead(account.getServers(), account.getLoginData().getUUID());
+			BufferedImage accHead = SkinHelper.getSkinHead(account);
 			if(accHead != null) {
 				ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 				ImageIO.write(accHead, "PNG", bOut);
