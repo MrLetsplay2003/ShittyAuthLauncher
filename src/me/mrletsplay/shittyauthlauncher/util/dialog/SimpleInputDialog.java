@@ -18,6 +18,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -47,6 +48,11 @@ public class SimpleInputDialog {
 
 	public SimpleInputDialog addString(String id, String name, String prompt) {
 		addInput(DialogInputType.STRING, id, name, prompt, null, null);
+		return this;
+	}
+
+	public SimpleInputDialog addPassword(String id, String name, String prompt) {
+		addInput(DialogInputType.PASSWORD, id, name, prompt, null, null);
 		return this;
 	}
 
@@ -212,6 +218,19 @@ public class SimpleInputDialog {
 				case STRING:
 				{
 					TextField name = new TextField();
+					name.setPromptText(e.getPrompt());
+					name.setPrefWidth(300);
+					GridPane.setHgrow(name, Priority.ALWAYS);
+					name.setMaxWidth(Double.MAX_VALUE);
+					if(e.getInitialValue() != null) name.setText((String) e.getInitialValue());
+					if(disabled.contains(e.getID())) name.setDisable(true);
+					nodeValueFunctions.put(e.getID(), () -> getString(name));
+					grid.add(name, 1, row);
+					break;
+				}
+				case PASSWORD:
+				{
+					PasswordField name = new PasswordField();
 					name.setPromptText(e.getPrompt());
 					name.setPrefWidth(300);
 					GridPane.setHgrow(name, Priority.ALWAYS);

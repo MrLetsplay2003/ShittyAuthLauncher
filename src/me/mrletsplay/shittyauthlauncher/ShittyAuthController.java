@@ -547,7 +547,7 @@ public class ShittyAuthController {
 		ButtonType loginButton = new ButtonType("Login", ButtonData.OK_DONE);
 		DialogData data = new SimpleInputDialog()
 				.addString("username", "Username", "Username")
-				.addString("password", "Password", "Password")
+				.addPassword("password", "Password", "Password")
 				.setVerifier(d -> {
 					return d.get("username") == null || d.get("password") == null ?
 							"Need both username and password to log in" : null;
