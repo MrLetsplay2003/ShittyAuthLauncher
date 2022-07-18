@@ -5,8 +5,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -57,9 +59,7 @@ import me.mrletsplay.shittyauthlauncher.util.dialog.SimpleInputDialog;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 import me.mrletsplay.shittyauthpatcher.version.AbstractMinecraftVersion;
-import me.mrletsplay.shittyauthpatcher.version.ImportedMinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.MinecraftVersionType;
-import me.mrletsplay.shittyauthpatcher.version.VersionsList;
 
 public class ShittyAuthController {
 
@@ -387,32 +387,13 @@ public class ShittyAuthController {
 				Button importBtn = new Button("Import");
 				importBtn.setMaxWidth(Double.MAX_VALUE);
 				importBtn.setOnAction(event -> {
-//					AbstractMinecraftVersion instVer = installation.getVersions().getVersion(installation.lastVersionId);
-//					boolean reloadVersions = false;
-//					if(instVer == null || (instVer.isImported() /* && version not installed */)) { TODO: idk
-//						// TODO: check whether the version is installed in gameDir, otherwise ask where it is and copy it
-//						/*DialogData d = new SimpleInputDialog()
-//								.addDirectory("path", "Path to .minecraft", "Path to .minecraft", new File(ShittyAuthLauncherSettings.DEFAULT_MINECRAFT_PATH))
-//								.text("This installation requires a custom (modded) version of Minecraft. For this to work correctly, some files need to be copied from the .minecraft folder.\n\n"
-//										+ "Please select the path to the .minecraft folder which contains the version '" + installation.lastVersionId + "'")
-//								.setVerifier(dt -> dt.get("path") == null ? "Path must be set" : null)
-//								.show("Custom version required", "Select path");
-//						System.out.println(d);
-//						if(d == null) return;
-//						List<ImportedVersion> vers = loadVersions(d.<File>get("path"));
-//						ImportedVersion versionToImport = vers.stream()
-//								.filter(v -> v.getId().equals(installation.lastVersionId))
-//								.findFirst().orElse(null);
-//						ProfilesHelper.installVersion(versionToImport, d.get("path"), new File(installation.gameDirectory));
-//						reloadVersions = true;*/
-//						DialogHelper.showError("Importing installations with modded versions is currently not supported");
-//						return;
-//					}
+					if(!Path.of(installation.gameDirectory).equals(Path.of(ShittyAuthLauncherSettings.DEFAULT_MINECRAFT_PATH))) {
+						DialogHelper.showWarning("This installation does not use the default .minecraft directory. If it contains modded versions, they need to be manually re-installed into the directory to appear");
+					}
 
 					installationsList.add(installation);
 					ShittyAuthLauncherSettings.setInstallations(installationsList);
 					ShittyAuthLauncherSettings.save();
-//					if(reloadVersions) loadAllVersions();
 					importBtn.setText("Imported");
 					importBtn.setDisable(true);
 				});
@@ -452,7 +433,8 @@ public class ShittyAuthController {
 		from.jvmArgs = jvmArgs == null ? Collections.emptyList() : Arrays.asList(jvmArgs.split(" "));
 		if(from.lastVersionId == null) from.lastVersionId = from.getVersions().getLatestRelease().getId();
 		from.mirror = data.<DownloadsMirror>get("mirror").getName();
-		loadVersions(from);
+		from.updateVersions();
+		if(from == dropdownInstallations.getValue()) versionsList.setAll(from.getVersions().getVersions());
 		return from;
 	}
 
@@ -468,7 +450,7 @@ public class ShittyAuthController {
 			FXMLLoader l = new FXMLLoader(url);
 			Parent pr = l.load(url.openStream());
 
-			ImageView img = (ImageView) pr.lookup("#imageIcon"); // TODO: e.g. use head of Minecraft skin
+			ImageView img = (ImageView) pr.lookup("#imageIcon");
 			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
 
 			BufferedImage accHead = SkinHelper.getSkinHead(account);
@@ -508,31 +490,45 @@ public class ShittyAuthController {
 	}
 
 	private ServerConfiguration showEditServersDialog(ServerConfiguration from) {
-		DialogData data = new SimpleInputDialog()
-			.addString("auth", "Authentication server URL", "e.g. http://auth.example.com", from != null ? from.authServer : null)
-			.addString("accounts", "Accounts server URL", "e.g. http://account.example.com", from != null ? from.accountsServer : null)
-			.addString("session", "Session server URL", "e.g. http://session.example.com", from != null ? from.sessionServer : null)
-			.addString("services", "Services server URL", "e.g. http://services.example.com", from != null ? from.servicesServer : null)
-			.addString("skin", "Skin/Cape host", "e.g. skins.example.com", from != null ? from.skinHost : null)
-			.setVerifier(d -> d.get("auth") == null
-						|| d.get("accounts") == null
-						|| d.get("session") == null
-						|| d.get("services") == null
-						|| d.get("skin") == null ?
-								"All servers must be set" : null)
-			.show("Edit Servers", "Enter server settings");
+		boolean custom = true;
+		if(from == null) {
+			int ch = DialogHelper.showChoice("Server Setup", "Choose your setup type", "ShittyAuth", "Custom");
+			if(ch == 0) custom = false;
+		}
+
+		DialogData data;
+
+		if(custom) {
+			data = new SimpleInputDialog()
+				.addString("auth", "Authentication server URL", "e.g. http://auth.example.com", from != null ? from.authServer : null)
+				.addString("accounts", "Accounts server URL", "e.g. http://account.example.com", from != null ? from.accountsServer : null)
+				.addString("session", "Session server URL", "e.g. http://session.example.com", from != null ? from.sessionServer : null)
+				.addString("services", "Services server URL", "e.g. http://services.example.com", from != null ? from.servicesServer : null)
+				.addString("skin", "Skin/Cape host", "e.g. skins.example.com", from != null ? from.skinHost : null)
+				.setVerifier(d -> d.get("auth") == null
+							|| d.get("accounts") == null
+							|| d.get("session") == null
+							|| d.get("services") == null
+							|| d.get("skin") == null ?
+									"All servers must be set" : null)
+				.show("Edit Servers", "Enter server settings");
+		}else {
+			data = new SimpleInputDialog()
+				.addString("auth", "ShittyAuthServer URL", "e.g. http://shittyauth.example.com")
+				.show("Edit Servers", "Enter server settings");
+		}
 
 		if(data == null) return null;
 
 		String authServerURL = data.get("auth");
 		if(authServerURL.endsWith("/")) authServerURL = authServerURL.substring(0, authServerURL.length() - 1);
-		String accountsServerURL = data.get("accounts");
+		String accountsServerURL = data.get("accounts", authServerURL);
 		if(accountsServerURL.endsWith("/")) accountsServerURL = accountsServerURL.substring(0, accountsServerURL.length() - 1);
-		String sessionServerURL = data.get("session");
+		String sessionServerURL = data.get("session", authServerURL);
 		if(sessionServerURL.endsWith("/")) sessionServerURL = sessionServerURL.substring(0, sessionServerURL.length() - 1);
-		String servicesServerURL = data.get("services");
+		String servicesServerURL = data.get("services", authServerURL);
 		if(servicesServerURL.endsWith("/")) servicesServerURL = servicesServerURL.substring(0, servicesServerURL.length() - 1);
-		String skinHostname = data.get("skin");
+		String skinHostname = data.get("skin", URI.create(authServerURL).getHost());
 
 		if(from == null) from = new ServerConfiguration();
 		from.authServer = authServerURL;
@@ -573,8 +569,6 @@ public class ShittyAuthController {
 			DialogHelper.showError("Failed to log in", e);
 		}
 	}
-
-
 
 	private DownloadsMirror showEditMirrorDialog(DownloadsMirror from) {
 		DownloadsMirror defaultMirror = DownloadsMirror.MOJANG;
@@ -676,38 +670,10 @@ public class ShittyAuthController {
 		areaLog.appendText(text);
 	}
 
-	private void loadVersions(GameInstallation inst) {
-		inst.updateVersions();
-
-		File versionsFolder = new File(inst.gameDirectory, "versions");
-		if(!versionsFolder.exists()) return;
-		System.out.println("Loading versions for '" + inst.name + "'...");
-
-		VersionsList versions = inst.getVersions();
-		List<ImportedMinecraftVersion> vers = loadVersions(inst.getVersions(), new File(inst.gameDirectory));
-		vers.removeIf(v -> versions.getVersion(v.getId()) != null);
-		versions.addVersions(vers);
-		System.out.println("Loaded " + vers.size() + " version(s)!");
-	}
-
-	private List<ImportedMinecraftVersion> loadVersions(VersionsList list, File gameDir) {
-		File versionsFolder = new File(gameDir, "versions");
-		if(!versionsFolder.exists()) return Collections.emptyList();
-		System.out.println("Loading versions from " + gameDir.getAbsolutePath() + "...");
-		List<ImportedMinecraftVersion> versions = new ArrayList<>();
-		for(File v : versionsFolder.listFiles()) {
-			if(!v.isDirectory()) continue;
-			File jsonFile = new File(v, v.getName() + ".json");
-			if(!jsonFile.exists()) continue;
-			versions.add(new ImportedMinecraftVersion(list, jsonFile));
-		}
-		return versions;
-	}
-
 	private void loadAllVersions() {
 		System.out.println("Loading versions...");
 		for(GameInstallation inst : ShittyAuthLauncherSettings.getInstallations()) {
-			loadVersions(inst);
+			inst.updateVersions();
 		}
 	}
 
@@ -739,7 +705,7 @@ public class ShittyAuthController {
 						profiles.remove(newInst.id);
 						continue;
 					}
-					loadVersions(newInst);
+					newInst.updateVersions();
 
 //					DefaultMinecraftVersion ver = DefaultMinecraftVersion.getVersion(newInst.lastVersionId);
 //					if(ver == null || (ver.isImported() && getImportedVersion(inst.id, newInst.lastVersionId) == null)) {

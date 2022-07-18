@@ -1,8 +1,11 @@
 package me.mrletsplay.shittyauthlauncher.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 import me.mrletsplay.mrcore.json.JSONType;
@@ -13,6 +16,7 @@ import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
+import me.mrletsplay.shittyauthpatcher.version.ImportedMinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.VersionsList;
 
 public class GameInstallation implements JSONConvertible {
@@ -75,7 +79,23 @@ public class GameInstallation implements JSONConvertible {
 	private VersionsList loadVersions() {
 		VersionsList v = new VersionsList();
 		v.addVersions(getMirror().getVersions());
+		v.addVersions(loadVersions(v));
 		return v;
+	}
+
+	private List<ImportedMinecraftVersion> loadVersions(VersionsList list) {
+		File gameDir = new File(gameDirectory);
+		File versionsFolder = new File(gameDir, "versions");
+		if(!versionsFolder.exists()) return Collections.emptyList();
+		System.out.println("Loading versions from " + gameDir.getAbsolutePath() + "...");
+		List<ImportedMinecraftVersion> versions = new ArrayList<>();
+		for(File v : versionsFolder.listFiles()) {
+			if(!v.isDirectory()) continue;
+			File jsonFile = new File(v, v.getName() + ".json");
+			if(!jsonFile.exists()) continue;
+			versions.add(new ImportedMinecraftVersion(list, jsonFile));
+		}
+		return versions;
 	}
 
 	public void updateVersions() {
@@ -83,7 +103,7 @@ public class GameInstallation implements JSONConvertible {
 	}
 
 	public VersionsList getVersions() {
-		if(versions == null) versions = loadVersions(); // TODO: combine mirror versions and load versions from folder
+		if(versions == null) versions = loadVersions();
 		return versions;
 	}
 

@@ -270,7 +270,7 @@ public class LaunchHelper {
 			File keyFile = new File(ShittyAuthLauncherSettings.DATA_PATH + "/keys/" + account.getServers().hashString() + ".der");
 			if(!keyFile.exists()) {
 				String[] choices = {"Yes", "No", "Use default Mojang key"};
-				int c = DialogHelper.showChoice("You don't have a public key file yet.\nAttempt to download it from the session server? (only available if using ShittyAuthServer)\n\nNote: Without a key file, skins won't work", choices);
+				int c = DialogHelper.showChoice("No public key file", "You don't have a public key file yet.\nAttempt to download it from the session server? (only available if using ShittyAuthServer)\n\nNote: Without a key file, skins won't work", choices);
 
 				switch(c) {
 					case 0: // Yes

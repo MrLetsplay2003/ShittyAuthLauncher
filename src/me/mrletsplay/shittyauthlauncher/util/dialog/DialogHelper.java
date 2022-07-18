@@ -74,13 +74,15 @@ public class DialogHelper {
 		return a.showAndWait().orElse(null) == ButtonType.YES;
 	}
 
-	public static int showChoice(String message, String... choices) {
+	public static int showChoice(String title, String message, String... choices) {
 		Alert a = new Alert(AlertType.CONFIRMATION);
 		a.initOwner(ShittyAuthLauncher.stage);
 		a.getButtonTypes().clear();
 		for(String ch : choices) {
 			a.getButtonTypes().add(new ButtonType(ch));
 		}
+		a.setTitle(title);
+		a.setHeaderText(title);
 		a.setContentText(message);
 		a.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 		return Arrays.asList(choices).indexOf(a.showAndWait().orElse(null).getText());
