@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.mrletsplay</groupId>
 	<artifactId>ShittyAuthLauncher</artifactId>
-	<version>1.5</version>
+	<version>1.5.1</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>ShittyAuthPatcher</artifactId>
-			<version>1.5</version>
+			<version>1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
