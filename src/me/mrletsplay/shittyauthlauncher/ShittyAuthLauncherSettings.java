@@ -118,6 +118,14 @@ public class ShittyAuthLauncherSettings {
 		return config.getBoolean("minimize-launcher");
 	}
 
+	public static void setTheme(String theme) {
+		config.set("theme", theme);
+	}
+
+	public static String getTheme() {
+		return config.getString("theme");
+	}
+
 	public static void setInstallations(List<GameInstallation> installations) {
 		ShittyAuthLauncherSettings.installations = new ArrayList<>(installations);
 		config.set("installations", new ArrayList<>(installations));

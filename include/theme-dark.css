@@ -1,0 +1,72 @@
+* {
+  -fx-text-fill: white;
+  -fx-darkest: black;
+  -fx-darker: #212121;
+  -fx-dark: #303030;
+  -fx-light: #424242;
+}
+
+.content-pane {
+  -fx-background-color: -fx-darker;
+}
+
+.button, .combo-box, .combo-box .list-cell {
+  -fx-background-color: -fx-light;
+}
+
+.check-box .box {
+  -fx-background-color: -fx-light;
+}
+
+.check-box .mark {
+  -fx-background-color: transparent;
+}
+
+.check-box:selected .mark {
+  -fx-background-color: white;
+}
+
+.combo-box .arrow {
+  -fx-background-color: white;
+}
+
+.tab-header-background {
+  -fx-background-color: -fx-darkest;
+}
+
+.tab {
+  -fx-background-color: -fx-light;
+}
+
+.tab {
+  -fx-stroke-borders: red;
+}
+
+.account-item, .installation-item, .mirror-item {
+  -fx-background-color: -fx-dark;
+}
+
+.accounts-box, .installations-box, .mirrors-box {
+  -fx-background-color: -fx-dark;
+}
+
+.scroll-bar {
+  -fx-background-color: -fx-darker;
+}
+
+.scroll-bar .thumb {
+  -fx-background-color: -fx-light;
+}
+
+.scroll-pane {
+  -fx-background-color: -fx-dark;
+}
+
+.text-area .scroll-pane {
+  -fx-background-color: -fx-dark;
+}
+
+.text-area .content {
+  -fx-background-color: -fx-dark;
+  -fx-background-radius: 0px;
+}

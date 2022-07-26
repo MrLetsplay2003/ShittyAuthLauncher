@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="480.0" minWidth="720.0" prefHeight="480.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="480.0" minWidth="720.0" prefHeight="480.0" prefWidth="720.0" styleClass="content-pane" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthController">
    <children>
       <TabPane layoutX="6.0" layoutY="5.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="105.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
@@ -37,7 +37,7 @@
                         </HBox>
                         <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
-                              <VBox fx:id="boxInstallations" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                              <VBox fx:id="boxInstallations" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="installations-box" />
                            </content>
                         </ScrollPane>
                      </children>
@@ -51,7 +51,7 @@
                         <Button mnemonicParsing="false" onAction="#buttonNewAccount" prefHeight="25.0" text="Add Account..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
                         <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
-                              <VBox fx:id="boxAccounts" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                              <VBox fx:id="boxAccounts" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="accounts-box" />
                            </content>
                         </ScrollPane>
                      </children>
@@ -65,7 +65,7 @@
                         <Button mnemonicParsing="false" onAction="#buttonNewMirror" prefHeight="25.0" text="Add Mirror..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
                         <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
-                              <VBox fx:id="boxMirrors" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+                              <VBox fx:id="boxMirrors" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="mirrors-box" />
                            </content>
                         </ScrollPane>
                      </children>
