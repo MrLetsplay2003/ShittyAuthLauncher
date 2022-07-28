@@ -100,7 +100,7 @@ public class LaunchHelper {
 		return allow != null && allow;
 	}
 
-	private static Task<List<File>> loadLibraries(AbstractMinecraftVersion version, VersionMetadata meta, File tempFolder, MinecraftAccount account, GameInstallation installation) throws IOException {
+	private static Task<List<File>> loadLibraries(AbstractMinecraftVersion version, VersionMetadata meta, File tempFolder, MinecraftAccount account, GameInstallation installation, File keyFile) throws IOException {
 		return new CombinedTask<List<File>>() {
 
 			@Override
@@ -194,7 +194,7 @@ public class LaunchHelper {
 					if(!out.exists() || forcePatch) {
 						updateMessage("Patching authlib");
 						IOUtils.createFile(out);
-						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers);
+						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers, keyFile);
 					}
 					libs.add(out);
 					System.out.println("Using authlib at: " + out.getAbsolutePath());
@@ -326,7 +326,7 @@ public class LaunchHelper {
 
 						VersionMetadata meta = version.loadMetadata(metaFile);
 
-						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, account, installation));
+						List<File> libs = runOther(loadLibraries(version, meta, tempFolder, account, installation, keyFile));
 						if(isCancelled()) {
 							IOUtils.deleteFile(tempFolder);
 							return null;
