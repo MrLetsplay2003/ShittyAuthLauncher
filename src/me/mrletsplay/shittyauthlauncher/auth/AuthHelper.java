@@ -21,7 +21,6 @@ public class AuthHelper {
 
 	public static LoginData authenticate(String username, String password, ServerConfiguration servers) {
 		HttpGeneric post = HttpRequest.createGeneric("POST", servers.authServer + "/authenticate");
-		post.setHeader("Content-Type", "application/json");
 
 		JSONObject req = new JSONObject();
 		JSONObject agent = new JSONObject();
