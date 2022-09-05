@@ -19,7 +19,7 @@
         <tabs>
           <Tab text="Game Log">
                <content>
-                  <TextArea fx:id="areaLog" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Output from the latest launch will appear here" AnchorPane.bottomAnchor="110.0" />
+                  <TextArea fx:id="areaLog" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Output from the latest launch will appear here" styleClass="content-scroll" AnchorPane.bottomAnchor="110.0" />
                </content>
           </Tab>
             <Tab text="Installations">
@@ -35,7 +35,7 @@
                               <Insets left="5.0" right="5.0" />
                            </padding>
                         </HBox>
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" styleClass="content-scroll" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
                               <VBox fx:id="boxInstallations" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="installations-box" />
                            </content>
@@ -49,7 +49,7 @@
                   <AnchorPane>
                      <children>
                         <Button mnemonicParsing="false" onAction="#buttonNewAccount" prefHeight="25.0" text="Add Account..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" styleClass="content-scroll" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
                               <VBox fx:id="boxAccounts" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="accounts-box" />
                            </content>
@@ -63,7 +63,7 @@
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <Button mnemonicParsing="false" onAction="#buttonNewMirror" prefHeight="25.0" text="Add Mirror..." AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" styleClass="content-scroll" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                            <content>
                               <VBox fx:id="boxMirrors" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="mirrors-box" />
                            </content>

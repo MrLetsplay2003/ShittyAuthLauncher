@@ -64,12 +64,13 @@ public class ShittyAuthLauncher extends Application {
 
 		Scene sc = new Scene(pr, 720, 480);
 		String theme = ShittyAuthLauncherSettings.getTheme();
-		if(theme != null)  sc.getStylesheets().add("/include/theme-dark.css");
 		primaryStage.setTitle(ShittyAuthLauncherSettings.LAUNCHER_BRAND);
 		primaryStage.setMinWidth(720);
 		primaryStage.setMinHeight(480);
 		primaryStage.setScene(sc);
 		primaryStage.show();
+
+		if(theme != null) Theming.updateTheme(theme);
 	}
 
 }

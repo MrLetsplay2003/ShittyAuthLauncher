@@ -15,7 +15,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -243,7 +243,7 @@ public class SimpleInputDialog {
 				}
 				case CHOICE:
 				{
-					ChoiceBox<Object> cb = new ChoiceBox<>();
+					ComboBox<Object> cb = new ComboBox<>();
 					cb.setPrefWidth(300);
 					GridPane.setHgrow(cb, Priority.ALWAYS);
 					cb.setMaxWidth(Double.MAX_VALUE);

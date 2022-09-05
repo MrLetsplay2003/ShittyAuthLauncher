@@ -120,6 +120,7 @@ public class ShittyAuthLauncherSettings {
 
 	public static void setTheme(String theme) {
 		config.set("theme", theme);
+		Theming.updateTheme(theme);
 	}
 
 	public static String getTheme() {

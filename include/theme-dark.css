@@ -1,72 +1,109 @@
 * {
-  -fx-text-fill: white;
-  -fx-darkest: black;
-  -fx-darker: #212121;
-  -fx-dark: #303030;
-  -fx-light: #424242;
+	-fx-text-fill: white;
+	-fx-darker: #212121;
+	-fx-dark: #303030;
+	-fx-light: #424242;
+	-fx-highlight: #1a5fb4;
+	-fx-highlight-transparent: #1a5fb422;
 }
 
 .content-pane {
-  -fx-background-color: -fx-darker;
+	-fx-background-color: -fx-dark;
+}
+
+.settings-pane, .dialog-pane {
+	-fx-background-color: -fx-dark;
+}
+
+.dialog-pane:header .header-panel {
+	-fx-background-color: -fx-darker;
 }
 
 .button, .combo-box, .combo-box .list-cell {
-  -fx-background-color: -fx-light;
+	-fx-background-color: -fx-light;
+}
+
+.combo-box > .list-cell {
+	-fx-background-color: transparent;
+}
+
+.combo-box .list-cell:hover {
+	-fx-background-color: -fx-highlight;
 }
 
 .check-box .box {
-  -fx-background-color: -fx-light;
+	-fx-background-color: -fx-light;
 }
 
 .check-box .mark {
-  -fx-background-color: transparent;
+	-fx-background-color: transparent;
 }
 
 .check-box:selected .mark {
-  -fx-background-color: white;
+	-fx-background-color: white;
+}
+
+.button:focused, .check-box:focused > .box, .combo-box-base:focused {
+	-fx-background-color: -fx-highlight, transparent, -fx-light, -fx-highlight-transparent, -fx-light;
+}
+
+.text-input:focused {
+	-fx-background-color: -fx-highlight, -fx-light, -fx-highlight-transparent, -fx-light;
 }
 
 .combo-box .arrow {
-  -fx-background-color: white;
+	-fx-background-color: white;
 }
 
 .tab-header-background {
-  -fx-background-color: -fx-darkest;
+	-fx-background-color: -fx-darker;
 }
 
 .tab {
-  -fx-background-color: -fx-light;
+	-fx-background-color: -fx-dark, -fx-light, -fx-light;
 }
 
-.tab {
-  -fx-stroke-borders: red;
+.tab:selected {
+	-fx-background-color: -fx-highlight-transparent, -fx-highlight, -fx-highlight;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+	-fx-border-color: -fx-highlight, -fx-highlight-transparent;
 }
 
 .account-item, .installation-item, .mirror-item {
-  -fx-background-color: -fx-dark;
+	-fx-background-color: -fx-dark;
 }
 
 .accounts-box, .installations-box, .mirrors-box {
-  -fx-background-color: -fx-dark;
+	-fx-background-color: -fx-dark;
 }
 
 .scroll-bar {
-  -fx-background-color: -fx-darker;
+	-fx-background-color: -fx-darker;
 }
 
 .scroll-bar .thumb {
-  -fx-background-color: -fx-light;
+	-fx-background-color: -fx-light;
 }
 
 .scroll-pane {
-  -fx-background-color: -fx-dark;
+	-fx-background-color: -fx-dark;
+}
+
+.content-scroll {
+	-fx-effect: innershadow(gaussian, #00000033, 10, 0.5, 0, 0);
 }
 
 .text-area .scroll-pane {
-  -fx-background-color: -fx-dark;
+	-fx-background-color: -fx-dark;
 }
 
 .text-area .content {
-  -fx-background-color: -fx-dark;
-  -fx-background-radius: 0px;
+	-fx-background-color: -fx-dark;
+	-fx-background-radius: 0px;
+}
+
+.text-field {
+	-fx-background-color: -fx-light;
 }

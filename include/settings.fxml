@@ -21,7 +21,7 @@
         <tabs>
             <Tab text="General">
                 <content>
-               <AnchorPane>
+               <AnchorPane styleClass="settings-pane">
                   <children>
                           <GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" vgap="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                               <columnConstraints>
@@ -41,7 +41,7 @@
                            <VBox>
                               <children>
                                         <Label text="Use JRE downloads from Adoptium instead of the ones provided by Mojang" />
-                                 <Text fill="#616161" strokeType="OUTSIDE" strokeWidth="0.0" text="The runtime downloads from Adoptium are generally more up-to-date than the ones Mojang provides" wrappingWidth="600.0">
+                                 <Text fill="#808080" strokeType="OUTSIDE" strokeWidth="0.0" text="The runtime downloads from Adoptium are generally more up-to-date than the ones Mojang provides" wrappingWidth="600.0">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -52,7 +52,7 @@
                            <VBox GridPane.rowIndex="1" GridPane.valignment="CENTER">
                               <children>
                                         <Label text="Always patch authlib" />
-                                 <Text fill="#616161" strokeType="OUTSIDE" strokeWidth="0.0" text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running Minecraft" wrappingWidth="600.0">
+                                 <Text fill="#808080" strokeType="OUTSIDE" strokeWidth="0.0" text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running Minecraft" wrappingWidth="600.0">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -63,7 +63,7 @@
                            <VBox GridPane.rowIndex="2" GridPane.valignment="TOP">
                               <children>
                                         <Label text="Always patch minecraft.jar" />
-                                 <Text fill="#616161" strokeType="OUTSIDE" strokeWidth="0.0" text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running older Minecraft versions" wrappingWidth="600.0">
+                                 <Text fill="#808080" strokeType="OUTSIDE" strokeWidth="0.0" text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running older Minecraft versions" wrappingWidth="600.0">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -79,7 +79,7 @@
                                   <CheckBox fx:id="checkboxMinimizeLauncher" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                            <VBox alignment="CENTER_LEFT" GridPane.rowIndex="4">
                               <children>
-                                 <Label text="Launcher Theme (requires restart)" />
+                                 <Label text="Launcher Theme" />
                               </children>
                            </VBox>
                                   <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER">
