@@ -1,0 +1,52 @@
+<configuration>
+
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+		<target>System.out</target>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread | %logger{0}] %p: %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="STDERR"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARN</level>
+		</filter>
+		<target>System.err</target>
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread | %logger{0}] %p: %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE-ROLLING"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${shittyauthlauncher.log-dir}/shittyauthlauncher.log</file>
+
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${shittyauthlauncher.log-dir}/archived/shittyauthlauncher.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<totalSizeCap>1GB</totalSizeCap>
+			<maxHistory>60</maxHistory>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread | %logger] %p: %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="debug">
+		<appender-ref ref="FILE-ROLLING" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STDERR" />
+	</root>
+
+</configuration>

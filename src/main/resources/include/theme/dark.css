@@ -11,8 +11,20 @@
 	-fx-background-color: -fx-dark;
 }
 
-.settings-pane, .dialog-pane {
+.settings-pane, .dialog-pane, .list-view {
 	-fx-background-color: -fx-dark;
+}
+
+.list-cell {
+	-fx-background-color: -fx-dark;
+}
+
+.list-cell:selected {
+	-fx-background-color: -fx-light;
+}
+
+.list-cell:focused:selected {
+	-fx-background-color: -fx-highlight;
 }
 
 .dialog-pane:header .header-panel {

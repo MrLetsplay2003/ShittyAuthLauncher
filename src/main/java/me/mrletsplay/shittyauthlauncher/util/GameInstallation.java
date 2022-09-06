@@ -14,6 +14,8 @@ import me.mrletsplay.mrcore.json.converter.JSONConvertible;
 import me.mrletsplay.mrcore.json.converter.JSONListType;
 import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.mrcore.misc.FriendlyException;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherPlugins;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.version.ImportedMinecraftVersion;
@@ -24,7 +26,7 @@ public class GameInstallation implements JSONConvertible {
 	public static final String DEFAULT_IMAGE_DATA;
 
 	static {
-		try(InputStream in = GameInstallation.class.getResourceAsStream("/include/icon.png")) {
+		try(InputStream in = ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()) {
 			byte[] bytes = in.readAllBytes();
 			DEFAULT_IMAGE_DATA = Base64.getEncoder().encodeToString(bytes);
 		} catch (IOException e) {
@@ -87,7 +89,7 @@ public class GameInstallation implements JSONConvertible {
 		File gameDir = new File(gameDirectory);
 		File versionsFolder = new File(gameDir, "versions");
 		if(!versionsFolder.exists()) return Collections.emptyList();
-		System.out.println("Loading versions from " + gameDir.getAbsolutePath() + "...");
+		ShittyAuthLauncher.LOGGER.info("Loading versions from " + gameDir.getAbsolutePath() + "...");
 		List<ImportedMinecraftVersion> versions = new ArrayList<>();
 		for(File v : versionsFolder.listFiles()) {
 			if(!v.isDirectory()) continue;

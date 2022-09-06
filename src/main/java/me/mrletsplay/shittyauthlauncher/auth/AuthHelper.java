@@ -7,6 +7,7 @@ import me.mrletsplay.mrcore.http.HttpRequest;
 import me.mrletsplay.mrcore.http.HttpResult;
 import me.mrletsplay.mrcore.http.data.JSONObjectData;
 import me.mrletsplay.mrcore.json.JSONObject;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class AuthHelper {
@@ -34,7 +35,7 @@ public class AuthHelper {
 		HttpResult r = post.execute();
 		if(!r.isSuccess()) {
 			JSONObject errorResponse = r.asJSONObject();
-			System.out.println("Error response: " + errorResponse.toString());
+			ShittyAuthLauncher.LOGGER.info("Error response: " + errorResponse.toString());
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Error");
 			a.setContentText(errorResponse.getString("errorMessage"));

@@ -31,8 +31,6 @@ import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 public class ShittyAuthLauncherSettings {
 
 	public static final String DATA_PATH = "shittyauthlauncher";
-	public static final String LAUNCHER_BRAND = "ShittyAuthLauncher";
-	public static final String LAUNCHER_VERSION = "69.420";
 
 	public static final String
 		DEFAULT_MINECRAFT_CONTAINER = OS.getCurrentOS().getType() == OSType.WINDOWS ? System.getenv("APPDATA") : System.getProperty("user.home"),
@@ -120,7 +118,6 @@ public class ShittyAuthLauncherSettings {
 
 	public static void setTheme(String theme) {
 		config.set("theme", theme);
-		Theming.updateTheme(theme);
 	}
 
 	public static String getTheme() {

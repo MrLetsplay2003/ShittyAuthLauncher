@@ -34,6 +34,7 @@ import me.mrletsplay.mrcore.io.ZIPFileUtils;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
+import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherPlugins;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthlauncher.auth.LoginData;
 import me.mrletsplay.shittyauthlauncher.auth.MinecraftAccount;
@@ -107,7 +108,7 @@ public class LaunchHelper {
 			protected List<File> call() throws Exception {
 				File minecraftJar = new File(installation.gameDirectory, "versions/" + version.getId() + "/" + version.getId() + ".jar");
 				if(!minecraftJar.exists() || minecraftJar.length() == 0) {
-					System.out.println("Downloading " + minecraftJar + "...");
+					ShittyAuthLauncher.LOGGER.info("Downloading " + minecraftJar + "...");
 					String downloadURL = meta.getClientDownloadURL();
 					HttpRequest.createGet(downloadURL).execute().transferTo(minecraftJar);
 				}
@@ -169,7 +170,7 @@ public class LaunchHelper {
 					// New skins API was introduced in release 1.7.6
 					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
 					if(forcePatch) {
-						System.out.println("Forcibly repatching Minecraft");
+						ShittyAuthLauncher.LOGGER.info("Forcibly repatching Minecraft");
 					}
 
 					File out = new File(minecraftJar.getParentFile(), "patched/" + account.getServers().hashString() + ".jar");
@@ -182,12 +183,12 @@ public class LaunchHelper {
 					minecraftJar = out;
 				}
 				libs.add(minecraftJar);
-				System.out.println("Minecraft jar: " + minecraftJar.getAbsolutePath());
+				ShittyAuthLauncher.LOGGER.info("Minecraft jar: " + minecraftJar.getAbsolutePath());
 
 				if(authLibFile != null) {
 					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
 					if(forcePatch) {
-						System.out.println("Forcibly repatching authlib");
+						ShittyAuthLauncher.LOGGER.info("Forcibly repatching authlib");
 					}
 
 					File out = new File(authLibFile.getParentFile(), "patched/" + account.getServers().hashString() + ".jar");
@@ -197,12 +198,12 @@ public class LaunchHelper {
 						LibraryPatcher.patchAuthlib(authLibFile.toPath(), out.toPath(), servers, keyFile);
 					}
 					libs.add(out);
-					System.out.println("Using authlib at: " + out.getAbsolutePath());
+					ShittyAuthLauncher.LOGGER.info("Using authlib at: " + out.getAbsolutePath());
 				}else {
-					System.out.println("Couldn't find authlib");
+					ShittyAuthLauncher.LOGGER.info("Couldn't find authlib");
 				}
 
-				System.out.println("Libraries: " + libs);
+				ShittyAuthLauncher.LOGGER.info("Libraries: " + libs);
 
 				return libs;
 			}
@@ -222,7 +223,7 @@ public class LaunchHelper {
 				String assetId = assetIndex.getID();
 				File indexFile = new File(indexesFolder, assetId + ".json");
 				if(!indexFile.exists()) {
-					System.out.println("Downloading " + indexFile + "...");
+					ShittyAuthLauncher.LOGGER.info("Downloading " + indexFile + "...");
 					updateMessage("Downloading " + indexFile + "...");
 					HttpRequest.createGet(assetIndex.getURL()).execute().transferTo(indexFile);
 				}
@@ -396,15 +397,15 @@ public class LaunchHelper {
 						params.put("user_properties", "{}");
 						params.put("game_assets", assetsFolder.getAbsolutePath().replace("\\", "/") + "/");
 						params.put("natives_directory", tempFolder.getAbsolutePath().replace("\\", "/"));
-						params.put("launcher_name", ShittyAuthLauncherSettings.LAUNCHER_BRAND);
-						params.put("launcher_version", ShittyAuthLauncherSettings.LAUNCHER_VERSION);
+						params.put("launcher_name", ShittyAuthLauncherPlugins.getBrandingProvider().getLauncherBrand());
+						params.put("launcher_version", ShittyAuthLauncherPlugins.getBrandingProvider().getLauncherVersion());
 						params.put("classpath", classPath);
 						params.put("auth_xuid", "nope"); // XBox UID
 						params.put("clientid", "nope");
 						params.put("library_directory", new File(installation.gameDirectory, "libraries").getAbsolutePath());
 						params.put("classpath_separator", libSeparator);
 
-						System.out.println("Java path: " + javaPath);
+						ShittyAuthLauncher.LOGGER.info("Java path: " + javaPath);
 
 						if(OS.getCurrentOS().getType() == OSType.MACOS && !jvmArgs.contains("-XstartOnFirstThread")) {
 							gameArgs.add(0, "-XstartOnFirstThread");
@@ -419,8 +420,8 @@ public class LaunchHelper {
 
 						jvmArgs.add("-Dfml.ignoreInvalidMinecraftCertificates=true"); // Forge complains if we patch the Minecraft
 
-						System.out.println("JVM args: " + jvmArgs);
-						System.out.println("Game args: " + gameArgs);
+						ShittyAuthLauncher.LOGGER.info("JVM args: " + jvmArgs);
+						ShittyAuthLauncher.LOGGER.info("Game args: " + gameArgs);
 
 						replacePlaceholders(gameArgs, params);
 						replacePlaceholders(jvmArgs, params);
@@ -431,7 +432,7 @@ public class LaunchHelper {
 						fullArgs.add(meta.getMainClass());
 						fullArgs.addAll(gameArgs);
 
-						System.out.println("Command line: " + fullArgs);
+						ShittyAuthLauncher.LOGGER.info("Command line: " + fullArgs);
 
 						ProcessBuilder b = new ProcessBuilder(fullArgs);
 						b.directory(new File(installation.gameDirectory));
@@ -507,7 +508,7 @@ public class LaunchHelper {
 			while(m.find()) {
 				String val = placeholders.get(m.group("name"));
 				if(val == null) {
-					System.out.println("Missing parameter: " + arg + ", skipping!");
+					ShittyAuthLauncher.LOGGER.info("Missing parameter: " + arg + ", skipping!");
 				}else {
 					m.appendReplacement(sb, val);
 				}

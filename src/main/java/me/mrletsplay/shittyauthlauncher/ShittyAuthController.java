@@ -312,8 +312,7 @@ public class ShittyAuthController {
 
 	private Node createInstallationItem(GameInstallation installation, boolean isImport) {
 		try {
-			URL url = ShittyAuthLauncher.class.getResource("/include/installation-item.fxml");
-			if(url == null) url = new File("./include/installation-item.fxml").toURI().toURL();
+			URL url = ShittyAuthLauncher.class.getResource("/include/ui/installation-item.fxml");
 
 			FXMLLoader l = new FXMLLoader(url);
 			Parent pr = l.load(url.openStream());
@@ -444,14 +443,13 @@ public class ShittyAuthController {
 
 	private Node createAccountItem(MinecraftAccount account) {
 		try {
-			URL url = ShittyAuthLauncher.class.getResource("/include/account-item.fxml");
-			if(url == null) url = new File("./include/account-item.fxml").toURI().toURL();
+			URL url = ShittyAuthLauncher.class.getResource("/include/ui/account-item.fxml");
 
 			FXMLLoader l = new FXMLLoader(url);
 			Parent pr = l.load(url.openStream());
 
 			ImageView img = (ImageView) pr.lookup("#imageIcon");
-			img.setImage(new Image(ShittyAuthController.class.getResourceAsStream("/include/icon.png")));
+			img.setImage(new Image(ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()));
 
 			BufferedImage accHead = SkinHelper.getSkinHead(account);
 			if(accHead != null) {
@@ -617,8 +615,7 @@ public class ShittyAuthController {
 
 	private Node createMirrorItem(DownloadsMirror mirror) {
 		try {
-			URL url = ShittyAuthLauncher.class.getResource("/include/mirror-item.fxml");
-			if(url == null) url = new File("./include/mirror-item.fxml").toURI().toURL();
+			URL url = ShittyAuthLauncher.class.getResource("/include/ui/mirror-item.fxml");
 
 			FXMLLoader l = new FXMLLoader(url);
 			Parent pr = l.load(url.openStream());
@@ -671,7 +668,7 @@ public class ShittyAuthController {
 	}
 
 	private void loadAllVersions() {
-		System.out.println("Loading versions...");
+		ShittyAuthLauncher.LOGGER.info("Loading versions...");
 		for(GameInstallation inst : ShittyAuthLauncherSettings.getInstallations()) {
 			inst.updateVersions();
 		}
@@ -679,18 +676,18 @@ public class ShittyAuthController {
 
 	// Provides compatibility for installers such as Forge
 	private void importInstallationsFromJSON() {
-		System.out.println("Loading installations from launcher_profiles.json...");
+		ShittyAuthLauncher.LOGGER.info("Loading installations from launcher_profiles.json...");
 		List<GameInstallation> oldInsts = ShittyAuthLauncherSettings.getInstallations();
 		List<GameInstallation> insts = new ArrayList<>();
 		for(GameInstallation inst : oldInsts) {
-			System.out.println("Loading installations for '" + inst.name + "'...");
+			ShittyAuthLauncher.LOGGER.info("Loading installations for '" + inst.name + "'...");
 			File profilesJSON = new File(inst.gameDirectory, "launcher_profiles.json");
 			if(profilesJSON.exists()) {
 				JSONObject obj;
 				try {
 					obj = new JSONObject(Files.readString(profilesJSON.toPath()));
 					if(!obj.has("shittyauth_autoImport")) {
-						System.out.println("Ignoring " + profilesJSON.getAbsolutePath() + ", because it doesn't have the 'shittyauth_autoImport' key set");
+						ShittyAuthLauncher.LOGGER.info("Ignoring " + profilesJSON.getAbsolutePath() + ", because it doesn't have the 'shittyauth_autoImport' key set");
 						continue;
 					}
 				} catch (IOException e) {

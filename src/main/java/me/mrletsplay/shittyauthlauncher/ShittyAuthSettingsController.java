@@ -1,15 +1,16 @@
 package me.mrletsplay.shittyauthlauncher;
 
+import java.util.stream.Collectors;
+
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import me.mrletsplay.shittyauthlauncher.api.Theme;
 
 public class ShittyAuthSettingsController {
-
-	private static final String DEFAULT_THEME = "default";
-	private static final String[] THEMES = {DEFAULT_THEME, "dark"};
 
 	@FXML
 	private CheckBox checkboxAlwaysPatchAuthlib;
@@ -24,7 +25,10 @@ public class ShittyAuthSettingsController {
 	private CheckBox checkboxMinimizeLauncher;
 
 	@FXML
-	private ComboBox<String> comboBoxTheme;
+	private ComboBox<Theme> comboBoxTheme;
+
+	@FXML
+	private ListView<String> listViewPlugins;
 
 	@FXML
 	void buttonSave(ActionEvent event) {
@@ -32,10 +36,11 @@ public class ShittyAuthSettingsController {
 		ShittyAuthLauncherSettings.setAlwaysPatchAuthlib(checkboxAlwaysPatchAuthlib.isSelected());
 		ShittyAuthLauncherSettings.setAlwaysPatchMinecraft(checkboxAlwaysPatchMinecraft.isSelected());
 		ShittyAuthLauncherSettings.setMinimizeLauncher(checkboxMinimizeLauncher.isSelected());
-		String theme = comboBoxTheme.getValue();
-		ShittyAuthLauncherSettings.setTheme(DEFAULT_THEME.equals(theme) ? null : theme);
+		Theme theme = comboBoxTheme.getValue();
+		ShittyAuthLauncherSettings.setTheme(theme == Theming.getDefaultTheme() ? null : theme.getID());
 		ShittyAuthLauncherSettings.save();
 		ShittyAuthLauncher.settingsStage.hide();
+		Theming.updateTheme(theme);
 	}
 
 	@FXML
@@ -48,10 +53,14 @@ public class ShittyAuthSettingsController {
 		checkboxAlwaysPatchAuthlib.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchAuthlib());
 		checkboxAlwaysPatchMinecraft.setSelected(ShittyAuthLauncherSettings.isAlwaysPatchMinecraft());
 		checkboxMinimizeLauncher.setSelected(ShittyAuthLauncherSettings.isMinimizeLauncher());
-		comboBoxTheme.setItems(FXCollections.observableArrayList(THEMES));
+		comboBoxTheme.setItems(FXCollections.observableArrayList(ShittyAuthLauncherPlugins.getThemes()));
 		String theme = ShittyAuthLauncherSettings.getTheme();
-		if(theme == null) theme = DEFAULT_THEME;
-		comboBoxTheme.setValue(theme);
+		Theme th = ShittyAuthLauncherPlugins.getTheme(theme);
+		if(th == null) th = Theming.getDefaultTheme();
+		listViewPlugins.setItems(FXCollections.observableArrayList(ShittyAuthLauncherPlugins.getPlugins().stream()
+			.map(p -> String.format("%s (version %s) by %s", p.getPluginId(), p.getDescriptor().getVersion(), p.getDescriptor().getProvider()))
+			.collect(Collectors.toList())));
+		comboBoxTheme.setValue(th);
 	}
 
 }

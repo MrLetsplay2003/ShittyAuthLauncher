@@ -1,0 +1,5 @@
+{
+	"id": "shittyauthlauncher_dark",
+	"name": "ShittyAuthLauncher Dark",
+	"stylesheets": ["/include/theme/dark.css"]
+}

@@ -18,13 +18,12 @@ import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 
 public class JVMVersion {
-	
+
 	public static final List<JVMVersion> VERSIONS = new ArrayList<>();
-	
+
 	static {
 		JSONObject obj = HttpRequest.createGet("https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json").execute().asJSONObject();
-		System.out.println(obj.toFancyString());
-		
+
 		// TODO: Check architecture
 		String osName;
 		switch(OS.getCurrentOS().getType()) {
@@ -39,7 +38,7 @@ public class JVMVersion {
 				osName = "windows-x64";
 				break;
 		}
-		
+
 		JSONObject jvms = obj.getJSONObject(osName);
 		for(String jvmName : jvms.keySet()) {
 			JSONArray arr = jvms.getJSONArray(jvmName);
@@ -54,7 +53,7 @@ public class JVMVersion {
 	private String name;
 	private String versionName;
 	private String manifestURL;
-	
+
 	public JVMVersion(String name, String versionName, String manifestURL) {
 		this.name = name;
 		this.versionName = versionName;
@@ -63,28 +62,28 @@ public class JVMVersion {
 	public static List<JVMVersion> getVersions() {
 		return VERSIONS;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getVersionName() {
 		return versionName;
 	}
-	
+
 	public String getManifestURL() {
 		return manifestURL;
 	}
-	
+
 	public static JVMVersion getVersion(String name) {
 		return VERSIONS.stream()
 				.filter(v -> v.getName().equals(name))
 				.findFirst().orElse(null);
 	}
-	
+
 	public static Task<File> downloadJRE(JVMVersion version, File folder) {
 		return new CombinedTask<File>() {
-					
+
 			@Override
 			protected File call() throws Exception {
 				File manifestFile = new File(folder, "manifest.json");
@@ -95,17 +94,17 @@ public class JVMVersion {
 						throw new LaunchException(e);
 					}
 				}
-		
+
 				JSONObject manifest;
 				try {
 					manifest = new JSONObject(Files.readString(manifestFile.toPath()));
 				} catch (IOException e) {
 					throw new LaunchException(e);
 				}
-				
+
 				Map<File, String> filesToDownload = new HashMap<>();
 				List<Path> executableFiles = new ArrayList<>();
-				
+
 				JSONObject files = manifest.getJSONObject("files");
 				for(String name : files.keySet()) {
 					JSONObject file = files.getJSONObject(name);
@@ -117,9 +116,9 @@ public class JVMVersion {
 						executableFiles.add(downloadPath.toPath());
 					}
 				}
-				
+
 				runOther(LaunchHelper.downloadFiles(filesToDownload));
-				
+
 				if(OS.getCurrentOS().getType() != OSType.WINDOWS) {
 					executableFiles.forEach(p -> {
 						Set<PosixFilePermission> perms = new HashSet<>();
@@ -133,10 +132,10 @@ public class JVMVersion {
 						}
 					});
 				}
-				
+
 				return new File(folder, OS.getCurrentOS().getType().getJavaPath());
 			}
 		};
 	}
-	
+
 }

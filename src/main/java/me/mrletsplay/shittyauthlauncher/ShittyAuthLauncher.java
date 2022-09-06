@@ -1,7 +1,9 @@
 package me.mrletsplay.shittyauthlauncher;
 
-import java.io.File;
 import java.net.URL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -9,8 +11,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import me.mrletsplay.shittyauthlauncher.api.Theme;
 
 public class ShittyAuthLauncher extends Application {
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(ShittyAuthLauncher.class);
 
 	public static Stage stage;
 	public static Stage settingsStage;
@@ -19,20 +24,19 @@ public class ShittyAuthLauncher extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		URL url = ShittyAuthLauncher.class.getResource("/include/launcher.fxml");
-		if(url == null) url = new File("./include/launcher.fxml").toURI().toURL();
+		URL url = ShittyAuthLauncher.class.getResource("/include/ui/launcher.fxml");
 
 		stage = primaryStage;
 		stage.setWidth(720);
 		stage.setHeight(480);
+		stage.setOnCloseRequest(e -> exit());
 
 		FXMLLoader l = new FXMLLoader(url);
 		Parent pr = l.load(url.openStream());
 		controller = l.getController();
 		controller.init();
 
-		URL url2 = ShittyAuthLauncher.class.getResource("/include/settings.fxml");
-		if(url2 == null) url2 = new File("./include/settings.fxml").toURI().toURL();
+		URL url2 = ShittyAuthLauncher.class.getResource("/include/ui/settings.fxml");
 
 		FXMLLoader l2 = new FXMLLoader(url2);
 		Parent settings = l2.load(url2.openStream());
@@ -41,36 +45,44 @@ public class ShittyAuthLauncher extends Application {
 		Scene settingsScene = new Scene(settings);
 
 		settingsStage = new Stage();
-		settingsStage.setTitle(ShittyAuthLauncherSettings.LAUNCHER_BRAND + " - Settings");
+		settingsStage.setTitle(ShittyAuthLauncherPlugins.getBrandingProvider().getLauncherBrand() + " - Settings");
 		settingsStage.setScene(settingsScene);
 		settingsStage.initOwner(stage);
-		settingsStage.sizeToScene();
 		settingsStage.setOnShown(event -> {
+			settingsStage.setMinWidth(settingsStage.getWidth());
+			settingsStage.setMinHeight(settingsStage.getHeight());
+		});
+
+		settingsStage.setOnShowing(event -> {
 			settingsController.update();
-			settingsStage.setMinWidth(settings.prefWidth(-1));
-			settingsStage.setMinHeight(settings.prefHeight(-1));
-			settingsStage.setWidth(settings.prefWidth(-1));
-			settingsStage.setHeight(settings.prefHeight(-1));
+			settingsStage.sizeToScene();
 		});
 
 		settingsStage.setOnCloseRequest(e -> {
 			settingsStage.hide();
 		});
 
-		URL iconURL = ShittyAuthLauncher.class.getResource("/include/icon.png");
-		if(iconURL == null) iconURL = new File("./include/icon.png").toURI().toURL();
-
-		primaryStage.getIcons().add(new Image(iconURL.openStream()));
+		primaryStage.getIcons().add(new Image(ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()));
 
 		Scene sc = new Scene(pr, 720, 480);
-		String theme = ShittyAuthLauncherSettings.getTheme();
-		primaryStage.setTitle(ShittyAuthLauncherSettings.LAUNCHER_BRAND);
+		primaryStage.setTitle(ShittyAuthLauncherPlugins.getBrandingProvider().getLauncherBrand());
 		primaryStage.setMinWidth(720);
 		primaryStage.setMinHeight(480);
 		primaryStage.setScene(sc);
 		primaryStage.show();
 
+		String themeID = ShittyAuthLauncherSettings.getTheme();
+		Theme theme = themeID == null ? Theming.getDefaultTheme() : ShittyAuthLauncherPlugins.getTheme(themeID);
+		if(theme == null) {
+			ShittyAuthLauncher.LOGGER.warn("Couldn't find theme '" + themeID + "'. Falling back to default theme");
+			theme = Theming.getDefaultTheme();
+		}
+
 		if(theme != null) Theming.updateTheme(theme);
+	}
+
+	public static void exit() {
+		ShittyAuthLauncherPlugins.unload();
 	}
 
 }
