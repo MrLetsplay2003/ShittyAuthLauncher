@@ -411,7 +411,7 @@ public class ShittyAuthController {
 			.addDirectory("directory", "Directory", "Directory", initWith != null ? new File(initWith.gameDirectory) : null)
 			.addFile("java", "Java Path", "empty = default", initWith != null && initWith.javaPath != null ? new File(initWith.javaPath) : null)
 			.addString("jvmArgs", "JVM arguments", "empty = none", initWith != null ? Optional.ofNullable(initWith.jvmArgs).map(a -> a.stream().collect(Collectors.joining(" "))).orElse("") : "")
-			.addChoice("mirror", "Mirror", initWith == null ? DownloadsMirror.MOJANG : initWith.getMirror(), ShittyAuthLauncherSettings.getMirrors())
+			.addChoice("mirror", "Mirror", initWith == null ? ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror() : initWith.getMirror(), ShittyAuthLauncherSettings.getMirrors())
 			.setVerifier(d -> {
 				if(d.get("name") == null) return "Name may not be empty";
 				if(d.get("directory") == null) return "Directory may not be empty";
@@ -569,7 +569,7 @@ public class ShittyAuthController {
 	}
 
 	private DownloadsMirror showEditMirrorDialog(DownloadsMirror from) {
-		DownloadsMirror defaultMirror = DownloadsMirror.MOJANG;
+		DownloadsMirror defaultMirror = ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
 		SimpleInputDialog dialog = new SimpleInputDialog()
 				.addString("name",
 						"Mirror Name",
@@ -645,7 +645,7 @@ public class ShittyAuthController {
 				}
 			});
 
-			if(mirror == DownloadsMirror.MOJANG){
+			if(ShittyAuthLauncherPlugins.getMirrors().contains(mirror)){
 				edit.setDisable(true);
 				delete.setDisable(true);
 			} else {

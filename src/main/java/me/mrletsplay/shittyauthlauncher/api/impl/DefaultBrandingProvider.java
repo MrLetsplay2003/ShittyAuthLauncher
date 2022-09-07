@@ -12,12 +12,14 @@ import me.mrletsplay.shittyauthlauncher.api.BrandingProvider;
 
 public class DefaultBrandingProvider implements BrandingProvider {
 
+	public static final DefaultBrandingProvider INSTANCE = new DefaultBrandingProvider();
+
 	private String
 		launcherBrand,
 		launcherVersion,
 		iconPath;
 
-	public DefaultBrandingProvider() {
+	protected DefaultBrandingProvider() {
 		URL url = ShittyAuthLauncher.class.getResource("/include/branding.json");
 		try {
 			JSONObject branding = new JSONObject(new String(IOUtils.readAllBytes(url.openStream()), StandardCharsets.UTF_8));

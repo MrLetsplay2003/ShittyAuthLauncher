@@ -18,13 +18,19 @@ import me.mrletsplay.shittyauthlauncher.api.ThemeProvider;
 
 public class DefaultThemeProvider implements ThemeProvider {
 
-	public static final Theme NO_THEME = new Theme("shittyauthlauncher_default", "ShittyAuthLauncher Default", Collections.emptyList());
+	public static final DefaultThemeProvider INSTANCE;
+	public static final Theme NO_THEME;
+	private static final List<String> THEMES;
 
-	private static final List<String> THEMES = Arrays.asList("dark");
+	static {
+		THEMES = Arrays.asList("dark");
+		NO_THEME = new Theme("shittyauthlauncher_default", "ShittyAuthLauncher Default", Collections.emptyList());
+		INSTANCE = new DefaultThemeProvider();
+	}
 
 	private List<Theme> themes;
 
-	public DefaultThemeProvider() {
+	protected DefaultThemeProvider() {
 		this.themes = new ArrayList<>();
 		themes.add(NO_THEME);
 

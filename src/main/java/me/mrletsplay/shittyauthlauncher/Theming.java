@@ -3,18 +3,11 @@ package me.mrletsplay.shittyauthlauncher;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
-import me.mrletsplay.shittyauthlauncher.api.impl.DefaultThemeProvider;
 
 public class Theming {
 
-	private static Theme defaultTheme = DefaultThemeProvider.NO_THEME;
-
-	public static void setDefaultTheme(Theme defaultTheme) {
-		Theming.defaultTheme = defaultTheme;
-	}
-
 	public static Theme getDefaultTheme() {
-		return defaultTheme;
+		return ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultTheme();
 	}
 
 	public static void updateTheme(Theme theme) {

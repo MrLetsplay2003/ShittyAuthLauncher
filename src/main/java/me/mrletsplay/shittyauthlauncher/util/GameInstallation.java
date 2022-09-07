@@ -20,6 +20,7 @@ import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.version.ImportedMinecraftVersion;
 import me.mrletsplay.shittyauthpatcher.version.VersionsList;
+import me.mrletsplay.shittyauthpatcher.version.VersionsLoadException;
 
 public class GameInstallation implements JSONConvertible {
 
@@ -80,7 +81,11 @@ public class GameInstallation implements JSONConvertible {
 
 	private VersionsList loadVersions() {
 		VersionsList v = new VersionsList();
-		v.addVersions(getMirror().getVersions());
+		try {
+			v.addVersions(getMirror().getVersions());
+		}catch(VersionsLoadException e) {
+			ShittyAuthLauncher.LOGGER.error("Failed to load version from mirror '" + getMirror().getName() + "'", e);
+		}
 		v.addVersions(loadVersions(v));
 		return v;
 	}
@@ -113,7 +118,7 @@ public class GameInstallation implements JSONConvertible {
 		DownloadsMirror m = ShittyAuthLauncherSettings.getMirror(mirror);
 		if(m == null) {
 			System.err.println("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default Mojang mirror");
-			return DownloadsMirror.MOJANG;
+			return ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
 		}
 		return m;
 	}

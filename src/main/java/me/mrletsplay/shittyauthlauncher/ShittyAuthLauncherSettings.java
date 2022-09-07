@@ -77,7 +77,7 @@ public class ShittyAuthLauncherSettings {
 		}
 
 		mirrors = getMirrors();
-		mirrors.add(0, DownloadsMirror.MOJANG);
+		mirrors.addAll(0, ShittyAuthLauncherPlugins.getMirrors());
 	}
 
 	public static void save() {
@@ -196,7 +196,7 @@ public class ShittyAuthLauncherSettings {
 			ShittyAuthLauncherSettings.mirrors = new ArrayList<>(mirrors);
 			JSONArray mirrorsArray = new JSONArray();
 			for(DownloadsMirror m : getMirrors()) {
-				if(m == DownloadsMirror.MOJANG) continue;
+				if(ShittyAuthLauncherPlugins.getMirrors().contains(m)) continue;
 				mirrorsArray.add(m.toJSON(SerializationOption.DONT_INCLUDE_CLASS));
 			}
 			Files.writeString(MIRRORS_PATH, mirrorsArray.toFancyString());
