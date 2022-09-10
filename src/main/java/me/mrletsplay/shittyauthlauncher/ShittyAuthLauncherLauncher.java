@@ -10,7 +10,6 @@ public class ShittyAuthLauncherLauncher { // Launches the launcher :)
 		if(System.getProperty("shittyauthlauncher.log-dir") == null)
 			System.setProperty("shittyauthlauncher.log-dir", new File(ShittyAuthLauncherSettings.DATA_PATH, "logs").getAbsolutePath());
 
-		ShittyAuthLauncherPlugins.load();
 		Application.launch(ShittyAuthLauncher.class, args);
 	}
 

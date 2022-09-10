@@ -1,0 +1,4 @@
+{
+	"jfxVersion": "${javafx.version}",
+	"launcherSystemVersion": "${project.version}"
+}

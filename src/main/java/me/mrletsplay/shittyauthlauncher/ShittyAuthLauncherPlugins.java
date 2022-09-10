@@ -1,15 +1,24 @@
 package me.mrletsplay.shittyauthlauncher;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 
+import me.mrletsplay.fxloader.FXLoader;
 import me.mrletsplay.shittyauthlauncher.api.BrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.MirrorProvider;
@@ -19,6 +28,7 @@ import me.mrletsplay.shittyauthlauncher.api.impl.DefaultBrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultDefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultMirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultThemeProvider;
+import me.mrletsplay.shittyauthlauncher.util.LauncherMeta;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 
 public class ShittyAuthLauncherPlugins {
@@ -41,7 +51,43 @@ public class ShittyAuthLauncherPlugins {
 		ShittyAuthLauncher.LOGGER.info("Loading plugins");
 		pluginManager = new DefaultPluginManager(Path.of(ShittyAuthLauncherSettings.DATA_PATH, "plugins"));
 		pluginManager.loadPlugins();
+
+		Set<URL> additionalURLs = new HashSet<>();
+		for(PluginWrapper pl : pluginManager.getPlugins()) {
+			try {
+				Manifest mf = new Manifest(pl.getPluginClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"));
+				String jfxModules = mf.getMainAttributes().getValue("Plugin-RequiredFXModules");
+
+				if(jfxModules != null) {
+					String[] modules = jfxModules.split(",");
+					for(String module : modules) {
+						FXLoader.downloadDependency(module.trim(), LauncherMeta.getJFXVersion()).forEach(p -> {
+							try {
+								additionalURLs.add(p.toUri().toURL());
+							} catch (MalformedURLException e) {
+								ShittyAuthLauncher.LOGGER.error("Failed to add JFX module '" + module + "' for plugin '" + pl.getPluginId() + "'", e);
+							}
+						});
+					}
+				}
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+
+		// Add the required JFX modules to the classpath
+		for(URL u : additionalURLs) {
+			try {
+				Method m = ShittyAuthLauncher.class.getClassLoader().getClass().getDeclaredMethod("addURL", URL.class);
+				m.setAccessible(true);
+				m.invoke(ShittyAuthLauncher.class.getClassLoader(), u);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				e.printStackTrace();
+			}
+		}
+
 		pluginManager.startPlugins();
+		pluginManager.setSystemVersion(LauncherMeta.getLauncherSystemVersion());
 
 		themeProviders.addAll(pluginManager.getExtensions(ThemeProvider.class));
 		ShittyAuthLauncher.LOGGER.info("Loaded " + themeProviders.size() + " theme providers");
@@ -65,7 +111,13 @@ public class ShittyAuthLauncherPlugins {
 		mirrorProviders.addAll(pluginManager.getExtensions(MirrorProvider.class));
 		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " mirror providers");
 
+		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " tab providers");
+
 		ShittyAuthLauncher.LOGGER.info("Using " + brandingProvider.getClass().getName() + " as branding provider");
+	}
+
+	public static void startUI() {
+
 	}
 
 	public static void unload() {

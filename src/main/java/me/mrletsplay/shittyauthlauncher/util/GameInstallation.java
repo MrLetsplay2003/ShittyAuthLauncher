@@ -117,8 +117,9 @@ public class GameInstallation implements JSONConvertible {
 	public DownloadsMirror getMirror() {
 		DownloadsMirror m = ShittyAuthLauncherSettings.getMirror(mirror);
 		if(m == null) {
-			System.err.println("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default Mojang mirror");
-			return ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
+			DownloadsMirror defMirror = ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
+			System.err.println("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default mirror '" + defMirror.getName() + "'");
+			return defMirror;
 		}
 		return m;
 	}

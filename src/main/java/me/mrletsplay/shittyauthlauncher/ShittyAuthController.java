@@ -37,11 +37,14 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.StageStyle;
+import me.mrletsplay.mrcore.http.HttpException;
 import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.misc.FriendlyException;
@@ -92,6 +95,9 @@ public class ShittyAuthController {
 
 	@FXML
 	private VBox boxMirrors;
+
+	@FXML
+	private TabPane tabPaneAll;
 
 	public void init() {
 		importInstallationsFromJSON();
@@ -161,6 +167,12 @@ public class ShittyAuthController {
 		selectInstallation(i);
 	}
 
+	public void addTab(String name, Node content) {
+		Tab t = new Tab(name);
+		tabPaneAll.getTabs().add(t);
+		t.setContent(content);
+	}
+
 	private void selectInstallation(GameInstallation inst) {
 		versionsList.clear();
 		versionsList.addAll(inst.getVersions().getVersions());
@@ -204,8 +216,13 @@ public class ShittyAuthController {
 			return;
 		}
 
-		if(acc.getLoginData() != null && !AuthHelper.validate(acc.getLoginData(), acc.getServers())) {
-			acc.setLoginData(AuthHelper.refresh(acc.getLoginData(), acc.getServers()));
+		try {
+			if(acc.getLoginData() != null && !AuthHelper.validate(acc.getLoginData(), acc.getServers())) {
+				acc.setLoginData(AuthHelper.refresh(acc.getLoginData(), acc.getServers()));
+			}
+		}catch(HttpException e) {
+			DialogHelper.showError("Failed to validate/refresh account data", e);
+			return;
 		}
 
 		if(!acc.isLoggedIn()) {

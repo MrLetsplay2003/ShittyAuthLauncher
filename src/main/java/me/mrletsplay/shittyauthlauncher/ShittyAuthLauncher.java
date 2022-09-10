@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -24,6 +26,7 @@ public class ShittyAuthLauncher extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		ShittyAuthLauncherPlugins.load();
 		URL url = ShittyAuthLauncher.class.getResource("/include/ui/launcher.fxml");
 
 		stage = primaryStage;
@@ -79,6 +82,10 @@ public class ShittyAuthLauncher extends Application {
 		}
 
 		if(theme != null) Theming.updateTheme(theme);
+	}
+
+	public static void addTab(String name, Node content) {
+		Platform.runLater(() -> controller.addTab(name, content));
 	}
 
 	public static void exit() {
