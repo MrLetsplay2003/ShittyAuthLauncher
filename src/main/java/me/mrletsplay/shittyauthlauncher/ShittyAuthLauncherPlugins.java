@@ -100,6 +100,8 @@ public class ShittyAuthLauncherPlugins {
 			brandingProvider = DefaultBrandingProvider.INSTANCE;
 		}
 
+		ShittyAuthLauncher.LOGGER.info("Using " + brandingProvider.getClass().getName() + " as branding provider");
+
 		List<DefaultsProvider> defaultsProviders = pluginManager.getExtensions(DefaultsProvider.class);
 		if(!defaultsProviders.isEmpty()) {
 			if(defaultsProviders.size() > 1) ShittyAuthLauncher.LOGGER.warn("There are multiple (" + defaultsProviders.size() + ") defaults providers, make sure to only have one");
@@ -108,16 +110,10 @@ public class ShittyAuthLauncherPlugins {
 			defaultsProvider = DefaultDefaultsProvider.INSTANCE;
 		}
 
+		ShittyAuthLauncher.LOGGER.info("Using " + defaultsProvider.getClass().getName() + " as defaults provider");
+
 		mirrorProviders.addAll(pluginManager.getExtensions(MirrorProvider.class));
 		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " mirror providers");
-
-		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " tab providers");
-
-		ShittyAuthLauncher.LOGGER.info("Using " + brandingProvider.getClass().getName() + " as branding provider");
-	}
-
-	public static void startUI() {
-
 	}
 
 	public static void unload() {

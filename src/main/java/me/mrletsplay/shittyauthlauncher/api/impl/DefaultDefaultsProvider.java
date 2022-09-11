@@ -3,6 +3,7 @@ package me.mrletsplay.shittyauthlauncher.api.impl;
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
+import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
 public class DefaultDefaultsProvider implements DefaultsProvider {
 
@@ -18,6 +19,16 @@ public class DefaultDefaultsProvider implements DefaultsProvider {
 	@Override
 	public DownloadsMirror getDefaultMirror() {
 		return DownloadsMirror.MOJANG;
+	}
+
+	@Override
+	public ServerConfiguration getDefaultServerConfiguration() {
+		return null;
+	}
+
+	@Override
+	public boolean allowCustomServerConfigurations() {
+		return true;
 	}
 
 }

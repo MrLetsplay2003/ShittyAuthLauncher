@@ -99,7 +99,7 @@
 	-fx-background-color: -fx-light;
 }
 
-.scroll-pane {
+.scroll-pane, .scroll-pane > .viewport {
 	-fx-background-color: -fx-dark;
 }
 

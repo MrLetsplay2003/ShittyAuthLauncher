@@ -292,6 +292,7 @@ public class ShittyAuthController {
 		vbox.setFillWidth(true);
 
 		ScrollPane scroll = new ScrollPane(vbox);
+		scroll.getStyleClass().add("content-scroll");
 		scroll.setPrefWidth(600);
 		scroll.setPrefHeight(300);
 		scroll.setMaxWidth(Double.MAX_VALUE);
@@ -309,7 +310,15 @@ public class ShittyAuthController {
 
 	@FXML
 	void buttonNewAccount(ActionEvent event) {
-		ServerConfiguration conf = showEditServersDialog(null);
+		ServerConfiguration conf;
+		if(ShittyAuthLauncherPlugins.getDefaultsProvider().allowCustomServerConfigurations()) {
+			conf = showEditServersDialog(null);
+		}else {
+			ServerConfiguration def = ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultServerConfiguration();
+			if(def == null) throw new FriendlyException("Illegal defaults provider: Default server configuration may not be null when not allowing custom server configurations");
+			conf = new ServerConfiguration(def.authServer, def.accountsServer, def.sessionServer, def.servicesServer, def.skinHost);
+		}
+
 		if(conf != null) {
 			MinecraftAccount acc = new MinecraftAccount(conf);
 			accountsList.add(acc);
@@ -507,7 +516,13 @@ public class ShittyAuthController {
 	private ServerConfiguration showEditServersDialog(ServerConfiguration from) {
 		boolean custom = true;
 		if(from == null) {
-			int ch = DialogHelper.showChoice("Server Setup", "Choose your setup type", "ShittyAuth", "Custom");
+			ServerConfiguration def = ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultServerConfiguration();
+			List<String> choices = new ArrayList<>();
+			choices.add("ShittyAuth");
+			choices.add("Custom");
+			if(def != null) choices.add("Default");
+			int ch = DialogHelper.showChoice("Server Setup", "Choose your setup type", choices.toArray(String[]::new));
+			if(ch == 2) return new ServerConfiguration(def.authServer, def.accountsServer, def.sessionServer, def.servicesServer, def.skinHost);
 			if(ch == 0) custom = false;
 		}
 
