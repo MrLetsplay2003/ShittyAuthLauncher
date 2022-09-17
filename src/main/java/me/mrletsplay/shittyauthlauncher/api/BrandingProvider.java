@@ -23,4 +23,9 @@ public interface BrandingProvider extends ExtensionPoint {
 	 */
 	public InputStream loadIcon();
 
+	/**
+	 * @return The name of the game/modpack, used for the "Play ..." button
+	 */
+	public String getGameName();
+
 }

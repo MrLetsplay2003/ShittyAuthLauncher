@@ -80,7 +80,7 @@
       <ComboBox fx:id="dropdownAccounts" layoutX="556.0" layoutY="381.0" prefWidth="170.0" AnchorPane.bottomAnchor="75.0" AnchorPane.rightAnchor="15.0" />
       <Label layoutX="14.0" layoutY="416.0" text="Minecraft version" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="15.0" />
       <ComboBox fx:id="dropdownVersions" layoutX="15.0" layoutY="429.0" prefHeight="25.0" prefWidth="225.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
-      <Button layoutY="416.0" mnemonicParsing="false" onAction="#buttonPlay" prefHeight="55.0" text="Play Minecraft" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0" />
+      <Button fx:id="buttonPlay" layoutY="416.0" mnemonicParsing="false" onAction="#buttonPlay" prefHeight="55.0" text="Play Minecraft" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0" />
       <Label layoutX="480.0" layoutY="420.0" text="Installation" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="177.0" />
       <ComboBox fx:id="dropdownInstallations" layoutX="555.0" layoutY="441.0" prefHeight="25.0" prefWidth="225.0" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0" />
    </children>

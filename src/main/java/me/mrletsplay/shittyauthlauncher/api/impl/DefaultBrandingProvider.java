@@ -46,4 +46,9 @@ public class DefaultBrandingProvider implements BrandingProvider {
 		return ShittyAuthLauncher.class.getResourceAsStream(iconPath);
 	}
 
+	@Override
+	public String getGameName() {
+		return "Minecraft";
+	}
+
 }

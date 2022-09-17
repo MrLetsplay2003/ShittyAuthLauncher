@@ -85,6 +85,9 @@ public class ShittyAuthController {
 	private CheckBox checkboxShowAllVersions;
 
 	@FXML
+	private Button buttonPlay;
+
+	@FXML
 	private TextArea areaLog;
 
 	@FXML
@@ -100,6 +103,8 @@ public class ShittyAuthController {
 	private TabPane tabPaneAll;
 
 	public void init() {
+		buttonPlay.setText("Play " + ShittyAuthLauncherPlugins.getBrandingProvider().getGameName());
+
 		importInstallationsFromJSON();
 
 		installationsList = FXCollections.observableArrayList();
