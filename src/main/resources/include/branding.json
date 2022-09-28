@@ -1,5 +1,4 @@
 {
 	"launcherBrand": "${project.name}",
-	"launcherVersion": "${project.version}",
-	"icon": "/include/icon.png"
+	"launcherVersion": "${project.version}"
 }

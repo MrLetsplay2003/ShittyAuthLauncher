@@ -480,7 +480,7 @@ public class ShittyAuthController {
 			Parent pr = l.load(url.openStream());
 
 			ImageView img = (ImageView) pr.lookup("#imageIcon");
-			img.setImage(new Image(ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()));
+			img.setImage(new Image(ShittyAuthLauncherPlugins.getIconProvider().loadDefaultAccountIcon()));
 
 			BufferedImage accHead = SkinHelper.getSkinHead(account);
 			if(accHead != null) {

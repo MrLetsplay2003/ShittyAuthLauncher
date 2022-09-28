@@ -27,7 +27,7 @@ public class GameInstallation implements JSONConvertible {
 	public static final String DEFAULT_IMAGE_DATA;
 
 	static {
-		try(InputStream in = ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()) {
+		try(InputStream in = ShittyAuthLauncherPlugins.getIconProvider().loadDefaultInstallationIcon()) {
 			byte[] bytes = in.readAllBytes();
 			DEFAULT_IMAGE_DATA = Base64.getEncoder().encodeToString(bytes);
 		} catch (IOException e) {

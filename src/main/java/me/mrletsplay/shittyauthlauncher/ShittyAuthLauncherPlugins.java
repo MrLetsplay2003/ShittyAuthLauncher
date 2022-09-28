@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,13 +20,16 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 
 import me.mrletsplay.fxloader.FXLoader;
+import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.api.BrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
+import me.mrletsplay.shittyauthlauncher.api.IconProvider;
 import me.mrletsplay.shittyauthlauncher.api.MirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
 import me.mrletsplay.shittyauthlauncher.api.ThemeProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultBrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultDefaultsProvider;
+import me.mrletsplay.shittyauthlauncher.api.impl.DefaultIconProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultMirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultThemeProvider;
 import me.mrletsplay.shittyauthlauncher.util.LauncherMeta;
@@ -37,6 +41,7 @@ public class ShittyAuthLauncherPlugins {
 	private static List<ThemeProvider> themeProviders;
 	private static DefaultsProvider defaultsProvider;
 	private static List<MirrorProvider> mirrorProviders;
+	private static IconProvider iconProvider;
 
 	private static PluginManager pluginManager;
 
@@ -49,7 +54,13 @@ public class ShittyAuthLauncherPlugins {
 		mirrorProviders.add(DefaultMirrorProvider.INSTANCE);
 
 		ShittyAuthLauncher.LOGGER.info("Loading plugins");
-		pluginManager = new DefaultPluginManager(Path.of(ShittyAuthLauncherSettings.DATA_PATH, "plugins"));
+		Path pluginsFolder = Path.of(ShittyAuthLauncherSettings.DATA_PATH, "plugins");
+		try {
+			Files.createDirectories(pluginsFolder);
+		} catch (IOException e2) {
+			throw new FriendlyException("Failed to create plugins directory", e2);
+		}
+		pluginManager = new DefaultPluginManager(pluginsFolder);
 		pluginManager.loadPlugins();
 
 		Set<URL> additionalURLs = new HashSet<>();
@@ -90,30 +101,26 @@ public class ShittyAuthLauncherPlugins {
 		pluginManager.setSystemVersion(LauncherMeta.getLauncherSystemVersion());
 
 		themeProviders.addAll(pluginManager.getExtensions(ThemeProvider.class));
-		ShittyAuthLauncher.LOGGER.info("Loaded " + themeProviders.size() + " theme providers");
+		ShittyAuthLauncher.LOGGER.info("Loaded " + themeProviders.size() + " theme provider(s)");
 
-		List<BrandingProvider> brandingProviders = pluginManager.getExtensions(BrandingProvider.class);
-		if(!brandingProviders.isEmpty()) {
-			if(brandingProviders.size() > 1) ShittyAuthLauncher.LOGGER.warn("There are multiple (" + brandingProviders.size() + ") branding providers, make sure to only have one");
-			brandingProvider = brandingProviders.get(0);
-		}else {
-			brandingProvider = DefaultBrandingProvider.INSTANCE;
-		}
-
+		brandingProvider = loadOneProvider("branding", BrandingProvider.class, DefaultBrandingProvider.INSTANCE);
 		ShittyAuthLauncher.LOGGER.info("Using " + brandingProvider.getClass().getName() + " as branding provider");
 
-		List<DefaultsProvider> defaultsProviders = pluginManager.getExtensions(DefaultsProvider.class);
-		if(!defaultsProviders.isEmpty()) {
-			if(defaultsProviders.size() > 1) ShittyAuthLauncher.LOGGER.warn("There are multiple (" + defaultsProviders.size() + ") defaults providers, make sure to only have one");
-			defaultsProvider = defaultsProviders.get(0);
-		}else {
-			defaultsProvider = DefaultDefaultsProvider.INSTANCE;
-		}
-
+		defaultsProvider = loadOneProvider("defaults", DefaultsProvider.class, DefaultDefaultsProvider.INSTANCE);
 		ShittyAuthLauncher.LOGGER.info("Using " + defaultsProvider.getClass().getName() + " as defaults provider");
 
 		mirrorProviders.addAll(pluginManager.getExtensions(MirrorProvider.class));
-		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " mirror providers");
+		ShittyAuthLauncher.LOGGER.info("Loaded " + mirrorProviders.size() + " mirror provider(s)");
+
+		iconProvider = loadOneProvider("icon", IconProvider.class, DefaultIconProvider.INSTANCE);
+		ShittyAuthLauncher.LOGGER.info("Using " + iconProvider.getClass().getName() + " as icon provider");
+	}
+
+	private static <T> T loadOneProvider(String what, Class<T> providerClass, T defaultValue) {
+		List<T> providers = pluginManager.getExtensions(providerClass);
+		if(providers.isEmpty()) return defaultValue;
+		if(providers.size() > 1) ShittyAuthLauncher.LOGGER.warn(String.format("There are multiple (%s) %s providers, make sure to only have one", providers.size(), what));
+		return providers.get(0);
 	}
 
 	public static void unload() {
@@ -159,6 +166,10 @@ public class ShittyAuthLauncherPlugins {
 		return mirrorProviders.stream()
 			.flatMap(p -> p.getMirrors().stream())
 			.collect(Collectors.toList());
+	}
+
+	public static IconProvider getIconProvider() {
+		return iconProvider;
 	}
 
 }

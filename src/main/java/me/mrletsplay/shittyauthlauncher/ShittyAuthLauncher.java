@@ -65,7 +65,7 @@ public class ShittyAuthLauncher extends Application {
 			settingsStage.hide();
 		});
 
-		primaryStage.getIcons().add(new Image(ShittyAuthLauncherPlugins.getBrandingProvider().loadIcon()));
+		primaryStage.getIcons().add(new Image(ShittyAuthLauncherPlugins.getIconProvider().loadLauncherIcon()));
 
 		Scene sc = new Scene(pr, 720, 480);
 		primaryStage.setTitle(ShittyAuthLauncherPlugins.getBrandingProvider().getLauncherBrand());

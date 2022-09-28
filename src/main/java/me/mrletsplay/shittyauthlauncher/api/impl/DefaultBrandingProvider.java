@@ -1,7 +1,6 @@
 package me.mrletsplay.shittyauthlauncher.api.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -16,8 +15,7 @@ public class DefaultBrandingProvider implements BrandingProvider {
 
 	private String
 		launcherBrand,
-		launcherVersion,
-		iconPath;
+		launcherVersion;
 
 	protected DefaultBrandingProvider() {
 		URL url = ShittyAuthLauncher.class.getResource("/include/branding.json");
@@ -25,7 +23,6 @@ public class DefaultBrandingProvider implements BrandingProvider {
 			JSONObject branding = new JSONObject(new String(IOUtils.readAllBytes(url.openStream()), StandardCharsets.UTF_8));
 			launcherBrand = branding.getString("launcherBrand");
 			launcherVersion = branding.getString("launcherVersion");
-			iconPath = branding.getString("icon");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -39,11 +36,6 @@ public class DefaultBrandingProvider implements BrandingProvider {
 	@Override
 	public String getLauncherVersion() {
 		return launcherVersion;
-	}
-
-	@Override
-	public InputStream loadIcon() {
-		return ShittyAuthLauncher.class.getResourceAsStream(iconPath);
 	}
 
 	@Override
