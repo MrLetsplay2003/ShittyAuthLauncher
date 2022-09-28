@@ -496,6 +496,7 @@ public class ShittyAuthController {
 			switchAccount.setOnAction(event -> showLoginDialog(account));
 
 			Button edit = (Button) pr.lookup("#buttonEdit");
+			edit.setDisable(!ShittyAuthLauncherPlugins.getDefaultsProvider().allowCustomServerConfigurations());
 			edit.setOnAction(event -> {
 				showEditServersDialog(account.getServers());
 				accountsList.set(accountsList.indexOf(account), account); // Cause a list update
