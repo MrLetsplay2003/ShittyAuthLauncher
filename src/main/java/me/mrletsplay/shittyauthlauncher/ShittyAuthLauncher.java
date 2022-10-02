@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
+import me.mrletsplay.shittyauthlauncher.locale.Locale;
 
 public class ShittyAuthLauncher extends Application {
 
@@ -82,6 +83,9 @@ public class ShittyAuthLauncher extends Application {
 		}
 
 		if(theme != null) Theming.updateTheme(theme);
+
+		Locale locale = Localization.getLocale();
+		Localization.updateLocale(locale);
 	}
 
 	public static void addTab(String name, Node content) {

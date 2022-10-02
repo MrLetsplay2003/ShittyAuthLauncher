@@ -103,8 +103,6 @@ public class ShittyAuthController {
 	private TabPane tabPaneAll;
 
 	public void init() {
-		buttonPlay.setText("Play " + ShittyAuthLauncherPlugins.getBrandingProvider().getGameName());
-
 		importInstallationsFromJSON();
 
 		installationsList = FXCollections.observableArrayList();

@@ -14,6 +14,7 @@ import me.mrletsplay.mrcore.json.converter.JSONConvertible;
 import me.mrletsplay.mrcore.json.converter.JSONListType;
 import me.mrletsplay.mrcore.json.converter.JSONValue;
 import me.mrletsplay.mrcore.misc.FriendlyException;
+import me.mrletsplay.shittyauthlauncher.Localization;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncher;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherPlugins;
 import me.mrletsplay.shittyauthlauncher.ShittyAuthLauncherSettings;
@@ -115,10 +116,12 @@ public class GameInstallation implements JSONConvertible {
 	}
 
 	public DownloadsMirror getMirror() {
+		if(mirror == null) return ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
+
 		DownloadsMirror m = ShittyAuthLauncherSettings.getMirror(mirror);
 		if(m == null) {
 			DownloadsMirror defMirror = ShittyAuthLauncherPlugins.getDefaultsProvider().getDefaultMirror();
-			System.err.println("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default mirror '" + defMirror.getName() + "'");
+			ShittyAuthLauncher.LOGGER.warn("Installation '" + name + "' references invalid mirror '" + mirror + "'. Falling back to default mirror '" + defMirror.getName() + "'");
 			return defMirror;
 		}
 		return m;
@@ -126,6 +129,8 @@ public class GameInstallation implements JSONConvertible {
 
 	@Override
 	public String toString() {
+		if(type == InstallationType.LATEST_RELEASE && name == null) return Localization.getLocale().get("installation.latest-release");
+		if(type == InstallationType.LATEST_SNAPSHOT && name == null) return Localization.getLocale().get("installation.latest-snapshot");
 		return name;
 	}
 

@@ -67,12 +67,12 @@ public class ShittyAuthLauncherSettings {
 
 		installations = getInstallations();
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_RELEASE)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", "Latest Release", null, DEFAULT_GAME_DATA_PATH, null, Collections.emptyList(), null));
+			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", null, null, DEFAULT_GAME_DATA_PATH, null, Collections.emptyList(), null));
 			setInstallations(installations);
 		}
 
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_SNAPSHOT)) {
-			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", "Latest Snapshot", null, DEFAULT_GAME_DATA_PATH, null, Collections.emptyList(), null));
+			installations.add(new GameInstallation(InstallationType.LATEST_SNAPSHOT, "latest-snapshot", null, null, DEFAULT_GAME_DATA_PATH, null, Collections.emptyList(), null));
 			setInstallations(installations);
 		}
 
@@ -204,6 +204,14 @@ public class ShittyAuthLauncherSettings {
 			System.err.println("Failed to write mirrors file");
 			e.printStackTrace();
 		}
+	}
+
+	public static void setLocale(String locale) {
+		config.set("locale", locale);
+	}
+
+	public static String getLocale() {
+		return config.getString("locale");
 	}
 
 }

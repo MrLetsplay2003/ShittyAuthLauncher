@@ -2,6 +2,7 @@ package me.mrletsplay.shittyauthlauncher.api;
 
 import org.pf4j.ExtensionPoint;
 
+import me.mrletsplay.shittyauthlauncher.locale.Locale;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
@@ -27,5 +28,10 @@ public interface DefaultsProvider extends ExtensionPoint {
 	 * @return Whether to allow custom server configurations. {@link #getDefaultServerConfiguration()} must return a non-null value if this method returns <code>false</code>
 	 */
 	public boolean allowCustomServerConfigurations();
+
+	/**
+	 * @return The default locale for the launcher
+	 */
+	public Locale getDefaultLocale();
 
 }

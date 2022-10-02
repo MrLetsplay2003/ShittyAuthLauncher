@@ -1,0 +1,25 @@
+{
+	"button.settings": "Einstellungen",
+	"button.play": "Spiele {gameName}",
+	"button.installations.new": "Neu Erstellen...",
+	"button.installations.import": "Importieren...",
+	"button.accounts.add": "Account hinzufügen...",
+	"button.mirrors.add": "Mirror hinzufügen...",
+
+	"tab.gameLog": "Spiel-Logs",
+	"tab.installations": "Installationen",
+	"tab.accounts": "Accounts",
+	"tab.mirrors": "Mirrors",
+	
+	"label.gameVersion": "{gameName}-Version",
+	"label.showAllVersions": "Zeige alle Versionen",
+	"label.account": "Account",
+	"label.installation": "Installation",
+	
+	"prompt.gameLog": "Ausgabe der letzten Ausführung wird hier angezeigt",
+	
+	"plugins.empty": "Beruhigende Stille",
+	
+	"installation.latest-release": "Letzter Release",
+	"installation.latest-snapshot": "Letzter Snapshot"
+}

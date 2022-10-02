@@ -2,6 +2,7 @@ package me.mrletsplay.shittyauthlauncher.api.impl;
 
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
+import me.mrletsplay.shittyauthlauncher.locale.Locale;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 import me.mrletsplay.shittyauthpatcher.util.ServerConfiguration;
 
@@ -29,6 +30,11 @@ public class DefaultDefaultsProvider implements DefaultsProvider {
 	@Override
 	public boolean allowCustomServerConfigurations() {
 		return true;
+	}
+
+	@Override
+	public Locale getDefaultLocale() {
+		return DefaultLocaleProvider.INSTANCE.getLocales().get(0);
 	}
 
 }

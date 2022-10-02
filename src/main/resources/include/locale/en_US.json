@@ -1,0 +1,25 @@
+{
+	"button.settings": "Settings",
+	"button.play": "Play {gameName}",
+	"button.installations.new": "Create New...",
+	"button.installations.import": "Import...",
+	"button.accounts.add": "Add Account...",
+	"button.mirrors.add": "Add Mirror...",
+
+	"tab.gameLog": "Game Logs",
+	"tab.installations": "Installations",
+	"tab.accounts": "Accounts",
+	"tab.mirrors": "Mirrors",
+	
+	"label.gameVersion": "{gameName} version",
+	"label.showAllVersions": "Show all versions",
+	"label.account": "Account",
+	"label.installation": "Installation",
+	
+	"prompt.gameLog": "Output from the latest launch will appear here",
+	
+	"plugins.empty": "Blissful silence",
+	
+	"installation.latest-release": "Latest Release",
+	"installation.latest-snapshot": "Latest Snapshot"
+}

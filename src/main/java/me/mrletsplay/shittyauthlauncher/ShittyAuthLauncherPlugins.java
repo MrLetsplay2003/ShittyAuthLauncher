@@ -24,14 +24,17 @@ import me.mrletsplay.mrcore.misc.FriendlyException;
 import me.mrletsplay.shittyauthlauncher.api.BrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.IconProvider;
+import me.mrletsplay.shittyauthlauncher.api.LocaleProvider;
 import me.mrletsplay.shittyauthlauncher.api.MirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
 import me.mrletsplay.shittyauthlauncher.api.ThemeProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultBrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultDefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultIconProvider;
+import me.mrletsplay.shittyauthlauncher.api.impl.DefaultLocaleProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultMirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultThemeProvider;
+import me.mrletsplay.shittyauthlauncher.locale.Locale;
 import me.mrletsplay.shittyauthlauncher.util.LauncherMeta;
 import me.mrletsplay.shittyauthpatcher.mirrors.DownloadsMirror;
 
@@ -42,6 +45,7 @@ public class ShittyAuthLauncherPlugins {
 	private static DefaultsProvider defaultsProvider;
 	private static List<MirrorProvider> mirrorProviders;
 	private static IconProvider iconProvider;
+	private static List<LocaleProvider> localeProviders;
 
 	private static PluginManager pluginManager;
 
@@ -52,6 +56,8 @@ public class ShittyAuthLauncherPlugins {
 		defaultsProvider = null;
 		mirrorProviders = new ArrayList<>();
 		mirrorProviders.add(DefaultMirrorProvider.INSTANCE);
+		localeProviders = new ArrayList<>();
+		localeProviders.add(DefaultLocaleProvider.INSTANCE);
 
 		ShittyAuthLauncher.LOGGER.info("Loading plugins");
 		Path pluginsFolder = Path.of(ShittyAuthLauncherSettings.DATA_PATH, "plugins");
@@ -114,6 +120,9 @@ public class ShittyAuthLauncherPlugins {
 
 		iconProvider = loadOneProvider("icon", IconProvider.class, DefaultIconProvider.INSTANCE);
 		ShittyAuthLauncher.LOGGER.info("Using " + iconProvider.getClass().getName() + " as icon provider");
+
+		localeProviders.addAll(pluginManager.getExtensions(LocaleProvider.class));
+		ShittyAuthLauncher.LOGGER.info("Loaded " + localeProviders.size() + " locale provider(s)");
 	}
 
 	private static <T> T loadOneProvider(String what, Class<T> providerClass, T defaultValue) {
@@ -170,6 +179,23 @@ public class ShittyAuthLauncherPlugins {
 
 	public static IconProvider getIconProvider() {
 		return iconProvider;
+	}
+
+	public static List<LocaleProvider> getLocaleProviders() {
+		return localeProviders;
+	}
+
+	public static List<Locale> getLocales() {
+		return localeProviders.stream()
+			.flatMap(p -> p.getLocales().stream())
+			.collect(Collectors.toList());
+	}
+
+	public static Locale getLocale(String id) {
+		return localeProviders.stream()
+			.flatMap(p -> p.getLocales().stream())
+			.filter(t -> Objects.equals(id, t.getID()))
+			.findFirst().orElse(null);
 	}
 
 }

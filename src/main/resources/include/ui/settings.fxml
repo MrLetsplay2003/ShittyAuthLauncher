@@ -34,6 +34,7 @@
                                   <RowConstraints fillHeight="false" valignment="CENTER" vgrow="NEVER" />
                                   <RowConstraints fillHeight="false" valignment="CENTER" vgrow="NEVER" />
                            <RowConstraints fillHeight="false" valignment="CENTER" vgrow="NEVER" />
+                           <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
                            <RowConstraints vgrow="ALWAYS" />
                                   <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" vgrow="NEVER" />
                               </rowConstraints>
@@ -82,7 +83,13 @@
                                  <Label text="Launcher Theme" />
                               </children>
                            </VBox>
-                                  <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER">
+                           <VBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="262.0" GridPane.rowIndex="5">
+                              <children>
+                                 <Label text="Launcher Language" />
+                              </children>
+                           </VBox>
+                           <ComboBox fx:id="comboBoxTheme" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                                  <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="7" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER">
                                       <children>
                                           <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonCancel" text="Cancel" />
                                           <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonSave" text="Save">
@@ -92,7 +99,7 @@
                                           </Button>
                                       </children>
                                   </HBox>
-                           <ComboBox fx:id="comboBoxTheme" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                           <ComboBox fx:id="comboBoxLanguage" layoutX="430.0" layoutY="258.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                               </children>
                               <padding>
                                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
