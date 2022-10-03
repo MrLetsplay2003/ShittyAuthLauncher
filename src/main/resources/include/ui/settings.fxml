@@ -19,7 +19,7 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.mrletsplay.shittyauthlauncher.ShittyAuthSettingsController">
     <TabPane layoutX="6.0" layoutY="5.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
-            <Tab text="General">
+            <Tab text="\@locale/settings.tab.general">
                 <content>
                <AnchorPane styleClass="settings-pane">
                   <children>
@@ -41,8 +41,8 @@
                               <children>
                            <VBox>
                               <children>
-                                        <Label text="Use JRE downloads from Adoptium instead of the ones provided by Mojang" wrapText="true" />
-                                 <Label text="The runtime downloads from Adoptium are generally more up-to-date than the ones Mojang provides" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
+                                        <Label text="\@locale/settings.label.useAdoptium" wrapText="true" />
+                                 <Label styleClass="label-explanation" text="\@locale/settings.label.useAdoptiumExplanation" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -52,8 +52,8 @@
                                   <CheckBox fx:id="checkboxUseAdoptium" mnemonicParsing="false" GridPane.columnIndex="1" />
                            <VBox GridPane.rowIndex="1" GridPane.valignment="CENTER">
                               <children>
-                                        <Label text="Always patch authlib" />
-                                 <Label text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running Minecraft" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
+                                        <Label text="\@locale/settings.label.alwaysPatchAuthlib" />
+                                 <Label styleClass="label-explanation" text="\@locale/settings.label.alwaysPatchAuthlibExplanation" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -63,8 +63,8 @@
                                   <CheckBox fx:id="checkboxAlwaysPatchAuthlib" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                            <VBox GridPane.rowIndex="2" GridPane.valignment="TOP">
                               <children>
-                                        <Label text="Always patch minecraft.jar" />
-                                 <Label text="Will reduce launch performance, but might be useful if you're experiencing weird issues when running older Minecraft versions" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
+                                        <Label text="\@locale/settings.label.alwaysPatchMinecraft" />
+                                 <Label styleClass="label-explanation" text="\@locale/settings.label.alwaysPatchMinecraftExplanation" textFill="#808080" wrapText="true" VBox.vgrow="ALWAYS">
                                     <font>
                                        <Font name="System Italic" size="13.0" />
                                     </font>
@@ -74,25 +74,25 @@
                                   <CheckBox fx:id="checkboxAlwaysPatchMinecraft" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                            <VBox GridPane.rowIndex="3" GridPane.valignment="CENTER">
                               <children>
-                                        <Label text="Minimize launcher after starting the game" />
+                                        <Label text="\@locale/settings.label.minimizeLauncher" />
                               </children>
                            </VBox>
                                   <CheckBox fx:id="checkboxMinimizeLauncher" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                            <VBox alignment="CENTER_LEFT" GridPane.rowIndex="4">
                               <children>
-                                 <Label text="Launcher Theme" />
+                                 <Label text="\@locale/settings.label.theme" />
                               </children>
                            </VBox>
                            <VBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="262.0" GridPane.rowIndex="5">
                               <children>
-                                 <Label text="Launcher Language" />
+                                 <Label text="\@locale/settings.label.locale" />
                               </children>
                            </VBox>
                            <ComboBox fx:id="comboBoxTheme" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
                                   <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="7" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER">
                                       <children>
-                                          <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonCancel" text="Cancel" />
-                                          <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonSave" text="Save">
+                                          <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonCancel" text="\@locale/settings.button.cancel" />
+                                          <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#buttonSave" text="\@locale/settings.button.save">
                                               <HBox.margin>
                                                   <Insets />
                                               </HBox.margin>
@@ -109,7 +109,7 @@
                </AnchorPane>
                 </content>
             </Tab>
-         <Tab text="Plugins">
+         <Tab text="\@locale/settings.tab.plugins">
            <content>
              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                   <children>

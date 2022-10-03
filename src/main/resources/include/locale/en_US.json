@@ -21,5 +21,21 @@
 	"plugins.empty": "Blissful silence",
 	
 	"installation.latest-release": "Latest Release",
-	"installation.latest-snapshot": "Latest Snapshot"
+	"installation.latest-snapshot": "Latest Snapshot",
+	
+	"settings.label.useAdoptium": "Use JRE downloads from Adoptium instead of the ones provided by Mojang",
+	"settings.label.useAdoptiumExplanation": "The runtime downloads from Adoptium are generally more up-to-date than the ones Mojang provides",
+	"settings.label.alwaysPatchAuthlib": "Always patch authlib",
+	"settings.label.alwaysPatchAuthlibExplanation": "Will reduce launch performance, but might be useful if you're experiencing weird issues when running Minecraft",
+	"settings.label.alwaysPatchMinecraft": "Always patch minecraft.jar",
+	"settings.label.alwaysPatchMinecraftExplanation": "Will reduce launch performance, but might be useful if you're experiencing weird issues when running older Minecraft versions",
+	"settings.label.minimizeLauncher": "Minimize launcher after starting the game",
+	"settings.label.theme": "Launcher Theme",
+	"settings.label.locale": "Launcher Language",
+	
+	"settings.button.cancel": "Cancel",
+	"settings.button.save": "Save",
+	
+	"settings.tab.general": "General",
+	"settings.tab.plugins": "Plugins"
 }

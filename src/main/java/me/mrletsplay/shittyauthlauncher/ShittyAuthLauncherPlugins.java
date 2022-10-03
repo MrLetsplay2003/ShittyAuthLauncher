@@ -21,6 +21,7 @@ import org.pf4j.PluginWrapper;
 
 import me.mrletsplay.fxloader.FXLoader;
 import me.mrletsplay.mrcore.misc.FriendlyException;
+import me.mrletsplay.shittyauthlauncher.api.AuthProvider;
 import me.mrletsplay.shittyauthlauncher.api.BrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.DefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.IconProvider;
@@ -28,6 +29,7 @@ import me.mrletsplay.shittyauthlauncher.api.LocaleProvider;
 import me.mrletsplay.shittyauthlauncher.api.MirrorProvider;
 import me.mrletsplay.shittyauthlauncher.api.Theme;
 import me.mrletsplay.shittyauthlauncher.api.ThemeProvider;
+import me.mrletsplay.shittyauthlauncher.api.impl.DefaultAuthProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultBrandingProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultDefaultsProvider;
 import me.mrletsplay.shittyauthlauncher.api.impl.DefaultIconProvider;
@@ -46,6 +48,7 @@ public class ShittyAuthLauncherPlugins {
 	private static List<MirrorProvider> mirrorProviders;
 	private static IconProvider iconProvider;
 	private static List<LocaleProvider> localeProviders;
+	private static AuthProvider authProvider;
 
 	private static PluginManager pluginManager;
 
@@ -123,6 +126,9 @@ public class ShittyAuthLauncherPlugins {
 
 		localeProviders.addAll(pluginManager.getExtensions(LocaleProvider.class));
 		ShittyAuthLauncher.LOGGER.info("Loaded " + localeProviders.size() + " locale provider(s)");
+
+		authProvider = loadOneProvider("auth", AuthProvider.class, DefaultAuthProvider.INSTANCE);
+		ShittyAuthLauncher.LOGGER.info("Using " + authProvider.getClass().getName() + " as auth provider");
 	}
 
 	private static <T> T loadOneProvider(String what, Class<T> providerClass, T defaultValue) {
@@ -196,6 +202,10 @@ public class ShittyAuthLauncherPlugins {
 			.flatMap(p -> p.getLocales().stream())
 			.filter(t -> Objects.equals(id, t.getID()))
 			.findFirst().orElse(null);
+	}
+
+	public static AuthProvider getAuthProvider() {
+		return authProvider;
 	}
 
 }

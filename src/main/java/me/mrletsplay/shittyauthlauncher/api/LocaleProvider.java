@@ -9,7 +9,7 @@ import me.mrletsplay.shittyauthlauncher.locale.Locale;
 public interface LocaleProvider extends ExtensionPoint {
 
 	/**
-	 * @return A list of {@link Locale}s that can be selected in the launcher
+	 * @return A list of {@link Locale}s the user can select in the launcher
 	 */
 	public List<Locale> getLocales();
 

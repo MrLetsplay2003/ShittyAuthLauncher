@@ -51,7 +51,11 @@ public class Localization {
 
 		if(key != null) {
 			String val = l.get(key);
-			if(val != null) prop.set(val);
+			if(val != null) {
+				prop.set(val);
+			}else {
+				prop.set(LOCALE_PREFIX + key);
+			}
 		}
 	}
 

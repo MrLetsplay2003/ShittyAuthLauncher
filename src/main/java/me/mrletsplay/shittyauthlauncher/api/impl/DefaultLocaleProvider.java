@@ -18,7 +18,7 @@ public class DefaultLocaleProvider implements LocaleProvider {
 
 	private List<Locale> locales;
 
-	private DefaultLocaleProvider() {
+	protected DefaultLocaleProvider() {
 		this.locales = new ArrayList<>();
 		locales.add(loadLocale("en_US", "English (US)"));
 		locales.add(loadLocale("de_DE", "Deutsch"));

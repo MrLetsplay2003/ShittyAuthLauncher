@@ -15,7 +15,7 @@ public interface BrandingProvider extends ExtensionPoint {
 	public String getLauncherVersion();
 
 	/**
-	 * @return The name of the game/modpack, used for the "Play ..." button
+	 * @return The name of the game/modpack, used via the <code>gameName</code> variable in locales
 	 */
 	public String getGameName();
 

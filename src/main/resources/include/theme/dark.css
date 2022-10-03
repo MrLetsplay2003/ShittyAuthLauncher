@@ -1,10 +1,17 @@
 * {
-	-fx-text-fill: white;
+	-fx-text-normal: white;
+	-fx-text-secondary: gray;
 	-fx-darker: #212121;
 	-fx-dark: #303030;
 	-fx-light: #424242;
 	-fx-highlight: #1a5fb4;
 	-fx-highlight-transparent: #1a5fb422;
+	
+	-fx-text-fill: -fx-text-normal;
+}
+
+.label-explanation {
+	-fx-text-fill: -fx-text-secondary;
 }
 
 .content-pane {
