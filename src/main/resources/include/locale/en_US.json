@@ -37,5 +37,10 @@
 	"settings.button.save": "Save",
 	
 	"settings.tab.general": "General",
-	"settings.tab.plugins": "Plugins"
+	"settings.tab.plugins": "Plugins",
+	
+	"error.no-version-selected": "No version selected",
+	"error.no-account-selected": "You need to create an account first",
+	"error.validate-refresh-failed": "Failed to validate/refresh account data",
+	"error.no-installation-selected": "No installation selected"
 }

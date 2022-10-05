@@ -209,13 +209,13 @@ public class ShittyAuthController {
 	void buttonPlay(ActionEvent event) {
 		AbstractMinecraftVersion ver = dropdownVersions.getSelectionModel().getSelectedItem();
 		if(ver == null) {
-			DialogHelper.showError("No version selected");
+			DialogHelper.showError(Localization.getLocale().get("error.no-version-selected"));
 			return;
 		}
 
 		MinecraftAccount acc = dropdownAccounts.getSelectionModel().getSelectedItem();
 		if(acc == null) {
-			DialogHelper.showWarning("You need to create an account first");
+			DialogHelper.showWarning(Localization.getLocale().get("error.no-account-selected"));
 			return;
 		}
 
@@ -224,7 +224,7 @@ public class ShittyAuthController {
 				acc.setLoginData(AuthHelper.refresh(acc.getLoginData(), acc.getServers()));
 			}
 		}catch(HttpException e) {
-			DialogHelper.showError("Failed to validate/refresh account data", e);
+			DialogHelper.showError(Localization.getLocale().get("error.validate-refresh-failed"), e);
 			return;
 		}
 
@@ -235,7 +235,7 @@ public class ShittyAuthController {
 
 		GameInstallation inst = dropdownInstallations.getSelectionModel().getSelectedItem();
 		if(inst == null) {
-			DialogHelper.showError("No installation selected");
+			DialogHelper.showError(Localization.getLocale().get("error.no-installation-selected"));
 			return;
 		}
 
