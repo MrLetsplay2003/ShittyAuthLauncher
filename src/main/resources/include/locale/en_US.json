@@ -42,5 +42,15 @@
 	"error.no-version-selected": "No version selected",
 	"error.no-account-selected": "You need to create an account first",
 	"error.validate-refresh-failed": "Failed to validate/refresh account data",
-	"error.no-installation-selected": "No installation selected"
+	"error.no-installation-selected": "No installation selected",
+	"error.import-file-does-not-exist": "The selected file does not exist",
+	"error.invalid-credentials": "Invalid credentials",
+	"error.login-error": "Failed to log in",
+	
+	"prompt.confirm-delete-account": "Do you really want to delete the account '{accountName}'?",
+	"prompt.confirm-delete-installation": "Do you really want to delete the installation '{installationName}'?\n\nNote: This will only remove it from the launcher, the game data folder will not be deleted",
+	"prompt.confirm-delete-mirror": "Do you really want to delete the mirror '{mirrorName}'?",
+	"prompt.not-minecraft-dir": "This installation does not use the default .minecraft directory. If it contains modded versions, they need to be manually re-installed into the directory to appear",
+	"prompt.server-setup.title": "Server Setup",
+	"prompt.server-setup.text": "Choose your setup type"
 }

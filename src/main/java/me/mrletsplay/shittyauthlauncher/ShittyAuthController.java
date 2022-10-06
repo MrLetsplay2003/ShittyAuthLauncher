@@ -277,7 +277,7 @@ public class ShittyAuthController {
 
 		File profiles = data.get("profiles");
 		if(!profiles.exists()) {
-			DialogHelper.showError("The selected file does not exist");
+			DialogHelper.showError(Localization.getLocale().get("error.import-file-does-not-exist"));
 			return;
 		}
 
@@ -403,8 +403,7 @@ public class ShittyAuthController {
 				delete.setMaxWidth(Double.MAX_VALUE);
 				if(installation.type != InstallationType.CUSTOM) delete.setDisable(true);
 				delete.setOnAction(event -> {
-					if(DialogHelper.showYesNo("Do you really want to delete the installation '" + installation.name + "'?\n\n"
-							+ "Note: This will only remove it from the launcher, the game data folder will not be deleted")) {
+					if(DialogHelper.showYesNo(Localization.getLocale().get("prompt.confirm-delete-installation", "installationName", installation.name))) {
 						installationsList.remove(installation);
 						ShittyAuthLauncherSettings.setInstallations(installationsList);
 						ShittyAuthLauncherSettings.save();
@@ -416,7 +415,7 @@ public class ShittyAuthController {
 				importBtn.setMaxWidth(Double.MAX_VALUE);
 				importBtn.setOnAction(event -> {
 					if(!Path.of(installation.gameDirectory).equals(Path.of(ShittyAuthLauncherSettings.DEFAULT_MINECRAFT_PATH))) {
-						DialogHelper.showWarning("This installation does not use the default .minecraft directory. If it contains modded versions, they need to be manually re-installed into the directory to appear");
+						DialogHelper.showWarning(Localization.getLocale().get("prompt.not-minecraft-dir"));
 					}
 
 					installationsList.add(installation);
@@ -504,7 +503,7 @@ public class ShittyAuthController {
 
 			Button delete = (Button) pr.lookup("#buttonDelete");
 			delete.setOnAction(event -> {
-				if(DialogHelper.showYesNo("Do you really want to delete the account '" + account.toString() + "'?")) {
+				if(DialogHelper.showYesNo(Localization.getLocale().get("prompt.confirm-delete-account", "accountName", account.toString()))) {
 					accountsList.remove(account);
 					ShittyAuthLauncherSettings.setAccounts(accountsList);
 					ShittyAuthLauncherSettings.save();
@@ -525,7 +524,7 @@ public class ShittyAuthController {
 			choices.add("ShittyAuth");
 			choices.add("Custom");
 			if(def != null) choices.add("Default");
-			int ch = DialogHelper.showChoice("Server Setup", "Choose your setup type", choices.toArray(String[]::new));
+			int ch = DialogHelper.showChoice(Localization.getLocale().get("prompt.server-setup.title"), Localization.getLocale().get("prompt.server-setup.text"), choices.toArray(String[]::new));
 			if(ch == 2) return new ServerConfiguration(def.authServer, def.accountsServer, def.sessionServer, def.servicesServer, def.skinHost);
 			if(ch == 0) custom = false;
 		}
@@ -597,10 +596,10 @@ public class ShittyAuthController {
 				ShittyAuthLauncherSettings.setAccounts(accountsList);
 				ShittyAuthLauncherSettings.save();
 			}else {
-				DialogHelper.showError("Invalid credentials");
+				DialogHelper.showError(Localization.getLocale().get("error.invalid-credentials"));
 			}
 		}catch(Exception e) {
-			DialogHelper.showError("Failed to log in", e);
+			DialogHelper.showError(Localization.getLocale().get("error.login-error"), e);
 		}
 	}
 
@@ -675,7 +674,7 @@ public class ShittyAuthController {
 
 			Button delete = (Button) pr.lookup("#buttonDelete");
 			delete.setOnAction(event -> {
-				if(DialogHelper.showYesNo("Do you really want to delete the mirror '" + mirror.getName() + "'?")) {
+				if(DialogHelper.showYesNo(Localization.getLocale().get("prompt.confirm-delete-mirror", "mirrorName", mirror.getName()))) {
 					mirrors.remove(mirror);
 					ShittyAuthLauncherSettings.setMirrors(mirrors);
 				}
