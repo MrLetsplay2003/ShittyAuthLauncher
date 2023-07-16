@@ -75,9 +75,9 @@
         </tabs>
       </TabPane>
       <CheckBox fx:id="checkboxShowAllVersions" layoutX="15.0" layoutY="384.0" mnemonicParsing="false" onAction="#checkboxShowAllVersions" prefHeight="25.0" text="\@locale/label.showAllVersions" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="15.0" />
-      <HBox alignment="CENTER" layoutX="260.0" layoutY="342.0" prefHeight="25.0" prefWidth="200.0" AnchorPane.bottomAnchor="75.0">
+      <HBox alignment="CENTER" layoutX="260.0" layoutY="342.0" prefHeight="25.0" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="260.0" AnchorPane.rightAnchor="260.0">
          <children>
-            <Button mnemonicParsing="false" onAction="#buttonSettings" prefHeight="25.0" text="\@locale/button.settings" HBox.hgrow="SOMETIMES" />
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#buttonSettings" prefHeight="25.0" text="\@locale/button.settings" HBox.hgrow="SOMETIMES" />
          </children>
       </HBox>
       <HBox alignment="CENTER_RIGHT" layoutX="505.0" layoutY="342.0" prefHeight="25.0" prefWidth="225.0" spacing="5.0" AnchorPane.bottomAnchor="75.0" AnchorPane.rightAnchor="15.0">
