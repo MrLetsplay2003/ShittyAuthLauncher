@@ -15,6 +15,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -451,7 +452,11 @@ public class ShittyAuthController {
 		DialogData data = dialog.show("Edit Installation", "Enter installation settings");
 		if(data == null) return null;
 
-		if(from == null) from = new GameInstallation();
+		if(from == null) {
+			from = new GameInstallation();
+			from.id = UUID.randomUUID().toString();
+		}
+
 		from.name = data.get("name");
 		from.gameDirectory = data.<File>get("directory").getAbsolutePath();
 		File java = data.get("java");

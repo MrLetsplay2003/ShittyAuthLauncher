@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import me.mrletsplay.mrcore.config.ConfigLoader;
@@ -66,6 +67,15 @@ public class ShittyAuthLauncherSettings {
 		}
 
 		installations = getInstallations();
+
+		if(installations.stream().anyMatch(i -> i.id == null)) {
+			installations.stream() // Fix installations with no id
+				.filter(i -> i.id == null)
+				.forEach(i -> i.id = UUID.randomUUID().toString());
+
+			setInstallations(installations);
+		}
+
 		if(!installations.stream().anyMatch(i -> i.type == InstallationType.LATEST_RELEASE)) {
 			installations.add(new GameInstallation(InstallationType.LATEST_RELEASE, "latest-release", null, null, DEFAULT_GAME_DATA_PATH, null, Collections.emptyList(), null));
 			setInstallations(installations);
