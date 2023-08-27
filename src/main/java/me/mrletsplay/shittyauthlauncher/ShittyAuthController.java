@@ -353,7 +353,7 @@ public class ShittyAuthController {
 			img.setImage(new Image(new ByteArrayInputStream(bytes)));
 
 			Label name = (Label) pr.lookup("#textName");
-			name.setText(installation.name);
+			name.setText(installation.getEffectiveName());
 
 			Label gameDir = (Label) pr.lookup("#textGameDir");
 			gameDir.setText("Game Directory: " + installation.gameDirectory);

@@ -186,7 +186,7 @@ public class LaunchHelper {
 				ShittyAuthLauncher.LOGGER.info("Minecraft jar: " + minecraftJar.getAbsolutePath());
 
 				if(authLibFile != null) {
-					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchMinecraft();
+					boolean forcePatch = ShittyAuthLauncherSettings.isAlwaysPatchAuthlib();
 					if(forcePatch) {
 						ShittyAuthLauncher.LOGGER.info("Forcibly repatching authlib");
 					}

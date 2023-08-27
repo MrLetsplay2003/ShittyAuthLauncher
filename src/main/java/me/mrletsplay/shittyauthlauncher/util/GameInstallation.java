@@ -127,11 +127,15 @@ public class GameInstallation implements JSONConvertible {
 		return m;
 	}
 
-	@Override
-	public String toString() {
+	public String getEffectiveName() {
 		if(type == InstallationType.LATEST_RELEASE && name == null) return Localization.getLocale().get("installation.latest-release");
 		if(type == InstallationType.LATEST_SNAPSHOT && name == null) return Localization.getLocale().get("installation.latest-snapshot");
 		return name;
+	}
+
+	@Override
+	public String toString() {
+		return getEffectiveName();
 	}
 
 }

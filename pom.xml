@@ -98,7 +98,7 @@
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>ShittyAuthPatcher</artifactId>
-			<version>1.9</version>
+			<version>1.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
