@@ -63,6 +63,7 @@ public class ShittyAuthLauncherSettings {
 			setInstallations(Collections.emptyList());
 			setAccounts(Collections.emptyList());
 			setActiveAccount(null);
+			setParallelDownloads(true);
 			save();
 		}
 
@@ -222,6 +223,14 @@ public class ShittyAuthLauncherSettings {
 
 	public static String getLocale() {
 		return config.getString("locale");
+	}
+
+	public static void setParallelDownloads(boolean parallelDownloads) {
+		config.set("parallelDownloads", parallelDownloads);
+	}
+
+	public static boolean isParallelDownloads() {
+		return config.getBoolean("parallelDownloads");
 	}
 
 }

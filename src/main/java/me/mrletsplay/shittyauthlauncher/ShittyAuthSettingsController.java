@@ -26,6 +26,9 @@ public class ShittyAuthSettingsController {
 	private CheckBox checkboxMinimizeLauncher;
 
 	@FXML
+	private CheckBox checkboxParallelDownloads;
+
+	@FXML
 	private ComboBox<Theme> comboBoxTheme;
 
 	@FXML
@@ -44,6 +47,7 @@ public class ShittyAuthSettingsController {
 		ShittyAuthLauncherSettings.setTheme(theme == Theming.getDefaultTheme() ? null : theme.getID());
 		Locale locale = comboBoxLanguage.getValue();
 		ShittyAuthLauncherSettings.setLocale(locale == Localization.getDefaultLocale() ? null : locale.getID());
+		ShittyAuthLauncherSettings.setParallelDownloads(checkboxParallelDownloads.isSelected());
 		ShittyAuthLauncherSettings.save();
 		ShittyAuthLauncher.settingsStage.hide();
 		Theming.updateTheme(theme);
@@ -72,6 +76,8 @@ public class ShittyAuthSettingsController {
 		Locale l = ShittyAuthLauncherPlugins.getLocale(locale);
 		if(l == null) l = Localization.getDefaultLocale();
 		comboBoxLanguage.setValue(l);
+
+		checkboxParallelDownloads.setSelected(ShittyAuthLauncherSettings.isParallelDownloads());
 
 		if(!ShittyAuthLauncherPlugins.getPlugins().isEmpty()) {
 			listViewPlugins.setItems(FXCollections.observableArrayList(ShittyAuthLauncherPlugins.getPlugins().stream()

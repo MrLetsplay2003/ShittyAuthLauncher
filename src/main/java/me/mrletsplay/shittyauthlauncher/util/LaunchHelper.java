@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,21 +58,46 @@ public class LaunchHelper {
 	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{(?<name>[a-z_]+)\\}");
 
 	public static Task<Void> downloadFiles(Map<File, String> toDownload) {
+		ExecutorService executor;
+		if(ShittyAuthLauncherSettings.isParallelDownloads()) {
+			executor = Executors.newFixedThreadPool(10);
+		}else {
+			executor = Executors.newSingleThreadExecutor();
+		}
 		return new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
-				int i = 0;
+				List<Future<?>> futures = new ArrayList<>();
+
+				AtomicInteger i = new AtomicInteger(0);
 				for(Map.Entry<File, String> dl : toDownload.entrySet()) {
 					if(isCancelled()) return null;
-					updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
-					try {
-						HttpRequest.createGet(dl.getValue()).execute().transferTo(dl.getKey());
-					} catch (IOException e) {
-						throw new LaunchException(e);
-					}
-					updateProgress(++i, toDownload.size());
+
+					futures.add(executor.submit(() -> {
+						updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
+						try {
+							HttpRequest.createGet(dl.getValue()).execute().transferTo(dl.getKey());
+						} catch (IOException e) {
+							throw new LaunchException(e);
+						}
+						updateProgress(i.incrementAndGet(), toDownload.size());
+					}));
 				}
+
+				futures.forEach(f -> {
+					try {
+						f.get();
+					}catch(ExecutionException e) {
+						if(e.getCause() instanceof LaunchException) {
+							throw (LaunchException) e.getCause();
+						}
+
+						throw new LaunchException(e.getCause());
+					} catch (InterruptedException e) {
+						return;
+					}
+				});
 
 				return null;
 			}

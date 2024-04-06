@@ -30,6 +30,7 @@
 	"settings.label.alwaysPatchMinecraft": "Always patch minecraft.jar",
 	"settings.label.alwaysPatchMinecraftExplanation": "Will reduce launch performance, but might be useful if you're experiencing weird issues when running older Minecraft versions",
 	"settings.label.minimizeLauncher": "Minimize launcher after starting the game",
+	"settings.label.parallelDownloads": "Download files in parallel",
 	"settings.label.theme": "Launcher Theme",
 	"settings.label.locale": "Launcher Language",
 	
