@@ -64,6 +64,7 @@ public class LaunchHelper {
 		}else {
 			executor = Executors.newSingleThreadExecutor();
 		}
+
 		return new Task<Void>() {
 
 			@Override
@@ -72,9 +73,9 @@ public class LaunchHelper {
 
 				AtomicInteger i = new AtomicInteger(0);
 				for(Map.Entry<File, String> dl : toDownload.entrySet()) {
-					if(isCancelled()) return null;
-
 					futures.add(executor.submit(() -> {
+						if(isCancelled()) return;
+
 						updateMessage("(" + i + "/" + toDownload.size() + ") Downloading " + dl.getKey() + "...");
 						try {
 							HttpRequest.createGet(dl.getValue()).execute().transferTo(dl.getKey());
@@ -85,19 +86,34 @@ public class LaunchHelper {
 					}));
 				}
 
-				futures.forEach(f -> {
+				executor.shutdown();
+
+				while(futures.stream().anyMatch(f -> !f.isDone())) {
+					if(Thread.currentThread().isInterrupted() || isCancelled()) {
+						futures.stream().forEach(f -> f.cancel(true));
+						return null;
+					}
+
+					try {
+						Thread.sleep(100);
+					}catch(InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+
+				for(Future<?> f : futures) {
 					try {
 						f.get();
 					}catch(ExecutionException e) {
+						futures.stream().forEach(f2 -> f2.cancel(true));
+
 						if(e.getCause() instanceof LaunchException) {
 							throw (LaunchException) e.getCause();
 						}
 
 						throw new LaunchException(e.getCause());
-					} catch (InterruptedException e) {
-						return;
 					}
-				});
+				}
 
 				return null;
 			}
